@@ -1,12 +1,10 @@
 package app.allstackproject.privideo.common.response;
 
 import app.allstackproject.privideo.common.response.status.ResponseStatus;
-import lombok.Builder;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-@Builder
 public class BaseErrorResponse implements ResponseStatus {
 
     private final int code;
