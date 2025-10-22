@@ -27,7 +27,6 @@ public class MemberRole extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @Column(columnDefinition = "BIGINT UNSIGNED")
     private long code;
 
     @Builder(access = AccessLevel.PRIVATE)
