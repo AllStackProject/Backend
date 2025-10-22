@@ -46,26 +46,32 @@ public class User extends BaseEntity {
     @Column(length = 100)
     private GenderType gender;
 
+    @NotBlank
+    @Column(length = 100)
+    private String phoneNumber;
+
     @AgeTypeConstraint
     private int age;
 
     @Builder(access = AccessLevel.PRIVATE)
     private User(String name, String email, String password, GenderType gender,
-                 int age) {
+                 String phoneNumber, int age) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.gender = gender;
+        this.phoneNumber = phoneNumber;
         this.age = age;
     }
 
     public static User create(String name, String email, String password, GenderType gender,
-                              int age) {
+                              String phoneNumber, int age) {
         return User.builder()
                 .name(name)
                 .email(email)
                 .password(password)
                 .gender(gender)
+                .phoneNumber(phoneNumber)
                 .age(age)
                 .build();
     }
