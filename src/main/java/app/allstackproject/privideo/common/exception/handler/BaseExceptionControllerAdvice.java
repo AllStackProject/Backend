@@ -7,6 +7,7 @@ import app.allstackproject.privideo.common.response.BaseErrorResponse;
 import app.allstackproject.privideo.common.response.status.ResponseStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpStatus;
@@ -14,8 +15,10 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
@@ -36,9 +39,23 @@ public class BaseExceptionControllerAdvice {
     }
 
     // === 2) 스프링 표준/검증/파싱 예외 매핑 ===
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<BaseErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException e,
+                                                                          HttpServletRequest req) {
+        List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
+        String msgSummary = fieldErrors.stream()
+                .map(f -> f.getField() + ": " + f.getDefaultMessage())
+                .reduce((a, b) -> a + ", " + b)
+                .orElse("요청 본문 검증 실패");
+
+        log.warn("[400 Validation @Valid] {} {} -> {}", req.getMethod(), req.getRequestURI(), msgSummary);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new BaseErrorResponse(BAD_REQUEST));
+    }
+
     @ExceptionHandler({TypeMismatchException.class, ConstraintViolationException.class})
     public ResponseEntity<BaseErrorResponse> handleValidation(Exception e, HttpServletRequest req) {
-        log.warn("[400 Validation] {} {}", req.getMethod(), req.getRequestURI(), e.toString());
+        log.warn("[400 Validation @Validated] {} {}", req.getMethod(), req.getRequestURI(), e.toString());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new BaseErrorResponse(BAD_REQUEST));
     }
