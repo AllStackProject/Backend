@@ -42,12 +42,16 @@ public class Member extends BaseEntity {
     private boolean isAdmin;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Member(boolean isAdmin) {
+    private Member(User user, Organization organization, boolean isAdmin) {
+        this.user = user;
+        this.organization = organization;
         this.isAdmin = isAdmin;
     }
 
-    public static Member create(boolean isAdmin) {
+    public static Member create(User user, Organization organization, boolean isAdmin) {
         return Member.builder()
+                .user(user)
+                .organization(organization)
                 .isAdmin(isAdmin)
                 .build();
     }

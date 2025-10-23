@@ -40,18 +40,24 @@ public class Organization extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    // TODO: 추후 Redis로 이관 예정
+    @NotBlank
+    private String code;
+
     @Builder(access = AccessLevel.PRIVATE)
-    private Organization(String name, String imgUrl, String description) {
+    private Organization(String name, String imgUrl, String description, String code) {
         this.name = name;
         this.imgUrl = imgUrl;
         this.description = description;
+        this.code = code;
     }
 
-    public static Organization create(String name, String imgUrl, String description) {
+    public static Organization create(String name, String imgUrl, String description, String code) {
         return Organization.builder()
                 .name(name)
                 .imgUrl(imgUrl)
                 .description(description)
+                .code(code)
                 .build();
     }
 }
