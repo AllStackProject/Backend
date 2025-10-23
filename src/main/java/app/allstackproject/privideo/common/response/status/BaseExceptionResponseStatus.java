@@ -23,7 +23,12 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
      * 3000: Server 오류 (INTERNAL_SERVER_ERROR)
      */
     SERVER_ERROR(3000, HttpStatus.INTERNAL_SERVER_ERROR, "서버에서 오류가 발생하였습니다."),
-    DB_TEMPORARY_UNAVAILABLE(3001, HttpStatus.SERVICE_UNAVAILABLE, "일시적으로 데이터를 처리할 수 없습니다.");
+    DB_TEMPORARY_UNAVAILABLE(3001, HttpStatus.SERVICE_UNAVAILABLE, "일시적으로 데이터를 처리할 수 없습니다."),
+
+    /**
+     * 4000: User 오류
+     */
+    INVALID_USER_SIGNUP(4001, HttpStatus.BAD_REQUEST, "회원가입 요청에서 유효하지 않은 값이 존재합니다.");
 
     private final int code;
     private final HttpStatus httpStatus;

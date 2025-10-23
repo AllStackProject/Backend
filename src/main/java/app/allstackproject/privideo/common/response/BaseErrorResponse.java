@@ -17,6 +17,13 @@ public class BaseErrorResponse implements ResponseStatus {
         this.message = responseStatus.getMessage();
     }
 
+    public BaseErrorResponse(ResponseStatus responseStatus, String detailMessage) {
+        this.code = responseStatus.getCode();
+        this.httpStatus = responseStatus.getStatus();
+        this.message =
+                (detailMessage != null && !detailMessage.isBlank()) ? detailMessage : responseStatus.getMessage();
+    }
+
     @Override
     public int getCode() {
         return code;
