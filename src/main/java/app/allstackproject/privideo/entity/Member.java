@@ -1,18 +1,16 @@
 package app.allstackproject.privideo.entity;
 
 import app.allstackproject.privideo.common.enumStatus.PermissionType;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import java.util.HashSet;
-import java.util.Set;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,16 +34,22 @@ public class Member extends BaseEntity {
     @JoinColumn(name = "organization_id")
     private Organization organization;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final Set<MemberRole> memberRoles = new HashSet<>();
-
     private boolean isAdmin;
 
+    private long permissionCode = 0L;
+
+    // TODO: 낙관적 락
+    @Version
+    private Long version;
+
     @Builder(access = AccessLevel.PRIVATE)
-    private Member(User user, Organization organization, boolean isAdmin) {
+    private Member(User user, Organization organization, boolean isAdmin, Long permissionCode) {
         this.user = user;
         this.organization = organization;
         this.isAdmin = isAdmin;
+        if (permissionCode != null) {
+            this.permissionCode = permissionCode;
+        }
     }
 
     public static Member create(User user, Organization organization, boolean isAdmin) {
@@ -53,41 +57,27 @@ public class Member extends BaseEntity {
                 .user(user)
                 .organization(organization)
                 .isAdmin(isAdmin)
+                .permissionCode(0L)
                 .build();
     }
 
-    public MemberRole addRole(long code) {
-        MemberRole mr = MemberRole.create(this, code); // this 주입
-        memberRoles.add(mr);
-        return mr;
-    }
-
-    public void addRole(MemberRole mr) {
-        memberRoles.add(mr);
-        mr._setMember(this);            // 내부 세터로 양쪽 일치
-    }
-
-    public void removeRole(MemberRole mr) {
-        memberRoles.remove(mr);
-        mr._setMember(null);
-    }
-
-    /**
-     * 멤버의 실효 권한 마스크 (모든 row OR)
-     */
-    public long effectiveMask() {
-        long mask = 0L;
-        for (MemberRole mr : memberRoles) {
-            mask |= mr.getCode();
+    public void grant(PermissionType... perms) {
+        for (PermissionType p : perms) {
+            permissionCode |= p.getBit();
         }
-        return mask;
     }
 
-    /**
-     * 멤버가 특정 권한을 갖는지
-     */
+    public void revoke(PermissionType... perms) {
+        for (PermissionType p : perms) {
+            permissionCode &= ~p.getBit();
+        }
+    }
+
     public boolean has(PermissionType p) {
-        long bit = p.getBit();
-        return (effectiveMask() & bit) == bit;
+        return (permissionCode & p.getBit()) == p.getBit();
+    }
+
+    public void replaceWith(PermissionType... perms) {
+        this.permissionCode = PermissionType.combine(perms);
     }
 }
