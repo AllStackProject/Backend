@@ -12,7 +12,7 @@ public class OrgTokenDto {
 
     private Long orgId;
 
-    private String orgRole;
+    private Boolean orgIsCreator;
 
     private long orgPermission;
 }
