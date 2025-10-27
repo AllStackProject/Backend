@@ -61,7 +61,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             if (!StringUtils.hasText(tokenTypeStr)) {
                 throw new ApiException(INVALID_TOKEN);
             }
-            TokenType tokenType = TokenType.valueOf(tokenTypeStr);
+
+            TokenType tokenType;
+            try {
+                tokenType = TokenType.valueOf(tokenTypeStr);
+            } catch (IllegalArgumentException ex) {
+                throw new ApiException(INVALID_TOKEN, ex.getMessage());
+            }
 
             String pathOrgId = extractOrgIdFromPath(req);
             Authentication auth;
@@ -85,9 +91,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 }
 
                 case ORG -> {
-                    Long memberId = c.get("memberId", Number.class).longValue();
-                    Long orgId = c.get("orgId", Number.class).longValue();
-                    Integer perm = c.get("orgPermission", Number.class).intValue();
+                    Long memberId = getLong(c, "memberId");
+                    Long orgId = getLong(c, "orgId");
+                    Integer perm = getInt(c, "orgPermission");
 
                     if (pathOrgId != null && !Objects.equals(pathOrgId, String.valueOf(orgId))) {
                         throw new ApiException(FORBIDDEN_ORG_MISMATCH);
@@ -114,17 +120,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.getContext().setAuthentication(auth);
         } catch (ApiException e) {
-            SecurityContextHolder.clearContext();
-            req.setAttribute(SECURITY_EXCEPTION_KEY, e.getResponseStatus());
-
-            switch (e.getResponseStatus().getStatus()) {
-                case UNAUTHORIZED -> throw new InsufficientAuthenticationException(e.getMessage(), e);
-                case FORBIDDEN -> throw new AccessDeniedException(e.getMessage(), e);
-                default -> throw new InsufficientAuthenticationException(e.getMessage(), e);
-            }
+            throw toSecurityException(req, e);
         } catch (Exception e) {
-            SecurityContextHolder.clearContext();
-            throw new ApiException(INVALID_TOKEN);
+            throw toSecurityException(req, new ApiException(INVALID_TOKEN, e.getMessage()));
         }
 
         chain.doFilter(req, res);
@@ -170,6 +168,32 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         return isAllDigits(first) ? first : null;
+    }
+
+    private static Long getLong(Claims c, String key) {
+        Number n = c.get(key, Number.class);
+        if (n == null) {
+            throw new ApiException(INVALID_TOKEN);
+        }
+        return n.longValue();
+    }
+
+    private static Integer getInt(Claims c, String key) {
+        Number n = c.get(key, Number.class);
+        if (n == null) {
+            throw new ApiException(INVALID_TOKEN);
+        }
+        return n.intValue();
+    }
+
+    private RuntimeException toSecurityException(HttpServletRequest req, ApiException e) {
+        SecurityContextHolder.clearContext();
+        req.setAttribute(SECURITY_EXCEPTION_KEY, e.getResponseStatus());
+        return switch (e.getResponseStatus().getStatus()) {
+            case FORBIDDEN -> new AccessDeniedException(e.getMessage(), e);
+            case UNAUTHORIZED -> new InsufficientAuthenticationException(e.getMessage(), e);
+            default -> new InsufficientAuthenticationException(e.getMessage(), e);
+        };
     }
 
     private static String cleanSegment(String s) {
