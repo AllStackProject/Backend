@@ -3,6 +3,7 @@ package app.allstackproject.privideo.common.filter;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.FORBIDDEN_ORG_MISMATCH;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_TOKEN;
 
+import app.allstackproject.privideo.common.enumStatus.AuthPrincipal;
 import app.allstackproject.privideo.common.enumStatus.PermissionType;
 import app.allstackproject.privideo.common.enumStatus.TokenType;
 import app.allstackproject.privideo.common.exception.ApiException;
@@ -87,12 +88,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     }
 
                     List<GrantedAuthority> auths = List.of(new SimpleGrantedAuthority("bootstrap:granted"));
-                    auth = new UsernamePasswordAuthenticationToken(userId, null, auths);
+                    var principal = new AuthPrincipal(userId, null, null, null, null, TokenType.BOOTSTRAP);
+                    auth = new UsernamePasswordAuthenticationToken(principal, null, auths);
                 }
 
                 case ORG -> {
                     Long memberId = getLong(c, "memberId");
                     Long orgId = getLong(c, "orgId");
+                    String orgIsCreator = getString(c, "orgIsCreator");
                     Integer perm = getInt(c, "orgPermission");
 
                     if (pathOrgId != null && !Objects.equals(pathOrgId, String.valueOf(orgId))) {
@@ -112,7 +115,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         auths.add(new SimpleGrantedAuthority("hashtag:create"));
                     }
 
-                    auth = new UsernamePasswordAuthenticationToken(memberId, null, auths);
+                    var principal = new AuthPrincipal(null, memberId, orgId, Boolean.getBoolean(orgIsCreator), perm,
+                            TokenType.ORG);
+                    auth = new UsernamePasswordAuthenticationToken(principal, null, auths);
                 }
 
                 default -> throw new ApiException(INVALID_TOKEN);
@@ -184,6 +189,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             throw new ApiException(INVALID_TOKEN);
         }
         return n.intValue();
+    }
+
+    private static String getString(Claims c, String key) {
+        String s = c.get(key, String.class);
+        if (s == null) {
+            throw new ApiException(INVALID_TOKEN);
+        }
+        return s;
     }
 
     private RuntimeException toSecurityException(HttpServletRequest req, ApiException e) {
