@@ -16,7 +16,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.access.ExceptionTranslationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -52,7 +52,7 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(customAuthEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler))
-                .addFilterBefore(new JwtAuthFilter(jwtProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(new JwtAuthFilter(jwtProvider), ExceptionTranslationFilter.class)
                 .cors(cors -> {
                 })
                 .formLogin(f -> f.disable())
