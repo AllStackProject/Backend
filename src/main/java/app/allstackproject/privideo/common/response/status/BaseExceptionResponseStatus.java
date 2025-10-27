@@ -25,6 +25,7 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     SERVER_ERROR(3000, HttpStatus.INTERNAL_SERVER_ERROR, "서버에서 오류가 발생하였습니다."),
     DB_TEMPORARY_UNAVAILABLE(3001, HttpStatus.SERVICE_UNAVAILABLE, "일시적으로 데이터를 처리할 수 없습니다.");
 
+
     private final int code;
     private final HttpStatus httpStatus;
     private final String message;
