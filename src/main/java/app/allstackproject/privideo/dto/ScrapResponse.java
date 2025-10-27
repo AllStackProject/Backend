@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserScrapResponse {
+public class ScrapResponse {
 
     private List<ScrapVideo> allScrap;
 
@@ -50,9 +50,9 @@ public class UserScrapResponse {
         }
     }
 
-    public static UserScrapResponse of(List<Scrap> scraps, Map<Long, History> historyMapByVideoId) {
+    public static ScrapResponse of(List<Scrap> scraps, Map<Long, History> historyMapByVideoId) {
         List<ScrapVideo> allScrap = ScrapVideo.of(scraps, historyMapByVideoId);
-        return UserScrapResponse.builder()
+        return ScrapResponse.builder()
                 .allScrap(allScrap)
                 .build();
     }

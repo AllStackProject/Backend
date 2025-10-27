@@ -1,10 +1,10 @@
 package app.allstackproject.privideo.service;
 
-import app.allstackproject.privideo.dto.UserScrapResponse;
+import app.allstackproject.privideo.dto.ScrapResponse;
 import app.allstackproject.privideo.entity.History;
 import app.allstackproject.privideo.entity.Scrap;
-import app.allstackproject.privideo.repository.UserHistoryRepository;
-import app.allstackproject.privideo.repository.UserScrapRepository;
+import app.allstackproject.privideo.repository.HistoryRepository;
+import app.allstackproject.privideo.repository.ScrapRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -15,13 +15,13 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class MyScrapService {
 
-    private final UserScrapRepository userScrapRepository;
-    private final UserHistoryRepository userHistoryRepository;
-    
-    public UserScrapResponse getUserScraps(Long memberId) {
+    private final ScrapRepository scrapRepository;
+    private final HistoryRepository historyRepository;
 
-        List<Scrap> scrapList = userScrapRepository.findByMemberId(memberId);
-        List<History> historyList = userHistoryRepository.findByMemberId(memberId);
+    public ScrapResponse getUserScraps(Long memberId, Long orgId) {
+
+        List<Scrap> scrapList = scrapRepository.findByMemberIdAndVideoOrganizationId(memberId, orgId);
+        List<History> historyList = historyRepository.findByMemberIdAndVideoOrganizationId(memberId, orgId);
 
         Map<Long, History> historyMapByVideoId = historyList.stream()
                 .collect(Collectors.toMap(
@@ -29,6 +29,6 @@ public class MyScrapService {
                         history -> history
                 ));
 
-        return UserScrapResponse.of(scrapList, historyMapByVideoId);
+        return ScrapResponse.of(scrapList, historyMapByVideoId);
     }
 }

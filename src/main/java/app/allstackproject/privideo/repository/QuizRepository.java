@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface UserQuizRepository extends JpaRepository<MemberQuizResult, Long> {
-    List<MemberQuizResult> findByMemberId(Long memberId);
+public interface QuizRepository extends JpaRepository<MemberQuizResult, Long> {
+    List<MemberQuizResult> findByMemberIdAndOrganizationId(Long memberId, Long orgId);
 }

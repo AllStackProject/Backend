@@ -12,11 +12,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserQuizResponse {
+public class QuizResponse {
 
     private List<QuizItem> allQuiz;
 
-    public static UserQuizResponse of(List<MemberQuizResult> quizList) {
+    public static QuizResponse of(List<MemberQuizResult> quizList) {
 
         List<QuizItem> allQuiz = quizList.stream()
                 .collect(Collectors.groupingBy(q -> q.getVideo().getTitle()))
@@ -34,7 +34,7 @@ public class UserQuizResponse {
                         .build())
                 .collect(Collectors.toList());
 
-        return UserQuizResponse.builder()
+        return QuizResponse.builder()
                 .allQuiz(allQuiz)
                 .build();
     }

@@ -14,11 +14,11 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserHistoryResponse {
+public class HistoryResponse {
 
     private List<VideoItem> videos;
 
-    public static UserHistoryResponse of(List<History> histories) {
+    public static HistoryResponse of(List<History> histories) {
         List<VideoItem> videoItems = histories.stream()
                 .map(h -> {
                     double watchRate = h.getWholeTime() == 0 ? 0.0 :
@@ -34,7 +34,7 @@ public class UserHistoryResponse {
                 })
                 .collect(Collectors.toList());
 
-        return UserHistoryResponse.builder()
+        return HistoryResponse.builder()
                 .videos(videoItems)
                 .build();
     }

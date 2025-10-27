@@ -13,11 +13,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserCommentResponse {
+public class CommentResponse {
 
     private List<CommentItem> comments;
 
-    public static UserCommentResponse of(List<Comment> comments) {
+    public static CommentResponse of(List<Comment> comments) {
         List<CommentItem> commentItems = comments.stream()
                 .map(comment -> CommentItem.builder()
                         .id(comment.getId())
@@ -29,7 +29,7 @@ public class UserCommentResponse {
                         .build())
                 .collect(Collectors.toList());
 
-        return UserCommentResponse.builder()
+        return CommentResponse.builder()
                 .comments(commentItems)
                 .build();
     }

@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface UserHistoryRepository extends JpaRepository<History, Long> {
-    List<History> findByMemberId(Long memberId);
+public interface HistoryRepository extends JpaRepository<History, Long> {
+    List<History> findByMemberIdAndVideoOrganizationId(Long memberId, Long orgId);
 }

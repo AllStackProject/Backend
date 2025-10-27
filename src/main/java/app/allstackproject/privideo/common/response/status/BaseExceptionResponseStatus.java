@@ -45,6 +45,10 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     USER_NOT_FOUND(5005, HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
     INVALID_PASSWORD(5006, HttpStatus.BAD_REQUEST, "비밀번호가 틀렸습니다.");
 
+    /**
+     * 6000: Comment 오류
+     */
+    //COMMENT_NOT_FOUND(6001, HttpStatus.BAD_REQUEST, "존재하지 않는 댓글입니다.");
 
     private final int code;
     private final HttpStatus httpStatus;
