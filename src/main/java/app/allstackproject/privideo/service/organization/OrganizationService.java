@@ -7,6 +7,7 @@ import static app.allstackproject.privideo.common.util.OrgCodeGenerator.generate
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.dto.organization.CreateOrgRequest;
 import app.allstackproject.privideo.dto.organization.CreateOrgResult;
+import app.allstackproject.privideo.dto.organization.ReadOrgDto;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.entity.User;
@@ -14,6 +15,7 @@ import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.user.UserRepository;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,11 +39,17 @@ public class OrganizationService {
         String code = generateCode(user.getId());
         Organization organization = Organization.create(user, createOrgRequest.getName(), createOrgRequest.getImg(),
                 createOrgRequest.getDesc(), code);
-        Member member = Member.create(user, organization, true);
+        Member member = Member.create(user, organization, true, true);
 
         organizationRepository.save(organization);
         memberRepository.save(member);
 
         return new CreateOrgResult(organization.getId(), code);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReadOrgDto> readOrgs(Long userId) {
+        userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
+        return organizationRepository.findAllByUserId(userId);
     }
 }

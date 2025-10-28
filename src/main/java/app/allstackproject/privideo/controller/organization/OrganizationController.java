@@ -8,12 +8,16 @@ import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.dto.organization.CreateOrgRequest;
 import app.allstackproject.privideo.dto.organization.CreateOrgResponse;
 import app.allstackproject.privideo.dto.organization.CreateOrgResult;
+import app.allstackproject.privideo.dto.organization.ReadOrgDto;
+import app.allstackproject.privideo.dto.organization.ReadOrgsResponse;
 import app.allstackproject.privideo.service.organization.OrganizationService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,13 +25,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/org")
+@RequestMapping("/orgs")
 public class OrganizationController {
 
     private final OrganizationService organizationService;
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")
-    @PostMapping("/")
+    @PostMapping("")
     public BaseResponse<CreateOrgResponse> createOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
                                                      @Valid @RequestBody CreateOrgRequest createOrgRequest,
                                                      BindingResult bindingResult) {
@@ -38,4 +42,13 @@ public class OrganizationController {
         CreateOrgResult createOrgResult = organizationService.createOrg(userId, createOrgRequest);
         return new BaseResponse<>(CreateOrgResponse.of(createOrgResult));
     }
+
+    @PreAuthorize("hasAuthority('bootstrap:granted')")
+    @GetMapping("")
+    public BaseResponse<ReadOrgsResponse> readOrgs(@AuthenticationPrincipal(expression = "userId") Long userId) {
+        List<ReadOrgDto> result = organizationService.readOrgs(userId);
+        return new BaseResponse<>(ReadOrgsResponse.of(result));
+    }
+
+
 }
