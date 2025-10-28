@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -7,6 +8,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,28 +32,59 @@ public class History extends BaseEntity {
     @JoinColumn(name = "video_id")
     private Video video;
 
-    private int watchedTime;
+    @NotNull
+    @Column(length = 64)
+    private String sessionId;
 
-    private int wholeTime;
+    @NotNull
+    private Long actualWatchSec;
 
-    private boolean isEnd;
+    @NotNull
+    private Long recentPositionSec;
+
+    @NotNull
+    private LocalDateTime startedAt;
+
+    @NotNull
+    private Long watchedSegCnt;
+
+    private boolean hadEnd;
+
+    private boolean isComplete;
+
+    @NotNull
+    private LocalDateTime completedAt;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private History(Member member, Video video, int watchedTime, int wholeTime, boolean isEnd) {
+    private History(Member member, Video video, String sessionId, Long actualWatchSec, Long recentPositionSec,
+                    LocalDateTime startedAt, Long watchedSegCnt, boolean hadEnd, boolean isComplete,
+                    LocalDateTime completedAt) {
         this.member = member;
         this.video = video;
-        this.watchedTime = watchedTime;
-        this.wholeTime = wholeTime;
-        this.isEnd = isEnd;
+        this.sessionId = sessionId;
+        this.actualWatchSec = actualWatchSec;
+        this.recentPositionSec = recentPositionSec;
+        this.startedAt = startedAt;
+        this.watchedSegCnt = watchedSegCnt;
+        this.hadEnd = hadEnd;
+        this.isComplete = isComplete;
+        this.completedAt = completedAt;
     }
 
-    public static History create(Member member, Video video, int watchedTime, int wholeTime, boolean isEnd) {
+    public static History create(Member member, Video video, String sessionId, Long actualWatchSec,
+                                 Long recentPositionSec, LocalDateTime startedAt, Long watchedSegCnt, boolean hadEnd,
+                                 boolean isComplete, LocalDateTime completedAt) {
         return History.builder()
                 .member(member)
                 .video(video)
-                .watchedTime(watchedTime)
-                .wholeTime(wholeTime)
-                .isEnd(isEnd)
+                .sessionId(sessionId)
+                .actualWatchSec(actualWatchSec)
+                .recentPositionSec(recentPositionSec)
+                .startedAt(startedAt)
+                .watchedSegCnt(watchedSegCnt)
+                .hadEnd(hadEnd)
+                .isComplete(isComplete)
+                .completedAt(completedAt)
                 .build();
     }
 }

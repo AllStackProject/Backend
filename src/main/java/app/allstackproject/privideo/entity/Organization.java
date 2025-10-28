@@ -36,6 +36,9 @@ public class Organization extends BaseEntity {
     private String imgUrl;
 
     @NotBlank
+    private String adImgUrl;
+
+    @NotBlank
     @Lob
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -45,17 +48,19 @@ public class Organization extends BaseEntity {
     private String code;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Organization(String name, String imgUrl, String description, String code) {
+    private Organization(String name, String imgUrl, String adImgUrl, String description, String code) {
         this.name = name;
+        this.adImgUrl = adImgUrl;
         this.imgUrl = imgUrl;
         this.description = description;
         this.code = code;
     }
 
-    public static Organization create(String name, String imgUrl, String description, String code) {
+    public static Organization create(String name, String adImgUrl, String imgUrl, String description, String code) {
         return Organization.builder()
                 .name(name)
                 .imgUrl(imgUrl)
+                .adImgUrl(adImgUrl)
                 .description(description)
                 .code(code)
                 .build();
