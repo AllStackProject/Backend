@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface QuizRepository extends JpaRepository<MemberQuizResult, Long> {
-    List<MemberQuizResult> findByMemberIdAndOrganizationId(Long memberId, Long orgId);
+    List<MemberQuizResult> findByMemberIdAndVideo_OrganizationId(Long memberId, Long organizationId);
 }

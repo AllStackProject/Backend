@@ -1,4 +1,4 @@
-package app.allstackproject.privideo.dto;
+package app.allstackproject.privideo.dto.video;
 
 import app.allstackproject.privideo.entity.History;
 import lombok.AllArgsConstructor;

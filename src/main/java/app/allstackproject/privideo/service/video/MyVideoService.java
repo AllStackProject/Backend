@@ -1,6 +1,6 @@
-package app.allstackproject.privideo.service;
+package app.allstackproject.privideo.service.video;
 
-import app.allstackproject.privideo.dto.HistoryResponse;
+import app.allstackproject.privideo.dto.video.HistoryResponse;
 import app.allstackproject.privideo.entity.History;
 import app.allstackproject.privideo.repository.HistoryRepository;
 import lombok.RequiredArgsConstructor;

@@ -15,7 +15,7 @@ public class MyQuizService {
     private final QuizRepository quizRepository;
 
     public QuizResponse getUserQuizzes(Long memberId, Long orgId) {
-        List<MemberQuizResult> quizList = quizRepository.findByMemberIdAndOrganizationId(memberId, orgId);
+        List<MemberQuizResult> quizList = quizRepository.findByMemberIdAndVideo_OrganizationId(memberId, orgId);
         return QuizResponse.of(quizList);
     }
 }

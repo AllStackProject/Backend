@@ -88,4 +88,10 @@ public class User extends BaseEntity {
     public void changePassword(String newPassword, PasswordEncoder passwordEncoder) {
         this.password = passwordEncoder.encode(newPassword);
     }
+
+    public void updateInfo(String NewPhoneNumber, GenderType newGender, int newAge) {
+        this.phoneNumber = NewPhoneNumber;
+        this.gender = newGender;
+        this.age = newAge;
+    }
 }
