@@ -44,7 +44,7 @@ public class MyActivityController {
         Long memberId = me.memberId();
         Long tokenOrgId = me.orgId();
 
-        // 조직에 대한 토큰 일치 여부
+        // 조직에 대한 토큰 일치 여부 검증
 //        if (!tokenOrgId.equals(orgId)) {
 //            throw new UnauthorizedException("해당 조직에 대한 권한이 없습니다.");
 //        }

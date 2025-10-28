@@ -1,6 +1,8 @@
 package app.allstackproject.privideo.controller;
 
+import app.allstackproject.privideo.common.enumStatus.AuthPrincipal;
 import app.allstackproject.privideo.common.response.BaseResponse;
+import app.allstackproject.privideo.dto.CommentResponse;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,16 +21,26 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class MyPageController {
 
-//    private final MyVideoService myVideoService;
-//    private final MyQuizService myQuizService;
-//    private final MyScrapService myScrapService;
-//    private final MyCommentService myCommentService;
-
     //사용자 정보 조회
-//    @GetMapping("/info/{userId}")
-//    public BaseResponse<UserInfoResponse> getMyInfo(@RequestParam Long userId) {
-//        UserInfoResponse infos = myInfoService.getUserInfos(userId);
-//        return new BaseResponse<>(infos);
-//    }
+    @GetMapping("/info")
+    public BaseResponse<UserInfoResponse> getMyInfo(
+            @AuthenticationPrincipal AuthPrincipal me) {
+
+        Long memberId = me.memberId();
+        UserInfoResponse info = myInfoService.getUserInfo(memberId);
+        return new BaseResponse<>(info);
+    }
+
+    //사용자 댓글 조회
+    @GetMapping("{orgId}/comment")
+    public BaseResponse<CommentResponse> getUserComments(
+            @AuthenticationPrincipal AuthPrincipal me,
+            @PathVariable long orgId) {
+
+        Long memberId = me.memberId();
+
+        CommentResponse comments = myCommentService.getUserComments(memberId, orgId);
+        return new BaseResponse<>(comments);
+    }
 }
 
