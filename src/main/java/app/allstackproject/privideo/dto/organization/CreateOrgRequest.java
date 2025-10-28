@@ -14,7 +14,7 @@ public class CreateOrgRequest {
     private String name;
 
     @NotNull
-    private String img;
+    private String imgUrl;
 
     @NotNull
     private String desc;

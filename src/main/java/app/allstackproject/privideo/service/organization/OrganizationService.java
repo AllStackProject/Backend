@@ -37,7 +37,7 @@ public class OrganizationService {
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
 
         String code = generateCode(user.getId());
-        Organization organization = Organization.create(user, createOrgRequest.getName(), createOrgRequest.getImg(),
+        Organization organization = Organization.create(user, createOrgRequest.getName(), createOrgRequest.getImgUrl(),
                 createOrgRequest.getDesc(), code);
         Member member = Member.create(user, organization, true, true);
 

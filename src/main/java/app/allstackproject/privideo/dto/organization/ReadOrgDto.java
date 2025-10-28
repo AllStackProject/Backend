@@ -10,7 +10,7 @@ public class ReadOrgDto {
 
     private String name;
 
-    private String img;
+    private String imgUrl;
 
     private String code;
 
@@ -21,11 +21,11 @@ public class ReadOrgDto {
     private boolean isActive;
 
     @QueryProjection
-    public ReadOrgDto(Long id, String name, String img, String code,
+    public ReadOrgDto(Long id, String name, String imgUrl, String code,
                       LocalDateTime joinAt, boolean isAdmin, boolean isActive) {
         this.id = id;
         this.name = name;
-        this.img = img;
+        this.imgUrl = imgUrl;
         this.code = code;
         this.joinAt = joinAt;
         this.isAdmin = isAdmin;

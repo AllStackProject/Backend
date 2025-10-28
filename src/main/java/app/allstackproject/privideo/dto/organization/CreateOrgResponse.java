@@ -1,14 +1,17 @@
 package app.allstackproject.privideo.dto.organization;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
 public class CreateOrgResponse {
-    private Long orgId;
+    private Long id;
 
-    private String orgCode;
+    private String code;
+
+    private CreateOrgResponse(Long id, String code) {
+        this.id = id;
+        this.code = code;
+    }
 
     public static CreateOrgResponse of(CreateOrgResult createOrgResult) {
         return new CreateOrgResponse(createOrgResult.getOrgId(), createOrgResult.getOrgCode());
