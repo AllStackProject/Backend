@@ -9,6 +9,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -39,35 +40,52 @@ public class Video extends BaseEntity {
     @NotBlank
     private String thumbnailUrl;
 
+    @NotNull
+    private Long wholeTime;
+
     private boolean isComment;
 
     private boolean isQuiz;
 
-    @NotBlank
-    private LocalDate expireTime;
+    @NotNull
+    private LocalDate expiredAt;
+
+    @NotNull
+    private Long viewCnt;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Video(Organization organization, Member creator, String title, String thumbnailUrl, boolean isComment,
-                  boolean isQuiz, LocalDate expireTime) {
+    private Video(Organization organization, Member creator, String title, String thumbnailUrl, Long wholeTime,
+                  boolean isComment, boolean isQuiz, LocalDate expiredAt, Long viewCnt) {
         this.organization = organization;
         this.creator = creator;
         this.title = title;
         this.thumbnailUrl = thumbnailUrl;
+        this.wholeTime = wholeTime;
         this.isComment = isComment;
         this.isQuiz = isQuiz;
-        this.expireTime = expireTime;
+        this.expiredAt = expiredAt;
+        this.viewCnt = viewCnt;
     }
 
     public static Video create(Organization organization, Member creator, String title, String thumbnailUrl,
-                               boolean isComment, boolean isQuiz, LocalDate expireTime) {
+                               Long wholeTime, boolean isComment, boolean isQuiz, LocalDate expiredAt, Long viewCnt) {
+        if (expiredAt == null) {
+            expiredAt = LocalDate.now().plusYears(100);
+        }
+        if (viewCnt == null) {
+            viewCnt = 0L;
+        }
+
         return Video.builder()
                 .organization(organization)
                 .creator(creator)
                 .title(title)
                 .thumbnailUrl(thumbnailUrl)
+                .wholeTime(wholeTime)
                 .isComment(isComment)
                 .isQuiz(isQuiz)
-                .expireTime(expireTime)
+                .expiredAt(expiredAt)
+                .viewCnt(viewCnt)
                 .build();
     }
 }
