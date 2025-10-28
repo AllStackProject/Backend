@@ -1,6 +1,7 @@
 package app.allstackproject.privideo.service.organization;
 
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DUPLICATE_ORG_NAME;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.USER_NOT_FOUND;
 import static app.allstackproject.privideo.common.util.OrgCodeGenerator.generateCode;
 
@@ -51,5 +52,15 @@ public class OrganizationService {
     public List<ReadOrgDto> readOrgs(Long userId) {
         userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
         return organizationRepository.findAllByUserId(userId);
+    }
+
+    public boolean joinOrg(Long userId, String orgName, String orgCode) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
+        Organization organization = organizationRepository.findByNameAndCode(orgName, orgCode)
+                .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
+
+        Member member = Member.create(user, organization, false, false);
+        memberRepository.save(member);
+        return true;
     }
 }

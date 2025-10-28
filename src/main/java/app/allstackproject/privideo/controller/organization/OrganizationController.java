@@ -1,13 +1,16 @@
 package app.allstackproject.privideo.controller.organization;
 
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_ORG_CREATE;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_ORG_JOIN;
 import static app.allstackproject.privideo.common.util.BindingResultUtil.getErrorMessage;
 
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.response.BaseResponse;
+import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.organization.CreateOrgRequest;
 import app.allstackproject.privideo.dto.organization.CreateOrgResponse;
 import app.allstackproject.privideo.dto.organization.CreateOrgResult;
+import app.allstackproject.privideo.dto.organization.JoinOrgRequest;
 import app.allstackproject.privideo.dto.organization.ReadOrgDto;
 import app.allstackproject.privideo.dto.organization.ReadOrgsResponse;
 import app.allstackproject.privideo.service.organization.OrganizationService;
@@ -50,5 +53,17 @@ public class OrganizationController {
         return new BaseResponse<>(ReadOrgsResponse.of(result));
     }
 
+    @PreAuthorize("hasAuthority('bootstrap:granted')")
+    @PostMapping("/join")
+    public BaseResponse<SuccessResponse> joinOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
+                                                 @Valid @RequestBody JoinOrgRequest joinOrgRequest,
+                                                 BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            throw new ApiException(INVALID_ORG_JOIN, getErrorMessage(bindingResult));
+        }
+
+        boolean isSuccess = organizationService.joinOrg(userId, joinOrgRequest.getName(), joinOrgRequest.getCode());
+        return new BaseResponse<>(SuccessResponse.of(isSuccess));
+    }
 
 }
