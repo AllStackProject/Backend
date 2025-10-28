@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.service.organization;
 
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DUPLICATE_ORG_NAME;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.USER_NOT_FOUND;
 import static app.allstackproject.privideo.common.util.OrgCodeGenerator.generateCode;
 
@@ -27,11 +28,15 @@ public class OrganizationService {
     private final OrganizationRepository organizationRepository;
 
     public CreateOrgResult createOrg(Long userId, @Valid CreateOrgRequest createOrgRequest) {
+        if (organizationRepository.findByName(createOrgRequest.getName()).isPresent()) {
+            throw new ApiException(DUPLICATE_ORG_NAME);
+        }
+
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
 
         String code = generateCode(user.getId());
-        Organization organization = Organization.create(user, createOrgRequest.getName(), "",
-                createOrgRequest.getDesc(), createOrgRequest.getImg(), code);
+        Organization organization = Organization.create(user, createOrgRequest.getName(), createOrgRequest.getImg(),
+                createOrgRequest.getDesc(), code);
         Member member = Member.create(user, organization, true);
 
         organizationRepository.save(organization);

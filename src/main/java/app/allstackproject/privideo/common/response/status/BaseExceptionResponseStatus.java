@@ -48,7 +48,8 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     /**
      * 7000: Organization 오류
      */
-    INVALID_ORG_CREATE(7001, HttpStatus.BAD_REQUEST, "조직 생성 요청에서 유효하지 않은 값이 존재합니다.");
+    INVALID_ORG_CREATE(7001, HttpStatus.BAD_REQUEST, "조직 생성 요청에서 유효하지 않은 값이 존재합니다."),
+    DUPLICATE_ORG_NAME(7002, HttpStatus.BAD_REQUEST, "조직 이름은 중복이 불가능합니다.");
 
     private final int code;
     private final HttpStatus httpStatus;
