@@ -6,7 +6,6 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_PASSWORD;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.PASSWORD_MISMATCH;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.PASSWORD_SAME_AS_CURRENT;
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.SERVER_ERROR;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.USER_NOT_FOUND;
 
 import app.allstackproject.privideo.common.enumStatus.GenderType;
@@ -24,9 +23,7 @@ import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.user.UserRepository;
 import jakarta.validation.Valid;
-import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -112,38 +109,31 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(USER_NOT_FOUND));
 
-        //비밀번호 변경 처리
         if (isPasswordChangeRequested(request)) {
             validateAndUpdatePassword(user, request);
         }
-        //정보 업데이트
         updateUserFields(user, request);
 
         return true;
     }
 
-    //비밀번호 변경 요청 확인
     private boolean isPasswordChangeRequested(UpdateUserInfoRequest request) {
         return request.getNewPassword() != null && !request.getNewPassword().isBlank();
     }
 
-    //비밀번호 검증 및 변경
     private void validateAndUpdatePassword(User user, UpdateUserInfoRequest request) {
-        // 새 비밀번호와 확인 일치 여부
+
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             throw new ApiException(PASSWORD_MISMATCH);
         }
 
-        // 새 비밀번호가 DB에 저장된 비번과 같은지 확인
         if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
             throw new ApiException(PASSWORD_SAME_AS_CURRENT);
         }
 
-        // 비밀번호 변경
         user.changePassword(request.getNewPassword(), passwordEncoder);
     }
 
-    //user 필드 업데이트
     private void updateUserFields(User user, UpdateUserInfoRequest request) {
         user.updateInfo(
                 request.getChangedPhoneNum(),

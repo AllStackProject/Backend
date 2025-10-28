@@ -29,6 +29,7 @@ public class QuizResponse {
                                         .question(q.getQuiz().getQuestion())
                                         .description(q.getQuiz().getDescription())
                                         .isCorrect(q.isCorrect())
+                                        .answer(q.getQuiz().isAnswer())
                                         .build())
                                 .collect(Collectors.toList()))
                         .build())
@@ -57,5 +58,6 @@ public class QuizResponse {
         private String question;
         private String description;
         private Boolean isCorrect;
+        private Boolean answer;
     }
 }
