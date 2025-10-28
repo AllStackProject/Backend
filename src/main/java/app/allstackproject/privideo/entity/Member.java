@@ -36,6 +36,8 @@ public class Member extends BaseEntity {
 
     private boolean isAdmin;
 
+    private boolean isApproved;
+
     private long permissionCode = 0L;
 
     // TODO: 낙관적 락
@@ -43,20 +45,22 @@ public class Member extends BaseEntity {
     private Long version;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Member(User user, Organization organization, boolean isAdmin, Long permissionCode) {
+    private Member(User user, Organization organization, boolean isAdmin, boolean isApproved, Long permissionCode) {
         this.user = user;
         this.organization = organization;
+        this.isApproved = isApproved;
         this.isAdmin = isAdmin;
         if (permissionCode != null) {
             this.permissionCode = permissionCode;
         }
     }
 
-    public static Member create(User user, Organization organization, boolean isAdmin) {
+    public static Member create(User user, Organization organization, boolean isAdmin, boolean isApproved) {
         return Member.builder()
                 .user(user)
                 .organization(organization)
                 .isAdmin(isAdmin)
+                .isApproved(isApproved)
                 .permissionCode(0L)
                 .build();
     }
