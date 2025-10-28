@@ -48,7 +48,8 @@ public class Organization extends BaseEntity {
     private String code;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Organization(String name, String imgUrl, String adImgUrl, String description, String code) {
+    private Organization(User creator, String name, String imgUrl, String adImgUrl, String description, String code) {
+        this.creator = creator;
         this.name = name;
         this.adImgUrl = adImgUrl;
         this.imgUrl = imgUrl;
@@ -56,8 +57,10 @@ public class Organization extends BaseEntity {
         this.code = code;
     }
 
-    public static Organization create(String name, String adImgUrl, String imgUrl, String description, String code) {
+    public static Organization create(User creator, String name, String adImgUrl, String imgUrl, String description,
+                                      String code) {
         return Organization.builder()
+                .creator(creator)
                 .name(name)
                 .imgUrl(imgUrl)
                 .adImgUrl(adImgUrl)
