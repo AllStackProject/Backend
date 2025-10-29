@@ -53,7 +53,8 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     DUPLICATE_ORG_NAME(7002, HttpStatus.BAD_REQUEST, "조직 이름은 중복이 불가능합니다."),
     INVALID_ORG_JOIN(7003, HttpStatus.BAD_REQUEST, "조직 가입 요청에서 유효하지 않은 값이 존재합니다."),
     ORGANIZATION_NOT_FOUND(7004, HttpStatus.NOT_FOUND, "존재하지 않는 조직입니다."),
-    INVALID_ORG_SELECT(7005, HttpStatus.BAD_REQUEST, "조직 선택 요청에서 유효하지 않은 값이 존재합니다.");
+    INVALID_ORG_SELECT(7005, HttpStatus.BAD_REQUEST, "조직 선택 요청에서 유효하지 않은 값이 존재합니다."),
+    INVALID_ORG_EXIT(7006, HttpStatus.BAD_REQUEST, "조직 탈퇴 요청에서 유효하지 않은 값이 존재합니다.");
 
     private final int code;
     private final HttpStatus httpStatus;

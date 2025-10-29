@@ -3,6 +3,7 @@ package app.allstackproject.privideo.controller.organization;
 import static app.allstackproject.privideo.common.filter.JwtAuthFilter.ACCESS_TOKEN_HEADER;
 import static app.allstackproject.privideo.common.filter.JwtAuthFilter.TOKEN_PREFIX;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_ORG_CREATE;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_ORG_EXIT;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_ORG_JOIN;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_ORG_SELECT;
 import static app.allstackproject.privideo.common.util.BindingResultUtil.getErrorMessage;
@@ -25,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -88,5 +90,18 @@ public class OrganizationController {
 
         response.setHeader(ACCESS_TOKEN_HEADER, TOKEN_PREFIX + orgToken);
         return new BaseResponse<>(SuccessResponse.of(true));
+    }
+
+    @PreAuthorize("hasAuthority('bootstrap:granted')")
+    @DeleteMapping("/exit")
+    public BaseResponse<SuccessResponse> exitOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
+                                                 @Valid @RequestBody SelectOrgRequest selectOrgRequest,
+                                                 BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            throw new ApiException(INVALID_ORG_EXIT, getErrorMessage(bindingResult));
+        }
+
+        boolean isSuccess = organizationService.exitOrg(userId, selectOrgRequest.getId());
+        return new BaseResponse<>(SuccessResponse.of(isSuccess));
     }
 }

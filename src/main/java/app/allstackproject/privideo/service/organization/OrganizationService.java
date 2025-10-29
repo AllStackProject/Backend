@@ -84,4 +84,15 @@ public class OrganizationService {
                 .orgPermission(member.getPermissionCode())
                 .build());
     }
+
+    public boolean exitOrg(Long userId, Long orgId) {
+        userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
+        organizationRepository.findById(orgId)
+                .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
+        Member member = memberRepository.findByUserIdAndOrganizationId(userId, orgId)
+                .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
+
+        member.updateToInactive();
+        return false;
+    }
 }
