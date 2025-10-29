@@ -3,6 +3,7 @@ package app.allstackproject.privideo.service.organization;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.PENDING;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DUPLICATE_ORG_NAME;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_ORG_CODE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.USER_NOT_FOUND;
@@ -61,10 +62,15 @@ public class OrganizationService {
         return organizationRepository.findAllByUserId(userId);
     }
 
-    public boolean joinOrg(Long userId, String orgName, String orgCode) {
+    public boolean joinOrg(Long userId, Long orgId, String orgCode) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
-        Organization organization = organizationRepository.findByNameAndCode(orgName, orgCode)
+        Organization organization = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
+
+        if (!organization.getCode().equals(orgCode)) {
+            throw new ApiException(INVALID_ORG_CODE);
+        }
+        
         Optional<Member> member = memberRepository.findByUserIdAndOrganizationId(userId, organization.getId());
 
         if (member.isPresent()) {
