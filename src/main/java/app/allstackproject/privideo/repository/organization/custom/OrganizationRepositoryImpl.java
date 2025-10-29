@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.repository.organization.custom;
 
+import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.entity.QMember.member;
 import static app.allstackproject.privideo.entity.QOrganization.organization;
 
@@ -28,7 +29,9 @@ public class OrganizationRepositoryImpl implements OrganizationRepositoryCustom 
                 ))
                 .from(member)
                 .join(member.organization, organization)
-                .where(member.user.id.eq(userId))
+                .where(member.user.id.eq(userId)
+                        .and(member.status.eq(ACTIVE))
+                        .and(member.isApproved.eq(true)))
                 .fetch();
     }
 }

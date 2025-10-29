@@ -20,6 +20,7 @@ import app.allstackproject.privideo.repository.organization.OrganizationReposito
 import app.allstackproject.privideo.repository.user.UserRepository;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,9 +63,15 @@ public class OrganizationService {
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
         Organization organization = organizationRepository.findByNameAndCode(orgName, orgCode)
                 .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
+        Optional<Member> member = memberRepository.findByUserIdAndOrganizationId(userId, organization.getId());
 
-        Member member = Member.create(user, organization, false, false);
-        memberRepository.save(member);
+        if (member.isPresent()) {
+            // TODO: requested -> [이미 요청을 보냈습니다] 예외, approved -> [이미 속한 조직입니다] 예외, rejected -> 기존 엔티티를 request로 수정
+        } else {
+            Member newMember = Member.create(user, organization, false, false);
+            memberRepository.save(newMember);
+        }
+
         return true;
     }
 
