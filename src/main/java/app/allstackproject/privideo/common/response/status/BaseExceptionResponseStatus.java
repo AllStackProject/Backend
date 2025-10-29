@@ -45,6 +45,8 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     USER_NOT_FOUND(5005, HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
     INVALID_PASSWORD(5006, HttpStatus.BAD_REQUEST, "비밀번호가 틀렸습니다."),
     MEMBER_NOT_FOUND(5007, HttpStatus.BAD_REQUEST, "존재하지 않는 멤버입니다."),
+    ALREADY_APPROVED_MEMBER(5008, HttpStatus.BAD_REQUEST, "이미 해당 조직에 가입 승인 처리된 멤버입니다."),
+    ALREADY_REJECTED_MEMBER(5009, HttpStatus.BAD_REQUEST, "이미 해당 조직에 가입 거절 처리된 멤버입니다."),
 
     /**
      * 7000: Organization 오류
