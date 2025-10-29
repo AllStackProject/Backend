@@ -89,6 +89,7 @@ public class OrganizationService {
                 .userId(userId)
                 .memberId(member.getId())
                 .orgId(orgId)
+                .orgJoinStatus(member.getJoinStatus().toString())
                 .orgIsAdmin(member.isAdmin())
                 .orgPermission(member.getPermissionCode())
                 .build());

@@ -1,5 +1,7 @@
 package app.allstackproject.privideo.entity;
 
+import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
+import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.REJECTED;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_APPROVED_MEMBER;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_REJECTED_MEMBER;
 
@@ -95,9 +97,18 @@ public class Member extends BaseEntity {
 
     public void changeJoinStatus(JoinStatusType destStatus) {
         switch (joinStatus) {
-            case PENDING -> this.joinStatus = destStatus;
-            case APPROVED -> throw new ApiException(ALREADY_APPROVED_MEMBER);
-            case REJECTED -> throw new ApiException(ALREADY_REJECTED_MEMBER);
+            case APPROVED -> {
+                if (destStatus.equals(APPROVED)) {
+                    throw new ApiException(ALREADY_APPROVED_MEMBER);
+                }
+            }
+            case REJECTED -> {
+                if (destStatus.equals(REJECTED)) {
+                    throw new ApiException(ALREADY_REJECTED_MEMBER);
+                }
+            }
         }
+        
+        this.joinStatus = destStatus;
     }
 }
