@@ -46,14 +46,14 @@ public class JwtProvider {
                 "userId", userId
         ), expTime);
     }
-    
+
     public String createOrgToken(OrgTokenDto dto) {
         return sign(Map.of(
                 "tokenType", ORG.name(),
                 "userId", dto.getUserId(),
                 "memberId", dto.getMemberId(),
                 "orgId", dto.getOrgId(),
-                "orgIsCreator", dto.getOrgIsCreator(),
+                "orgIsAdmin", dto.getOrgIsAdmin(),
                 "orgPermission", dto.getOrgPermission()
         ), expTime);
     }

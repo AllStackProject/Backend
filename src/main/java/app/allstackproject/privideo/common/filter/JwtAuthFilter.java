@@ -95,7 +95,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 case ORG -> {
                     Long memberId = getLong(c, "memberId");
                     Long orgId = getLong(c, "orgId");
-                    String orgIsCreator = getString(c, "orgIsCreator");
+                    String orgIsAdmin = getString(c, "orgIsAdmin");
                     Integer perm = getInt(c, "orgPermission");
 
                     if (pathOrgId != null && !Objects.equals(pathOrgId, String.valueOf(orgId))) {
@@ -115,7 +115,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         auths.add(new SimpleGrantedAuthority("hashtag:create"));
                     }
 
-                    var principal = new AuthPrincipal(null, memberId, orgId, Boolean.getBoolean(orgIsCreator), perm,
+                    var principal = new AuthPrincipal(null, memberId, orgId, Boolean.getBoolean(orgIsAdmin), perm,
                             TokenType.ORG);
                     auth = new UsernamePasswordAuthenticationToken(principal, null, auths);
                 }
