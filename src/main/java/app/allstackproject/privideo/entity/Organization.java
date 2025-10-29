@@ -10,6 +10,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,10 +33,11 @@ public class Organization extends BaseEntity {
     @Column(unique = true)
     private String name;
 
-    @NotBlank
+    @NotNull
     private String imgUrl;
 
-    @NotBlank
+    // TODO: 생성 시 기본 이미지 확정되면 @NotBlank로 복원 및 적용
+    @NotNull
     private String adImgUrl;
 
     @NotBlank
@@ -48,19 +50,21 @@ public class Organization extends BaseEntity {
     private String code;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Organization(String name, String imgUrl, String adImgUrl, String description, String code) {
+    private Organization(User creator, String name, String imgUrl, String adImgUrl, String description, String code) {
+        this.creator = creator;
         this.name = name;
-        this.adImgUrl = adImgUrl;
         this.imgUrl = imgUrl;
+        this.adImgUrl = adImgUrl;
         this.description = description;
         this.code = code;
     }
 
-    public static Organization create(String name, String adImgUrl, String imgUrl, String description, String code) {
+    public static Organization create(User creator, String name, String imgUrl, String description, String code) {
         return Organization.builder()
+                .creator(creator)
                 .name(name)
                 .imgUrl(imgUrl)
-                .adImgUrl(adImgUrl)
+                .adImgUrl("")
                 .description(description)
                 .code(code)
                 .build();

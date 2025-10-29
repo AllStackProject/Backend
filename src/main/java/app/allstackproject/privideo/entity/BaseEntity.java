@@ -39,4 +39,15 @@ public abstract class BaseEntity {
         lastModifiedAt = LocalDateTime.now();
     }
 
+    public void updateToActive() {
+        this.status = BaseStatusType.ACTIVE;
+    }
+
+    public void updateToInactive() {
+        this.status = BaseStatusType.INACTIVE;
+    }
+
+    public boolean isActive() {
+        return this.status == BaseStatusType.ACTIVE;
+    }
 }

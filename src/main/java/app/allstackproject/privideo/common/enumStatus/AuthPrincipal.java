@@ -5,7 +5,7 @@ public record AuthPrincipal(
         Long userId,
         Long memberId,
         Long orgId,
-        Boolean orgIsCreator,
+        Boolean orgIsAdmin,
         Integer orgPermission,
         TokenType tokenType
 ) {
