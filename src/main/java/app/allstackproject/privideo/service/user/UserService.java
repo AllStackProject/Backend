@@ -105,7 +105,7 @@ public class UserService {
         return UserInfoResponse.of(user, members);
     }
 
-    public boolean updateUserInfo(Long userId, @Valid UpdateUserInfoRequest request) {
+    public boolean updateUserInfo(Long userId, UpdateUserInfoRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(USER_NOT_FOUND));
 

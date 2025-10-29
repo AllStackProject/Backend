@@ -34,7 +34,6 @@ public class MyActivityController {
 
     //영상 시청 내역 조회
     @GetMapping("{orgId}/video")
-    @PreAuthorize("hasAuthority('video:upload')")
     public BaseResponse<HistoryResponse> getVideoHistory(
             @AuthenticationPrincipal AuthPrincipal me,
             @PathVariable long orgId) {
