@@ -1,5 +1,7 @@
 package app.allstackproject.privideo.service.organization;
 
+import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
+import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.PENDING;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DUPLICATE_ORG_NAME;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
@@ -45,7 +47,7 @@ public class OrganizationService {
         String code = generateCode(user.getId());
         Organization organization = Organization.create(user, createOrgRequest.getName(), createOrgRequest.getImgUrl(),
                 createOrgRequest.getDesc(), code);
-        Member member = Member.create(user, organization, true, true);
+        Member member = Member.create(user, organization, true, APPROVED);
 
         organizationRepository.save(organization);
         memberRepository.save(member);
@@ -66,9 +68,9 @@ public class OrganizationService {
         Optional<Member> member = memberRepository.findByUserIdAndOrganizationId(userId, organization.getId());
 
         if (member.isPresent()) {
-            // TODO: requested -> [이미 요청을 보냈습니다] 예외, approved -> [이미 속한 조직입니다] 예외, rejected -> 기존 엔티티를 request로 수정
+            // TODO: pending -> [이미 요청을 보냈습니다] 예외, approved -> [이미 속한 조직입니다] 예외, rejected -> 기존 엔티티를 request로 수정
         } else {
-            Member newMember = Member.create(user, organization, false, false);
+            Member newMember = Member.create(user, organization, false, PENDING);
             memberRepository.save(newMember);
         }
 
