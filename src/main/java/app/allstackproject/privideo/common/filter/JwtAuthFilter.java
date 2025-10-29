@@ -96,6 +96,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     Long userId = getLong(c, "userId");
                     Long memberId = getLong(c, "memberId");
                     Long orgId = getLong(c, "orgId");
+                    String orgJoinStatus = getString(c, "orgJoinStatus");
                     String orgIsAdmin = getString(c, "orgIsAdmin");
                     Integer perm = getInt(c, "orgPermission");
 
@@ -105,7 +106,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                     // TODO: Redis 최신 권한 검증
 
-                    List<GrantedAuthority> auths = new ArrayList<>();
+                    List<GrantedAuthority> auths = new ArrayList<>(List.of(new SimpleGrantedAuthority("org:granted"),
+                            new SimpleGrantedAuthority("org:" + orgJoinStatus)));
+
+                    if (orgIsAdmin.equals("true")) {
+                        auths.add(new SimpleGrantedAuthority("org:admin"));
+                    }
+
                     if (PermissionType.has(perm, PermissionType.UPLOAD_VIDEO)) {
                         auths.add(new SimpleGrantedAuthority("video:upload"));
                     }
