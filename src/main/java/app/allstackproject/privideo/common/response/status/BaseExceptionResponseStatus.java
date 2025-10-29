@@ -46,12 +46,13 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     USER_NOT_FOUND(5005, HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
     INVALID_PASSWORD(5006, HttpStatus.BAD_REQUEST, "비밀번호가 틀렸습니다."),
     PASSWORD_MISMATCH(5007, HttpStatus.BAD_REQUEST, "비밀번호 확인 문자열이 일치하지 않습니다."),
-    PASSWORD_SAME_AS_CURRENT(5008, HttpStatus.BAD_REQUEST, "새 비밀번호가 현재 비밀번호와 일치합니다.");
+    PASSWORD_SAME_AS_CURRENT(5008, HttpStatus.BAD_REQUEST, "새 비밀번호가 현재 비밀번호와 일치합니다."),
 
     /**
      * 6000: Comment 오류 (7000번대는 조직 관련 오류)
      */
-    //COMMENT_NOT_FOUND(6001, HttpStatus.BAD_REQUEST, "존재하지 않는 댓글입니다.");
+    COMMENT_NOT_FOUND(6001, HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."),
+    COMMENT_UNAUTHORIZED_DELETE(6002, HttpStatus.FORBIDDEN, "본인의 댓글만 삭제할 수 있습니다.");
 
     private final int code;
     private final HttpStatus httpStatus;
