@@ -16,9 +16,9 @@ public class ReadOrgDto {
 
     private LocalDateTime joinAt;
 
-    private boolean isAdmin;
+    private Boolean isAdmin;
 
-    private boolean isActive;
+    private Boolean isActive;
 
     @QueryProjection
     public ReadOrgDto(Long id, String name, String imgUrl, String code,
