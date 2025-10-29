@@ -53,9 +53,12 @@ public class Video extends BaseEntity {
     @NotNull
     private Long viewCnt;
 
+    @NotNull
+    private Long quitCnt;
+
     @Builder(access = AccessLevel.PRIVATE)
     private Video(Organization organization, Member creator, String title, String thumbnailUrl, Long wholeTime,
-                  boolean isComment, boolean isQuiz, LocalDate expiredAt, Long viewCnt) {
+                  boolean isComment, boolean isQuiz, LocalDate expiredAt, Long viewCnt, Long quitCnt) {
         this.organization = organization;
         this.creator = creator;
         this.title = title;
@@ -65,15 +68,20 @@ public class Video extends BaseEntity {
         this.isQuiz = isQuiz;
         this.expiredAt = expiredAt;
         this.viewCnt = viewCnt;
+        this.quitCnt = quitCnt;
     }
 
     public static Video create(Organization organization, Member creator, String title, String thumbnailUrl,
-                               Long wholeTime, boolean isComment, boolean isQuiz, LocalDate expiredAt, Long viewCnt) {
+                               Long wholeTime, boolean isComment, boolean isQuiz, LocalDate expiredAt, Long viewCnt,
+                               Long quitCnt) {
         if (expiredAt == null) {
             expiredAt = LocalDate.now().plusYears(100);
         }
         if (viewCnt == null) {
             viewCnt = 0L;
+        }
+        if (quitCnt == null) {
+            quitCnt = 0L;
         }
 
         return Video.builder()
@@ -86,6 +94,7 @@ public class Video extends BaseEntity {
                 .isQuiz(isQuiz)
                 .expiredAt(expiredAt)
                 .viewCnt(viewCnt)
+                .quitCnt(quitCnt)
                 .build();
     }
 }
