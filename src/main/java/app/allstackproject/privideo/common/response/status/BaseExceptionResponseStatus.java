@@ -37,7 +37,7 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     FORBIDDEN_NO_PERMISSION(4005, HttpStatus.FORBIDDEN, "해당 요청에 대한 권한이 없습니다."),
 
     /**
-     * 5000: User 오류
+     * 5000: User/Member 오류
      */
     INVALID_USER_SIGNUP(5001, HttpStatus.BAD_REQUEST, "회원가입 요청에서 유효하지 않은 값이 존재합니다."),
     DUPLICATE_EMAIL(5002, HttpStatus.BAD_REQUEST, "이미 가입된 회원입니다."),
@@ -46,12 +46,23 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     USER_NOT_FOUND(5005, HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
     INVALID_PASSWORD(5006, HttpStatus.BAD_REQUEST, "비밀번호가 틀렸습니다."),
     PASSWORD_MISMATCH(5007, HttpStatus.BAD_REQUEST, "비밀번호 확인 문자열이 일치하지 않습니다."),
-    PASSWORD_SAME_AS_CURRENT(5008, HttpStatus.BAD_REQUEST, "새 비밀번호가 현재 비밀번호와 일치합니다.");
+    PASSWORD_SAME_AS_CURRENT(5008, HttpStatus.BAD_REQUEST, "새 비밀번호가 현재 비밀번호와 일치합니다."),
+    MEMBER_NOT_FOUND(5009, HttpStatus.BAD_REQUEST, "존재하지 않는 멤버입니다."),
 
     /**
      * 6000: Comment 오류 (7000번대는 조직 관련 오류)
      */
     //COMMENT_NOT_FOUND(6001, HttpStatus.BAD_REQUEST, "존재하지 않는 댓글입니다.");
+
+    /**
+     * 7000: Organization 오류
+     */
+    INVALID_ORG_CREATE(7001, HttpStatus.BAD_REQUEST, "조직 생성 요청에서 유효하지 않은 값이 존재합니다."),
+    DUPLICATE_ORG_NAME(7002, HttpStatus.BAD_REQUEST, "조직 이름은 중복이 불가능합니다."),
+    INVALID_ORG_JOIN(7003, HttpStatus.BAD_REQUEST, "조직 가입 요청에서 유효하지 않은 값이 존재합니다."),
+    ORGANIZATION_NOT_FOUND(7004, HttpStatus.NOT_FOUND, "존재하지 않는 조직입니다."),
+    INVALID_ORG_SELECT(7005, HttpStatus.BAD_REQUEST, "조직 선택 요청에서 유효하지 않은 값이 존재합니다."),
+    INVALID_ORG_EXIT(7006, HttpStatus.BAD_REQUEST, "조직 탈퇴 요청에서 유효하지 않은 값이 존재합니다.");
 
     private final int code;
     private final HttpStatus httpStatus;
