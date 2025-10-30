@@ -1,7 +1,15 @@
 package app.allstackproject.privideo.entity;
 
+import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
+import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.REJECTED;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_APPROVED_MEMBER;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_REJECTED_MEMBER;
+
+import app.allstackproject.privideo.common.enumStatus.JoinStatusType;
 import app.allstackproject.privideo.common.enumStatus.PermissionType;
+import app.allstackproject.privideo.common.exception.ApiException;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -36,7 +44,8 @@ public class Member extends BaseEntity {
 
     private boolean isAdmin;
 
-    private boolean isApproved;
+    @Enumerated(EnumType.STRING)
+    private JoinStatusType joinStatus;
 
     private long permissionCode = 0L;
 
@@ -45,22 +54,23 @@ public class Member extends BaseEntity {
     private Long version;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Member(User user, Organization organization, boolean isAdmin, boolean isApproved, Long permissionCode) {
+    private Member(User user, Organization organization, boolean isAdmin, JoinStatusType joinStatus,
+                   Long permissionCode) {
         this.user = user;
         this.organization = organization;
-        this.isApproved = isApproved;
+        this.joinStatus = joinStatus;
         this.isAdmin = isAdmin;
         if (permissionCode != null) {
             this.permissionCode = permissionCode;
         }
     }
 
-    public static Member create(User user, Organization organization, boolean isAdmin, boolean isApproved) {
+    public static Member create(User user, Organization organization, boolean isAdmin, JoinStatusType joinStatus) {
         return Member.builder()
                 .user(user)
                 .organization(organization)
                 .isAdmin(isAdmin)
-                .isApproved(isApproved)
+                .joinStatus(joinStatus)
                 .permissionCode(0L)
                 .build();
     }
@@ -83,5 +93,22 @@ public class Member extends BaseEntity {
 
     public void replaceWith(PermissionType... perms) {
         this.permissionCode = PermissionType.combine(perms);
+    }
+
+    public void changeJoinStatus(JoinStatusType destStatus) {
+        switch (joinStatus) {
+            case APPROVED -> {
+                if (destStatus.equals(APPROVED)) {
+                    throw new ApiException(ALREADY_APPROVED_MEMBER);
+                }
+            }
+            case REJECTED -> {
+                if (destStatus.equals(REJECTED)) {
+                    throw new ApiException(ALREADY_REJECTED_MEMBER);
+                }
+            }
+        }
+        
+        this.joinStatus = destStatus;
     }
 }
