@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.dto.organization;
 
+import app.allstackproject.privideo.common.enumStatus.JoinStatusType;
 import com.querydsl.core.annotations.QueryProjection;
 import java.time.LocalDateTime;
 import lombok.Getter;
@@ -18,17 +19,17 @@ public class ReadOrgDto {
 
     private Boolean isAdmin;
 
-    private Boolean isActive;
+    private JoinStatusType joinStatus;
 
     @QueryProjection
     public ReadOrgDto(Long id, String name, String imgUrl, String code,
-                      LocalDateTime joinAt, boolean isAdmin, boolean isActive) {
+                      LocalDateTime joinAt, boolean isAdmin, JoinStatusType joinStatus) {
         this.id = id;
         this.name = name;
         this.imgUrl = imgUrl;
         this.code = code;
         this.joinAt = joinAt;
         this.isAdmin = isAdmin;
-        this.isActive = isActive;
+        this.joinStatus = joinStatus;
     }
 }

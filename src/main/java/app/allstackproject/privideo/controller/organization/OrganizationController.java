@@ -3,9 +3,7 @@ package app.allstackproject.privideo.controller.organization;
 import static app.allstackproject.privideo.common.filter.JwtAuthFilter.ACCESS_TOKEN_HEADER;
 import static app.allstackproject.privideo.common.filter.JwtAuthFilter.TOKEN_PREFIX;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_ORG_CREATE;
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_ORG_EXIT;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_ORG_JOIN;
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_ORG_SELECT;
 import static app.allstackproject.privideo.common.util.BindingResultUtil.getErrorMessage;
 
 import app.allstackproject.privideo.common.exception.ApiException;
@@ -17,7 +15,6 @@ import app.allstackproject.privideo.dto.organization.CreateOrgResult;
 import app.allstackproject.privideo.dto.organization.JoinOrgRequest;
 import app.allstackproject.privideo.dto.organization.ReadOrgDto;
 import app.allstackproject.privideo.dto.organization.ReadOrgsResponse;
-import app.allstackproject.privideo.dto.organization.SelectOrgRequest;
 import app.allstackproject.privideo.service.organization.OrganizationService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -26,10 +23,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -62,28 +60,24 @@ public class OrganizationController {
     }
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")
-    @PostMapping("/join")
+    @PostMapping("/{orgId}/join")
     public BaseResponse<SuccessResponse> joinOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
                                                  @Valid @RequestBody JoinOrgRequest joinOrgRequest,
+                                                 @PathVariable("orgId") Long orgId,
                                                  BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             throw new ApiException(INVALID_ORG_JOIN, getErrorMessage(bindingResult));
         }
 
-        boolean isSuccess = organizationService.joinOrg(userId, joinOrgRequest.getName(), joinOrgRequest.getCode());
+        boolean isSuccess = organizationService.joinOrg(userId, orgId, joinOrgRequest.getCode());
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
     }
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")
-    @PatchMapping("")
+    @PatchMapping("/{orgId}")
     public BaseResponse<SuccessResponse> selectOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
-                                                   @Valid @RequestBody SelectOrgRequest selectOrgRequest,
-                                                   BindingResult bindingResult, HttpServletResponse response) {
-        if (bindingResult.hasErrors()) {
-            throw new ApiException(INVALID_ORG_SELECT, getErrorMessage(bindingResult));
-        }
-
-        String orgToken = organizationService.selectOrg(userId, selectOrgRequest.getId());
+                                                   @PathVariable("orgId") Long orgId, HttpServletResponse response) {
+        String orgToken = organizationService.selectOrg(userId, orgId);
         if (orgToken == null || orgToken.isBlank()) {
             return new BaseResponse<>(SuccessResponse.of(false));
         }
@@ -93,15 +87,10 @@ public class OrganizationController {
     }
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")
-    @DeleteMapping("/exit")
+    @PutMapping("/{orgId}")
     public BaseResponse<SuccessResponse> exitOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
-                                                 @Valid @RequestBody SelectOrgRequest selectOrgRequest,
-                                                 BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            throw new ApiException(INVALID_ORG_EXIT, getErrorMessage(bindingResult));
-        }
-
-        boolean isSuccess = organizationService.exitOrg(userId, selectOrgRequest.getId());
+                                                 @PathVariable("orgId") Long orgId) {
+        boolean isSuccess = organizationService.exitOrg(userId, orgId);
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
     }
 }

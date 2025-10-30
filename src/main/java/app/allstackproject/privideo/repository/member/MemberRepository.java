@@ -8,7 +8,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
-    List<Member> findByUserId(Long userId);
 
-    Optional<Member> findByUserIdAndOrganizationId(Long userId, Long orgId);
+  List<Member> findByUserId(Long userId);
+  
+  Optional<Member> findByIdAndOrganizationId(Long id, Long orgId);
+    
+  Optional<Member> findByUserIdAndOrganizationId(Long userId, Long orgId);
 }

@@ -25,13 +25,12 @@ public class OrganizationRepositoryImpl implements OrganizationRepositoryCustom 
                         organization.code,
                         member.createdAt,
                         member.isAdmin,
-                        member.isApproved
+                        member.joinStatus
                 ))
                 .from(member)
                 .join(member.organization, organization)
                 .where(member.user.id.eq(userId)
-                        .and(member.status.eq(ACTIVE))
-                        .and(member.isApproved.eq(true)))
+                        .and(member.status.eq(ACTIVE)))
                 .fetch();
     }
 }

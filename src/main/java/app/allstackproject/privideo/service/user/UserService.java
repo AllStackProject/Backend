@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.service.user;
 
+import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.PENDING;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DB_CONSTRAINT_VIOLATE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DUPLICATE_EMAIL;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_ORG_CODE;
@@ -65,7 +66,7 @@ public class UserService {
         if (orgCode != null && !orgCode.isBlank()) {
             Organization org = organizationRepository.findByCode(orgCode.trim())
                     .orElseThrow(() -> new ApiException(INVALID_ORG_CODE));
-            memberRepository.save(Member.create(user, org, false, true));
+            memberRepository.save(Member.create(user, org, false, PENDING));
         }
 
         return true;
