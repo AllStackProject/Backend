@@ -10,7 +10,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class MyVideoService {
+public class HistoryService {
 
     private final HistoryRepository historyRepository;
 

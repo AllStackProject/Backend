@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class MyCommentService {
+public class CommentService {
 
     private final CommentRepository commentRepository;
 

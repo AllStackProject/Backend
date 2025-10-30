@@ -35,7 +35,6 @@ public class MyPageController {
     }
 
     //사용자 정보 수정
-    //null값 예외처리 필요
     @PatchMapping("/info")
     public BaseResponse<SuccessResponse> updateMyInfo(
             @AuthenticationPrincipal AuthPrincipal me,

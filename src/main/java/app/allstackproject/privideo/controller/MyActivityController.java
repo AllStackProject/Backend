@@ -7,13 +7,12 @@ import app.allstackproject.privideo.dto.CommentResponse;
 import app.allstackproject.privideo.dto.QuizResponse;
 import app.allstackproject.privideo.dto.video.ScrapResponse;
 import app.allstackproject.privideo.dto.video.HistoryResponse;
-import app.allstackproject.privideo.service.MyCommentService;
-import app.allstackproject.privideo.service.MyQuizService;
-import app.allstackproject.privideo.service.video.MyScrapService;
-import app.allstackproject.privideo.service.video.MyVideoService;
+import app.allstackproject.privideo.service.CommentService;
+import app.allstackproject.privideo.service.QuizService;
+import app.allstackproject.privideo.service.video.ScrapService;
+import app.allstackproject.privideo.service.video.HistoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,10 +26,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class MyActivityController {
 
-    private final MyVideoService myVideoService;
-    private final MyQuizService myQuizService;
-    private final MyScrapService myScrapService;
-    private final MyCommentService myCommentService;
+    private final HistoryService historyService;
+    private final QuizService quizService;
+    private final ScrapService scrapService;
+    private final CommentService commentService;
 
     //영상 시청 내역 조회
     @GetMapping("{orgId}/video")
@@ -40,7 +39,7 @@ public class MyActivityController {
 
         Long memberId = me.memberId();
 
-        HistoryResponse histories = myVideoService.getUserVideos(memberId, orgId);
+        HistoryResponse histories = historyService.getUserVideos(memberId, orgId);
         return new BaseResponse<>(histories);
     }
 
@@ -52,7 +51,7 @@ public class MyActivityController {
 
         Long memberId = me.memberId();
 
-        QuizResponse quizzes = myQuizService.getUserQuizzes(memberId, orgId);
+        QuizResponse quizzes = quizService.getUserQuizzes(memberId, orgId);
         return new BaseResponse<>(quizzes);
     }
 
@@ -63,7 +62,7 @@ public class MyActivityController {
 
         Long memberId = me.memberId();
 
-        ScrapResponse scraps = myScrapService.getUserScraps(memberId, orgId);
+        ScrapResponse scraps = scrapService.getUserScraps(memberId, orgId);
         return new BaseResponse<>(scraps);
     }
 
@@ -75,7 +74,7 @@ public class MyActivityController {
 
         Long memberId = me.memberId();
 
-        CommentResponse comments = myCommentService.getUserComments(memberId, orgId);
+        CommentResponse comments = commentService.getUserComments(memberId, orgId);
         return new BaseResponse<>(comments);
     }
 
@@ -88,7 +87,7 @@ public class MyActivityController {
 
         Long memberId = me.memberId();
 
-        boolean result = myCommentService.deleteComment(memberId, orgId, commentId);
+        boolean result = commentService.deleteComment(memberId, orgId, commentId);
         return new BaseResponse<>(SuccessResponse.of(result));
     }
 }

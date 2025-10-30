@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class MyScrapService {
+public class ScrapService {
 
     private final ScrapRepository scrapRepository;
     private final HistoryRepository historyRepository;

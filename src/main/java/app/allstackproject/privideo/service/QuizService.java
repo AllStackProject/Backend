@@ -10,7 +10,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class MyQuizService {
+public class QuizService {
 
     private final QuizRepository quizRepository;
 
