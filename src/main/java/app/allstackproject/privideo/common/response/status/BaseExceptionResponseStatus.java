@@ -44,9 +44,17 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     INVALID_USER_LOGIN(5004, HttpStatus.BAD_REQUEST, "로그인 요청에서 유효하지 않은 값이 존재합니다"),
     USER_NOT_FOUND(5005, HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
     INVALID_PASSWORD(5006, HttpStatus.BAD_REQUEST, "비밀번호가 틀렸습니다."),
-    MEMBER_NOT_FOUND(5007, HttpStatus.BAD_REQUEST, "존재하지 않는 멤버입니다."),
-    ALREADY_APPROVED_MEMBER(5008, HttpStatus.BAD_REQUEST, "이미 해당 조직에 가입 승인 처리된 멤버입니다."),
-    ALREADY_REJECTED_MEMBER(5009, HttpStatus.BAD_REQUEST, "이미 해당 조직에 가입 거절 처리된 멤버입니다."),
+    PASSWORD_MISMATCH(5007, HttpStatus.BAD_REQUEST, "비밀번호 확인 문자열이 일치하지 않습니다."),
+    PASSWORD_SAME_AS_CURRENT(5008, HttpStatus.BAD_REQUEST, "새 비밀번호가 현재 비밀번호와 일치합니다."),
+    MEMBER_NOT_FOUND(5009, HttpStatus.BAD_REQUEST, "존재하지 않는 멤버입니다."),
+    ALREADY_APPROVED_MEMBER(5010, HttpStatus.BAD_REQUEST, "이미 해당 조직에 가입 승인 처리된 멤버입니다."),
+    ALREADY_REJECTED_MEMBER(5011, HttpStatus.BAD_REQUEST, "이미 해당 조직에 가입 거절 처리된 멤버입니다."),
+
+    /**
+     * 6000: Comment 오류
+     */
+    COMMENT_NOT_FOUND(6001, HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."),
+    COMMENT_UNAUTHORIZED_DELETE(6002, HttpStatus.FORBIDDEN, "본인의 댓글만 삭제할 수 있습니다."),
 
     /**
      * 7000: Organization 오류

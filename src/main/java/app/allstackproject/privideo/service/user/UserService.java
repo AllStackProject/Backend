@@ -5,6 +5,8 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DUPLICATE_EMAIL;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_ORG_CODE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_PASSWORD;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.PASSWORD_MISMATCH;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.PASSWORD_SAME_AS_CURRENT;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.USER_NOT_FOUND;
 
 import app.allstackproject.privideo.common.enumStatus.GenderType;
@@ -13,6 +15,8 @@ import app.allstackproject.privideo.common.jwt.JwtProvider;
 import app.allstackproject.privideo.dto.user.PatchPasswordRequest;
 import app.allstackproject.privideo.dto.user.PostLoginRequest;
 import app.allstackproject.privideo.dto.user.PostSignupRequest;
+import app.allstackproject.privideo.dto.user.UpdateUserInfoRequest;
+import app.allstackproject.privideo.dto.user.UserInfoResponse;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.entity.User;
@@ -20,6 +24,7 @@ import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.user.UserRepository;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -91,5 +96,50 @@ public class UserService {
 
         user.changePassword(patchPasswordRequest.getNewPassword(), passwordEncoder);
         return true;
+    }
+
+    public UserInfoResponse getUserInfo(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(USER_NOT_FOUND));
+
+        List<Member> members = memberRepository.findByUserId(userId);
+        return UserInfoResponse.of(user, members);
+    }
+
+    public boolean updateUserInfo(Long userId, UpdateUserInfoRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(USER_NOT_FOUND));
+
+        if (isPasswordChangeRequested(request)) {
+            validateAndUpdatePassword(user, request);
+        }
+        updateUserFields(user, request);
+
+        return true;
+    }
+
+    private boolean isPasswordChangeRequested(UpdateUserInfoRequest request) {
+        return request.getNewPassword() != null && !request.getNewPassword().isBlank();
+    }
+
+    private void validateAndUpdatePassword(User user, UpdateUserInfoRequest request) {
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new ApiException(PASSWORD_MISMATCH);
+        }
+
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+            throw new ApiException(PASSWORD_SAME_AS_CURRENT);
+        }
+
+        user.changePassword(request.getNewPassword(), passwordEncoder);
+    }
+
+    private void updateUserFields(User user, UpdateUserInfoRequest request) {
+        user.updateInfo(
+                request.getChangedPhoneNum(),
+                GenderType.valueOf(request.getChangedGender().toUpperCase()),
+                Integer.parseInt(request.getChangedAge())
+        );
     }
 }
