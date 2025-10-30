@@ -1,0 +1,39 @@
+services:
+  redis:
+    # 이미지
+    image: redis:7.2-alpine
+
+    # 컨테이너 이름
+    container_name: privideo-redis
+
+    # 포트
+    ports:
+      - "${REDIS_PORT}:6379"
+
+    # 볼륨
+    volumes:
+      - privideo-redis-data:/data
+
+    # Redis 옵션
+    # allkeys-lru는 키 중 가장 오래된 것 삭제 옵션
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+
+    # 재시작 정책
+    restart: unless-stopped
+
+    # 헬스체크: 고정
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+    environment:
+      - TZ=TZ:-Asia/Seoul
+volumes:
+  privideo-redis-data:

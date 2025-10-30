@@ -84,3 +84,17 @@ secret:
     refresh-secret-key: ${REFRESH_SECRET_KEY}
     access-expired-in: ${ACCESS_EXPIRED_IN}
     refresh-expired-in: ${REFRESH_EXPIRED_IN}
+---
+spring:
+  data:
+    redis:
+      host: localhost
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 10
+          min-idle: 2
+          max-wait: -1ms
+      timeout: 3000ms
