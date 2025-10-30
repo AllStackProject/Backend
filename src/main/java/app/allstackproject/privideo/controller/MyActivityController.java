@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/myactivity")
+@RequestMapping("{orgId}/myactivity")
 @Slf4j
 public class MyActivityController {
 
@@ -32,7 +32,7 @@ public class MyActivityController {
     private final CommentService commentService;
 
     //영상 시청 내역 조회
-    @GetMapping("{orgId}/video")
+    @GetMapping("/video")
     public BaseResponse<HistoryResponse> getVideoHistory(
             @AuthenticationPrincipal AuthPrincipal me,
             @PathVariable long orgId) {
@@ -44,7 +44,7 @@ public class MyActivityController {
     }
 
     //퀴즈 내역 조회
-    @GetMapping("{orgId}/quiz")
+    @GetMapping("/quiz")
     public BaseResponse<QuizResponse> getUserQuizses(
             @AuthenticationPrincipal AuthPrincipal me,
             @PathVariable long orgId) {
@@ -56,7 +56,7 @@ public class MyActivityController {
     }
 
     //스크랩 영상 리스트 조회
-    @GetMapping("{orgId}/scrap")
+    @GetMapping("/scrap")
     public BaseResponse<ScrapResponse> getUserScrabs(
             @AuthenticationPrincipal AuthPrincipal me, @PathVariable long orgId) {
 
@@ -67,7 +67,7 @@ public class MyActivityController {
     }
 
     //사용자 댓글 조회
-    @GetMapping("{orgId}/comment")
+    @GetMapping("/comment")
     public BaseResponse<CommentResponse> getUserComments(
             @AuthenticationPrincipal AuthPrincipal me,
             @PathVariable long orgId) {
@@ -79,7 +79,7 @@ public class MyActivityController {
     }
 
     //사용자 댓글 삭제
-    @DeleteMapping("{orgId}/{commentId}")
+    @DeleteMapping("/{commentId}")
     public BaseResponse<SuccessResponse> deleteComment(
             @AuthenticationPrincipal AuthPrincipal me,
             @PathVariable Long orgId,
