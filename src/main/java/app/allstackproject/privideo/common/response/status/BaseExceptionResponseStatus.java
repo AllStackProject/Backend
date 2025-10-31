@@ -1,6 +1,7 @@
 package app.allstackproject.privideo.common.response.status;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties.Http;
 import org.springframework.http.HttpStatus;
 
 @RequiredArgsConstructor
@@ -65,6 +66,7 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     ORGANIZATION_NOT_FOUND(7004, HttpStatus.NOT_FOUND, "존재하지 않는 조직입니다."),
     INVALID_ORG_SELECT(7005, HttpStatus.BAD_REQUEST, "조직 선택 요청에서 유효하지 않은 값이 존재합니다."),
     INVALID_ORG_EXIT(7006, HttpStatus.BAD_REQUEST, "조직 탈퇴 요청에서 유효하지 않은 값이 존재합니다.");
+
 
     private final int code;
     private final HttpStatus httpStatus;

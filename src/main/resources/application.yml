@@ -49,6 +49,12 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
+      lettuce:
+        pool:
+          max-active: ${REDIS_ACTIVE} #10
+          max-idle: ${REDIS_MAX_IDLE} #10
+          min-idle: ${REDIS_MIN_IDLE} #2
+      timeout: ${REDIS_TIMEOUT} #3000ms
 
 ---
 
