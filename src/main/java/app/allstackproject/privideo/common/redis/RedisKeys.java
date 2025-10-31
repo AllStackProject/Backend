@@ -7,24 +7,16 @@ public class RedisKeys {
 
     private static final String ORG_PREFIX = "org:";
     private static final String ORG_CODE_PREFIX = "orgcode:";
-    private static final String MEMBER_SUFFIX = ":member:";
 
     public static String org(Long orgId) {
         return ORG_PREFIX + orgId;
     }
 
-    public static String orgCode(String code) {
+    public static String getOrgCode(String code) {
         return ORG_CODE_PREFIX + code;
     }
 
-    public static String memberPermission(Long orgId, Long memberId) {
-        return ORG_PREFIX + orgId + MEMBER_SUFFIX + memberId;
-    }
-
-    public static String orgMembersPattern(Long orgId) {
-        return ORG_PREFIX + orgId + MEMBER_SUFFIX + "*";
-    }
-
+    //TODO: enum으로 빼기
     public static final class Fields {
         private Fields() {
         }
