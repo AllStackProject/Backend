@@ -8,30 +8,28 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document("session_idempotency")
+@Document("seg_quit_log")
 @CompoundIndexes({
-        @CompoundIndex(name = "ux_session_type", def = "{'sessionId':1,'type':1}", unique = true)
+        @CompoundIndex(name = "ux_video_pack", def = "{'videoId':1,'packId':1}", unique = true)
 })
 @Getter
 @Setter
 @NoArgsConstructor
-public class IdempotencyKey {
+public class SegQuitLogs {
     @Id
-    private String id;
+    private String id;          // "video:{videoId}|pack:{packId}"
 
     @NotNull
-    private String sessionId;
+    private Long videoId;
 
     @NotNull
-    private String type;      // "JOIN" | "FLUSH"
+    private Long packId;
 
     @NotNull
-    private Instant createdAt;
+    private Long[] counts;
 
     @NotNull
-    @Indexed(name = "ttl_expireAt", expireAfter = "0s")
-    private Instant expiredAt;
+    private Instant updatedAt;
 }
