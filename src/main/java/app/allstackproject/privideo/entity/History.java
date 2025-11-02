@@ -1,5 +1,7 @@
 package app.allstackproject.privideo.entity;
 
+import static java.lang.Math.ceil;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -32,7 +34,7 @@ public class History extends BaseEntity {
     private Video video;
 
     @NotNull
-    private Long actualWatchSec;
+    private Long watchRate;
 
     @NotNull
     private Long recentPositionSec;
@@ -51,11 +53,11 @@ public class History extends BaseEntity {
     private LocalDateTime completedAt;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private History(Member member, Video video, Long actualWatchSec, Long recentPositionSec, LocalDateTime startedAt,
+    private History(Member member, Video video, Long watchRate, Long recentPositionSec, LocalDateTime startedAt,
                     Long watchedSegCnt, boolean hadEnd, boolean isComplete, LocalDateTime completedAt) {
         this.member = member;
         this.video = video;
-        this.actualWatchSec = actualWatchSec;
+        this.watchRate = watchRate;
         this.recentPositionSec = recentPositionSec;
         this.startedAt = startedAt;
         this.watchedSegCnt = watchedSegCnt;
@@ -64,19 +66,27 @@ public class History extends BaseEntity {
         this.completedAt = completedAt;
     }
 
-    public static History create(Member member, Video video, Long actualWatchSec, Long recentPositionSec,
-                                 LocalDateTime startedAt, Long watchedSegCnt, boolean hadEnd, boolean isComplete,
-                                 LocalDateTime completedAt) {
+    public static History create(Member member, Video video) {
         return History.builder()
                 .member(member)
                 .video(video)
-                .actualWatchSec(actualWatchSec)
-                .recentPositionSec(recentPositionSec)
-                .startedAt(startedAt)
-                .watchedSegCnt(watchedSegCnt)
-                .hadEnd(hadEnd)
-                .isComplete(isComplete)
-                .completedAt(completedAt)
+                .watchRate(0L)
+                .startedAt(LocalDateTime.now())
+                .watchedSegCnt(0L)
+                .hadEnd(false)
+                .isComplete(false)
                 .build();
+    }
+
+    public void update(Long watchRate, Long recentPositionSec, Long watchedSegCnt, boolean hadEnd) {
+        this.watchRate = watchRate;
+        this.recentPositionSec = recentPositionSec;
+        this.watchedSegCnt = watchedSegCnt;
+        this.hadEnd = hadEnd;
+
+        if (watchedSegCnt > 0.9 * ceil((double) video.getWholeTime() / 10) && hadEnd) {
+            this.isComplete = true;
+            this.completedAt = LocalDateTime.now();
+        }
     }
 }

@@ -97,4 +97,12 @@ public class Video extends BaseEntity {
                 .quitCnt(quitCnt)
                 .build();
     }
+
+    public void watch() {
+        this.watchCnt++;
+    }
+
+    public void quit() {
+        this.quitCnt++;
+    }
 }
