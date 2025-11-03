@@ -65,8 +65,12 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     INVALID_ORG_JOIN(7003, HttpStatus.BAD_REQUEST, "조직 가입 요청에서 유효하지 않은 값이 존재합니다."),
     ORGANIZATION_NOT_FOUND(7004, HttpStatus.NOT_FOUND, "존재하지 않는 조직입니다."),
     INVALID_ORG_SELECT(7005, HttpStatus.BAD_REQUEST, "조직 선택 요청에서 유효하지 않은 값이 존재합니다."),
-    INVALID_ORG_EXIT(7006, HttpStatus.BAD_REQUEST, "조직 탈퇴 요청에서 유효하지 않은 값이 존재합니다.");
+    INVALID_ORG_EXIT(7006, HttpStatus.BAD_REQUEST, "조직 탈퇴 요청에서 유효하지 않은 값이 존재합니다."),
+    ORGANIZATION_CODE_IN_USE(7007, HttpStatus.CONFLICT, "조직 코드가 이미 사용중입니다.");
 
+    /**
+     * 8000:
+     */
 
     private final int code;
     private final HttpStatus httpStatus;
