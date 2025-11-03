@@ -98,7 +98,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     Long orgId = getLong(c, "orgId");
                     String orgJoinStatus = getString(c, "orgJoinStatus");
                     String orgIsAdmin = getString(c, "orgIsAdmin");
-                    Integer perm = getInt(c, "orgPermission");
+                    Number n = c.get("orgPermission", Number.class);
+                    Long perm = n != null ? n.longValue() : 0L;
 
                     if (pathOrgId != null && !Objects.equals(pathOrgId, String.valueOf(orgId))) {
                         throw new ApiException(FORBIDDEN_ORG_MISMATCH);
@@ -113,14 +114,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         auths.add(new SimpleGrantedAuthority("org:admin"));
                     }
 
-                    if (PermissionType.has(perm, PermissionType.UPLOAD_VIDEO)) {
-                        auths.add(new SimpleGrantedAuthority("video:upload"));
+                    if (PermissionType.has(perm, PermissionType.VIDEO_QUIZ_MANAGE)) {
+                        auths.add(new SimpleGrantedAuthority("perm:video_quiz_manage"));
                     }
-                    if (PermissionType.has(perm, PermissionType.CREATE_GROUP)) {
-                        auths.add(new SimpleGrantedAuthority("group:create"));
+                    if (PermissionType.has(perm, PermissionType.STATS_REPORT)) {
+                        auths.add(new SimpleGrantedAuthority("perm:stats_report"));
                     }
-                    if (PermissionType.has(perm, PermissionType.CREATE_HASHTAG)) {
-                        auths.add(new SimpleGrantedAuthority("hashtag:create"));
+                    if (PermissionType.has(perm, PermissionType.NOTICE)) {
+                        auths.add(new SimpleGrantedAuthority("perm:notice"));
+                    }
+                    if (PermissionType.has(perm, PermissionType.ORG_SETTING)) {
+                        auths.add(new SimpleGrantedAuthority("perm:org_setting"));
                     }
 
                     var principal = new AuthPrincipal(userId, memberId, orgId, Boolean.getBoolean(orgIsAdmin), perm,
