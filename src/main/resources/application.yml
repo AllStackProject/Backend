@@ -22,11 +22,18 @@ spring:
     url: ${DATASOURCE_URL}
     username: ${DATASOURCE_USERNAME}
     password: ${DATASOURCE_PASSWORD}
-    driver-class-name: jdbc:mysql://com.mysql.cj.jdbc.Driver
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+
 logging:
   level:
     org.hibernate.sql: debug
-
 ---
 spring:
   config:
@@ -44,17 +51,17 @@ spring:
     activate:
       on-profile: "devRedis"
 
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
-      password: ${REDIS_PASSWORD}
-      lettuce:
-        pool:
-          max-active: ${REDIS_ACTIVE} #10
-          max-idle: ${REDIS_MAX_IDLE} #10
-          min-idle: ${REDIS_MIN_IDLE} #2
-      timeout: ${REDIS_TIMEOUT} #3000ms
+#  data:
+#    redis:
+#      host: ${REDIS_HOST}
+#      port: ${REDIS_PORT}
+#      password: ${REDIS_PASSWORD}
+#      lettuce:
+#        pool:
+#          max-active: ${REDIS_ACTIVE} #10
+#          max-idle: ${REDIS_MAX_IDLE} #10
+#          min-idle: ${REDIS_MIN_IDLE} #2
+#      timeout: ${REDIS_TIMEOUT} #3000ms
 
 ---
 
@@ -65,14 +72,14 @@ spring:
 cloud:
   aws:
     credentials:
-      access-key: ${S3-ACCESS-KEY}
-      secret-key: ${S3-SECRET-KEY}
-    #    s3:
-    #      bucket: project-space-image-storage
-    region:
-      static: ap-northeast-2 # 리전 정보(서울)
-    stack:
-      auto: false
+#      access-key: ${S3-ACCESS-KEY}
+#      secret-key: ${S3-SECRET-KEY}
+#        s3:
+#          bucket: project-space-image-storage
+#    region:
+#      static: ap-northeast-2 # 리전 정보(서울)
+#    stack:
+#      auto: false
 
 ---
 
@@ -97,7 +104,5 @@ spring:
 
 secret:
   jwt:
-    access-secret-key: ${ACCESS_SECRET_KEY}
-    refresh-secret-key: ${REFRESH_SECRET_KEY}
-    access-expired-in: ${ACCESS_EXPIRED_IN}
-    refresh-expired-in: ${REFRESH_EXPIRED_IN}
+    secret-key: ${TOKEN_SECRET_KEY}
+    expired-in: ${TOKEN_EXPIRED_IN}
