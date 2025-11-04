@@ -49,7 +49,6 @@ public class History extends BaseEntity {
 
     private boolean isComplete;
 
-    @NotNull
     private LocalDateTime completedAt;
 
     @Builder(access = AccessLevel.PRIVATE)
@@ -71,6 +70,7 @@ public class History extends BaseEntity {
                 .member(member)
                 .video(video)
                 .watchRate(0L)
+                .recentPositionSec(0L)
                 .startedAt(LocalDateTime.now())
                 .watchedSegCnt(0L)
                 .hadEnd(false)
