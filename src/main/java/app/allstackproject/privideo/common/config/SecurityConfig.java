@@ -42,10 +42,10 @@ public class SecurityConfig {
                         )
                 )
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(a -> a
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error", "/favicon.ico",
                                 "/user/signup", "/user/login",
-                                "/h2-console/**")
+                                "/h2-console/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**")
                         .permitAll()
                         .anyRequest().authenticated()
                 )

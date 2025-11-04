@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.controller.user;
 
+import static app.allstackproject.privideo.common.config.SwaggerConfig.BOOTSTRAP_AUTH_KEY;
 import static app.allstackproject.privideo.common.filter.JwtAuthFilter.ACCESS_TOKEN_HEADER;
 import static app.allstackproject.privideo.common.filter.JwtAuthFilter.TOKEN_PREFIX;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_USER_LOGIN;
@@ -13,6 +14,10 @@ import app.allstackproject.privideo.dto.user.PatchPasswordRequest;
 import app.allstackproject.privideo.dto.user.PostLoginRequest;
 import app.allstackproject.privideo.dto.user.PostSignupRequest;
 import app.allstackproject.privideo.service.user.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,10 +33,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/user")
+@Tag(name = "User", description = "유저 관련 API")
 public class UserController {
 
     private final UserService userService;
 
+    @Operation(summary = "유저 회원가입")
     @PostMapping("/signup")
     public BaseResponse<SuccessResponse> postSignup(@Valid @RequestBody PostSignupRequest postSignupRequest,
                                                     BindingResult bindingResult) {
@@ -43,6 +50,7 @@ public class UserController {
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
     }
 
+    @Operation(summary = "유저 로그인")
     @PostMapping("/login")
     public BaseResponse<SuccessResponse> postLogin(@Valid @RequestBody PostLoginRequest postLoginRequest,
                                                    BindingResult bindingResult, HttpServletResponse response) {
@@ -59,6 +67,7 @@ public class UserController {
         return new BaseResponse<>(SuccessResponse.of(true));
     }
 
+    @Operation(summary = "유저 비밀번호 변경", security = {@SecurityRequirement(name = BOOTSTRAP_AUTH_KEY)})
     @PreAuthorize("hasAuthority('bootstrap:granted')")
     @PatchMapping("/password")
     public BaseResponse<SuccessResponse> patchPassword(
