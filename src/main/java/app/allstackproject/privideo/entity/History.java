@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.entity;
 
+import static app.allstackproject.privideo.service.video.LogService.SEGMENT_SECONDS;
 import static java.lang.Math.ceil;
 
 import jakarta.persistence.Entity;
@@ -83,7 +84,7 @@ public class History extends BaseEntity {
         this.watchedSegCnt = watchedSegCnt;
         this.hadEnd = hadEnd;
 
-        if (watchedSegCnt > 0.9 * ceil((double) video.getWholeTime() / 10) && hadEnd) {
+        if (watchedSegCnt > 0.9 * ceil((double) video.getWholeTime() / SEGMENT_SECONDS) && hadEnd) {
             this.isComplete = true;
             this.completedAt = LocalDateTime.now();
         }

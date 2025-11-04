@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class LogService {
     private static final int PACK_SIZE = 100;
-    private static final int SEGMENT_SECONDS = 10;
+    public static final int SEGMENT_SECONDS = 10;
 
     private final MongoTemplate mongoTemplate;
 
@@ -73,11 +73,11 @@ public class LogService {
             return;
         }
 
-        // TODO: videoId에 대해 도큐먼트 이미 존재 -> 갱신(+)
         Long[] zeros = new Long[PACK_SIZE];
         Arrays.fill(zeros, 0L);
 
-        BulkOperations bulk = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, SegViewLogs.class);
+        BulkOperations upsertBulk = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, SegViewLogs.class);
+        BulkOperations incBulk = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, SegViewLogs.class);
 
         for (Entry<Integer, Map<Integer, Integer>> e : incByPack.entrySet()) {
             int packId = e.getKey();
@@ -86,20 +86,22 @@ public class LogService {
             String id = "video:%d|pack:%d".formatted(videoId, packId);
             Query q = Query.query(Criteria.where("_id").is(id));
 
-            Update u = new Update()
+            Update init = new Update()
                     .setOnInsert("videoId", videoId)
                     .setOnInsert("packId", (long) packId)
                     .setOnInsert("counts", zeros)
                     .currentDate("updatedAt");
+            upsertBulk.upsert(q, init);
 
+            Update inc = new Update().currentDate("updatedAt");
             for (Entry<Integer, Integer> s : slots.entrySet()) {
-                u.inc("counts." + s.getKey(), s.getValue());
+                inc.inc("counts." + s.getKey(), s.getValue());
             }
-
-            bulk.upsert(q, u);
+            incBulk.updateOne(q, inc);
         }
 
-        bulk.execute();
+        upsertBulk.execute();
+        incBulk.execute();
     }
 
     public void incSegQuitBucket(Long videoId, Long recentPositionSec, int totalSegCnt) {
@@ -119,14 +121,17 @@ public class LogService {
         Long[] zeros = new Long[PACK_SIZE];
         Arrays.fill(zeros, 0L);
 
-        Update u = new Update()
+        Update init = new Update()
                 .setOnInsert("videoId", videoId)
                 .setOnInsert("packId", (long) packId)
                 .setOnInsert("counts", zeros)
+                .currentDate("updatedAt");
+        mongoTemplate.upsert(q, init, SegQuitLogs.class);
+
+        Update inc = new Update()
                 .inc("counts." + slot, 1)
                 .currentDate("updatedAt");
-
-        mongoTemplate.upsert(q, u, SegQuitLogs.class);
+        mongoTemplate.updateFirst(q, inc, SegQuitLogs.class);
     }
 
     private String to3hBucketKey(int hour) {
