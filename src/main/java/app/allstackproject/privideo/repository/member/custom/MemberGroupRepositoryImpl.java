@@ -13,13 +13,26 @@ public class MemberGroupRepositoryImpl implements MemberGroupRepositoryCustom {
 
     @Override
     public boolean isAccessibleToVideo(Long memberId, Long videoId) {
-        Integer count = jpaQueryFactory
-                .selectOne()
+        Long authorityCount = jpaQueryFactory
+                .select(videoGroupAuthority.count())
                 .from(videoGroupAuthority)
-                .join(memberGroupMapping).on(videoGroupAuthority.memberGroup.id.eq(memberGroupMapping.member.id))
                 .where(videoGroupAuthority.video.id.eq(videoId))
-                .fetchFirst();
+                .fetchOne();
 
-        return count != null;
+        if (authorityCount == null || authorityCount == 0) {
+            return true;
+        }
+
+        Long accessibleCount = jpaQueryFactory
+                .select(videoGroupAuthority.count())
+                .from(videoGroupAuthority)
+                .join(memberGroupMapping).on(videoGroupAuthority.memberGroup.id.eq(memberGroupMapping.memberGroup.id))
+                .where(
+                        videoGroupAuthority.video.id.eq(videoId),
+                        memberGroupMapping.member.id.eq(memberId)
+                )
+                .fetchOne();
+
+        return accessibleCount != null && accessibleCount > 0;
     }
 }
