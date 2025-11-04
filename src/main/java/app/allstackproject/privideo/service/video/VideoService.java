@@ -60,7 +60,7 @@ public class VideoService {
         String sessionId = UUID.nameUUIDFromBytes((memberId.toString()).getBytes(StandardCharsets.UTF_8)).toString();
 
         // TODO: Redis에서 해당 member, video에 대해 열려있는 세션이 있는지 확인
-        boolean sessionExists = true;
+        boolean sessionExists = false;
         if (sessionExists) {
             throw new ApiException(VIDEO_ALREADY_WATCHED);
         }
@@ -73,7 +73,7 @@ public class VideoService {
 
         VideoInfo videoInfo = VideoInfo.from(video);
         List<CommentInfo> commentInfos = commentRepository.findAllByVideoId(videoId);
-        List<QuizInfo> quizInfos = quizRepository.findAllByVideoId(videoId);
+        List<QuizInfo> quizInfos = quizRepository.findByVideoId(videoId);
         List<String> hashtags = hashtagRepository.findAllByVideoId(videoId);
 
         boolean isFirstWatch = true;
