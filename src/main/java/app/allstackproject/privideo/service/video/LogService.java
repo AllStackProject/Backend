@@ -1,11 +1,18 @@
 package app.allstackproject.privideo.service.video;
 
+import app.allstackproject.privideo.entity.OrgViewLog;
+import app.allstackproject.privideo.entity.SegQuitLogs;
+import app.allstackproject.privideo.entity.SegViewLogs;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.mongodb.core.BulkOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -16,6 +23,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class LogService {
     private static final int PACK_SIZE = 100;
+    private static final int SEGMENT_SECONDS = 10;
+
     private final MongoTemplate mongoTemplate;
 
     public void incOrgViewBucket(long orgId, Instant nowUtc) {
@@ -32,34 +41,92 @@ public class LogService {
                 .setOnInsert("date", dateKey)
                 .currentDate("updatedAt");
 
-        mongoTemplate.upsert(q, u, "org_view_log");
+        mongoTemplate.upsert(q, u, OrgViewLog.class);
     }
 
-    public void incVideoSegment(Long videoId, double positionSec) {
-        int segIdx = (int) Math.floor(positionSec / 10.0);
-        if (segIdx < 0) {
-            segIdx = 0;
+    public void incSegViewBucket(Long videoId, BigInteger segments, int totalSegments) {
+        if (segments == null || segments.signum() == 0 || totalSegments <= 0) {
+            return;
         }
 
-        int packId = segIdx / PACK_SIZE;
-        int slot = segIdx % PACK_SIZE;
+        Map<Integer, Map<Integer, Integer>> incByPack = new HashMap<>();
 
-        Query q = Query.query(Criteria.where("videoId").is(videoId).and("packId").is(packId));
+        BigInteger m = segments;
+        while (m.signum() != 0) {
+            int i = m.getLowestSetBit();
+            m = m.clearBit(i);
 
-        // 최초 업서트 시 counts 길이 100으로 채워두기
-        List<Long> zeros = new ArrayList<>(PACK_SIZE);
-        for (int i = 0; i < PACK_SIZE; i++) {
-            zeros.add(0L);
+            if (i >= totalSegments) {
+                continue;
+            }
+
+            int segIdxFromStart = (totalSegments - 1) - i;
+
+            int packId = segIdxFromStart / PACK_SIZE;
+            int slot = segIdxFromStart % PACK_SIZE;
+
+            incByPack.computeIfAbsent(packId, k -> new HashMap<>())
+                    .merge(slot, 1, Integer::sum);
         }
+
+        if (incByPack.isEmpty()) {
+            return;
+        }
+
+        // TODO: videoId에 대해 도큐먼트 이미 존재 -> 갱신(+)
+        Long[] zeros = new Long[PACK_SIZE];
+        Arrays.fill(zeros, 0L);
+
+        BulkOperations bulk = mongoTemplate.bulkOps(BulkOperations.BulkMode.UNORDERED, SegViewLogs.class);
+
+        for (Entry<Integer, Map<Integer, Integer>> e : incByPack.entrySet()) {
+            int packId = e.getKey();
+            Map<Integer, Integer> slots = e.getValue();
+
+            String id = "video:%d|pack:%d".formatted(videoId, packId);
+            Query q = Query.query(Criteria.where("_id").is(id));
+
+            Update u = new Update()
+                    .setOnInsert("videoId", videoId)
+                    .setOnInsert("packId", (long) packId)
+                    .setOnInsert("counts", zeros)
+                    .currentDate("updatedAt");
+
+            for (Entry<Integer, Integer> s : slots.entrySet()) {
+                u.inc("counts." + s.getKey(), s.getValue());
+            }
+
+            bulk.upsert(q, u);
+        }
+
+        bulk.execute();
+    }
+
+    public void incSegQuitBucket(Long videoId, Long recentPositionSec, int totalSegCnt) {
+        if (videoId == null || recentPositionSec == null || totalSegCnt <= 0) {
+            return;
+        }
+
+        long pos = Math.max(0L, recentPositionSec);
+        int segIdxFromStart = (int) Math.min(pos / SEGMENT_SECONDS, (long) totalSegCnt - 1);
+
+        int packId = segIdxFromStart / PACK_SIZE;
+        int slot = segIdxFromStart % PACK_SIZE;
+
+        String id = "video:%d|pack:%d".formatted(videoId, packId);
+        Query q = Query.query(Criteria.where("_id").is(id));
+
+        Long[] zeros = new Long[PACK_SIZE];
+        Arrays.fill(zeros, 0L);
 
         Update u = new Update()
-                .inc("counts." + slot, 1)
                 .setOnInsert("videoId", videoId)
                 .setOnInsert("packId", (long) packId)
                 .setOnInsert("counts", zeros)
+                .inc("counts." + slot, 1)
                 .currentDate("updatedAt");
 
-        mongoTemplate.upsert(q, u, "seg_view_log"); // 컬렉션명 또는 SegViewLogs.class
+        mongoTemplate.upsert(q, u, SegQuitLogs.class);
     }
 
     private String to3hBucketKey(int hour) {
@@ -67,5 +134,4 @@ public class LogService {
         int end = start + 3;
         return "%02d-%02d".formatted(start, end);
     }
-
 }

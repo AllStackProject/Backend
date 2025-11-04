@@ -14,7 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document("org_view_log")
 @CompoundIndexes({
-        @CompoundIndex(name = "ux_org_date", def = "{'orgId':1,'date':1}", unique = false)
+        @CompoundIndex(name = "ux_org_date", def = "{'orgId':1,'date':1}", unique = true)
 })
 @Getter
 @Setter

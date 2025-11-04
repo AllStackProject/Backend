@@ -42,8 +42,7 @@ public class History extends BaseEntity {
     @NotNull
     private LocalDateTime startedAt;
 
-    @NotNull
-    private Long watchedSegCnt;
+    private int watchedSegCnt;
 
     private boolean hadEnd;
 
@@ -53,7 +52,7 @@ public class History extends BaseEntity {
 
     @Builder(access = AccessLevel.PRIVATE)
     private History(Member member, Video video, Long watchRate, Long recentPositionSec, LocalDateTime startedAt,
-                    Long watchedSegCnt, boolean hadEnd, boolean isComplete, LocalDateTime completedAt) {
+                    int watchedSegCnt, boolean hadEnd, boolean isComplete, LocalDateTime completedAt) {
         this.member = member;
         this.video = video;
         this.watchRate = watchRate;
@@ -72,13 +71,13 @@ public class History extends BaseEntity {
                 .watchRate(0L)
                 .recentPositionSec(0L)
                 .startedAt(LocalDateTime.now())
-                .watchedSegCnt(0L)
+                .watchedSegCnt(0)
                 .hadEnd(false)
                 .isComplete(false)
                 .build();
     }
 
-    public void update(Long watchRate, Long recentPositionSec, Long watchedSegCnt, boolean hadEnd) {
+    public void update(Long watchRate, Long recentPositionSec, int watchedSegCnt, boolean hadEnd) {
         this.watchRate = watchRate;
         this.recentPositionSec = recentPositionSec;
         this.watchedSegCnt = watchedSegCnt;

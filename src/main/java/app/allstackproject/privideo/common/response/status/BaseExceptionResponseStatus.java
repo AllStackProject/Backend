@@ -73,7 +73,13 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     VIDEO_NOT_FOUND(8001, HttpStatus.NOT_FOUND, "존재하지 않는 영상입니다."),
     VIDEO_NOT_IN_ORGANIZATION(8002, HttpStatus.NOT_FOUND, "해당 조직에서 찾을 수 없는 영상입니다."),
     VIDEO_ALREADY_WATCHED(8003, HttpStatus.CONFLICT, "해당 영상은 이미 시청 중입니다."),
-    VIDEO_NOT_ACCESSIBLE(8004, HttpStatus.BAD_REQUEST, "해당 영상에 접근 권한이 없습니다.");
+    VIDEO_NOT_ACCESSIBLE(8004, HttpStatus.BAD_REQUEST, "해당 영상에 접근 권한이 없습니다."),
+    INVALID_VIDEO_LEAVE(8005, HttpStatus.BAD_REQUEST, "영상 시청 종료 요청에서 유효하지 않은 값이 존재합니다."),
+
+    /**
+     * 9000: History 오류
+     */
+    HISTORY_NOT_FOUND(9001, HttpStatus.NOT_FOUND, "시청 내역을 찾을 수 없습니다.");
 
     private final int code;
     private final HttpStatus httpStatus;
