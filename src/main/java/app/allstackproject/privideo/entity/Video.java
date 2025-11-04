@@ -38,6 +38,9 @@ public class Video extends BaseEntity {
     private String title;
 
     @NotBlank
+    private String url;
+
+    @NotBlank
     private String thumbnailUrl;
 
     @NotNull
@@ -57,11 +60,12 @@ public class Video extends BaseEntity {
     private Long quitCnt;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Video(Organization organization, Member creator, String title, String thumbnailUrl, Long wholeTime,
-                  boolean isComment, boolean isQuiz, LocalDate expiredAt, Long watchCnt, Long quitCnt) {
+    private Video(Organization organization, Member creator, String title, String url, String thumbnailUrl,
+                  Long wholeTime, boolean isComment, boolean isQuiz, LocalDate expiredAt, Long watchCnt, Long quitCnt) {
         this.organization = organization;
         this.creator = creator;
         this.title = title;
+        this.url = url;
         this.thumbnailUrl = thumbnailUrl;
         this.wholeTime = wholeTime;
         this.isComment = isComment;
@@ -71,7 +75,7 @@ public class Video extends BaseEntity {
         this.quitCnt = quitCnt;
     }
 
-    public static Video create(Organization organization, Member creator, String title, String thumbnailUrl,
+    public static Video create(Organization organization, Member creator, String title, String url, String thumbnailUrl,
                                Long wholeTime, boolean isComment, boolean isQuiz, LocalDate expiredAt, Long watchCnt,
                                Long quitCnt) {
         if (expiredAt == null) {
@@ -88,6 +92,7 @@ public class Video extends BaseEntity {
                 .organization(organization)
                 .creator(creator)
                 .title(title)
+                .url(url)
                 .thumbnailUrl(thumbnailUrl)
                 .wholeTime(wholeTime)
                 .isComment(isComment)
