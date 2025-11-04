@@ -4,8 +4,8 @@ import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTI
 import static app.allstackproject.privideo.entity.QMember.member;
 import static app.allstackproject.privideo.entity.QOrganization.organization;
 
-import app.allstackproject.privideo.dto.organization.QReadOrgDto;
 import app.allstackproject.privideo.dto.organization.ReadOrgDto;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ public class OrganizationRepositoryImpl implements OrganizationRepositoryCustom 
     @Override
     public List<ReadOrgDto> findAllByUserId(Long userId) {
         return jpaQueryFactory
-                .select(new QReadOrgDto(
+                .select(Projections.constructor(ReadOrgDto.class,
                         organization.id,
                         organization.name,
                         organization.imgUrl,

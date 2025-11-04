@@ -1,7 +1,10 @@
 package app.allstackproject.privideo.dto;
 
-import app.allstackproject.privideo.entity.MemberQuizResult;
+import app.allstackproject.privideo.dto.quiz.MemberQuizDto;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,28 +19,37 @@ public class QuizResponse {
 
     private List<QuizItem> allQuiz;
 
-    public static QuizResponse of(List<MemberQuizResult> quizList) {
+    public static QuizResponse of(List<MemberQuizDto> rows) {
+        Map<Long, List<MemberQuizDto>> grouped = new LinkedHashMap<>();
+        for (MemberQuizDto d : rows) {
+            grouped.computeIfAbsent(d.getVideoId(), k -> new ArrayList<>()).add(d);
+        }
 
-        List<QuizItem> allQuiz = quizList.stream()
-                .collect(Collectors.groupingBy(q -> q.getVideo().getTitle()))
-                .entrySet().stream()
-                .map(entry -> QuizItem.builder()
-                        .videoName(entry.getKey())
-                        .quiz(entry.getValue().stream()
-                                .map(q -> QuizDetail.builder()
-                                        .id(q.getId())
-                                        .question(q.getQuiz().getQuestion())
-                                        .description(q.getQuiz().getDescription())
-                                        .isCorrect(q.isCorrect())
-                                        .answer(q.getQuiz().isAnswer())
-                                        .build())
-                                .collect(Collectors.toList()))
-                        .build())
-                .collect(Collectors.toList());
+        List<QuizItem> items = new ArrayList<>(grouped.size());
+        for (Map.Entry<Long, List<MemberQuizDto>> e : grouped.entrySet()) {
+            Long videoId = e.getKey();
+            List<MemberQuizDto> list = e.getValue();
+            String videoTitle = list.isEmpty() ? null : list.get(0).getVideoTitle();
 
-        return QuizResponse.builder()
-                .allQuiz(allQuiz)
-                .build();
+            List<QuizDetail> details = new ArrayList<>(list.size());
+            for (MemberQuizDto d : list) {
+                details.add(QuizDetail.builder()
+                        .id(d.getQuizId())
+                        .question(d.getQuestion())
+                        .description(d.getDescription())
+                        .isCorrect(d.getIsCorrect())
+                        .answer(d.getAnswer())
+                        .build());
+            }
+
+            items.add(QuizItem.builder()
+                    .videoId(videoId)
+                    .videoName(videoTitle)
+                    .quiz(details)
+                    .build());
+        }
+
+        return QuizResponse.builder().allQuiz(items).build();
     }
 
     @Data
@@ -45,6 +57,7 @@ public class QuizResponse {
     @AllArgsConstructor
     @Builder
     public static class QuizItem {
+        private Long videoId;
         private String videoName;
         private List<QuizDetail> quiz;
     }
