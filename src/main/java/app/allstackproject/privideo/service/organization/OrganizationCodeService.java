@@ -45,16 +45,6 @@ public class OrganizationCodeService {
         return oldCode;
     }
 
-    //조직 생성 시 코드 발급
-    @Transactional
-    public void createOrgCode(Long orgId, String code) {
-
-        //Redis에 코드 저장
-        orgRedisRepository.createOrgCode(orgId, code);
-
-        log.info("조직 코드 생성 완료 - orgId: {}, code: {}", orgId, code);
-    }
-
     //조직 코드로 ID 조회
     public Long getOrgIdByCode(String code) {
         Long orgId = orgRedisRepository.getOrgIdByCode(code);

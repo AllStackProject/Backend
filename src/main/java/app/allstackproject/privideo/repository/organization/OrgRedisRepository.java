@@ -8,7 +8,6 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.RedisScript;

@@ -19,15 +19,18 @@ import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.entity.User;
 import app.allstackproject.privideo.repository.member.MemberRepository;
+import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.user.UserRepository;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -36,6 +39,8 @@ public class OrganizationService {
     private final UserRepository userRepository;
     private final MemberRepository memberRepository;
     private final OrganizationRepository organizationRepository;
+    private final OrgRedisRepository orgRedisRepository;
+
     private final JwtProvider jwtProvider;
 
     public CreateOrgResult createOrg(Long userId, @Valid CreateOrgRequest createOrgRequest) {
@@ -52,6 +57,14 @@ public class OrganizationService {
 
         organizationRepository.save(organization);
         memberRepository.save(member);
+
+        try {
+            orgRedisRepository.createOrgCode(organization.getId(), code);
+            log.info("조직 코드 Redis 저장 완료 - orgId: {}, code: {}", organization.getId(), code);
+        } catch (Exception e) {
+            //Redis 장애
+            log.info("조직 코드 Redis 저장 완료 - orgId: {}, code: {}", organization.getId(), code);
+        }
 
         return new CreateOrgResult(organization.getId(), code);
     }
@@ -70,7 +83,7 @@ public class OrganizationService {
         if (!organization.getCode().equals(orgCode)) {
             throw new ApiException(INVALID_ORG_CODE);
         }
-        
+
         Optional<Member> member = memberRepository.findByUserIdAndOrganizationId(userId, organization.getId());
 
         if (member.isPresent()) {
@@ -90,6 +103,10 @@ public class OrganizationService {
                 .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
         Member member = memberRepository.findByUserIdAndOrganizationId(userId, orgId)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
+
+        //TODO
+        //request 상태인지 rejected 상태인지 pending도 안 됨 approved일 때만 선택 가능
+        //approve고 선택 한 경우 -> redis 권한 변경
 
         return jwtProvider.createOrgToken(OrgTokenDto.builder()
                 .userId(userId)
