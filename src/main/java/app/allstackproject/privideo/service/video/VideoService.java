@@ -138,10 +138,8 @@ public class VideoService {
             History history = historyRepository.findByMemberIdAndVideoIdAndStatus(memberId, videoId, ACTIVE)
                     .orElseThrow(() -> new ApiException(HISTORY_NOT_FOUND));
 
-            int watchedSegCnt = watchedSegments.bitCount(); // 1인 비트 개수 반환하는 거 맞는지 확인 필요
-            boolean watchEnd = watchedSegments.testBit(0); // 마지막 비트가 1인지 반환하는 거 맞는지 확인 필요
-            history.update(leaveVideoSessionInfo.getWatchRate(), leaveVideoSessionInfo.getRecentPosition(),
-                    watchedSegCnt, watchEnd);
+            boolean watchEnd = watchedSegments.testBit(0);
+            history.update(leaveVideoSessionInfo.getWatchRate(), leaveVideoSessionInfo.getRecentPosition(), watchEnd);
         }
 
         int totalSegCnt = leaveVideoSessionInfo.getWatchSegments().length() * 4;

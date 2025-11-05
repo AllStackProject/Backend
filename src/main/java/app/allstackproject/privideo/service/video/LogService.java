@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class LogService {
     private static final int PACK_SIZE = 100;
-    public static final int SEGMENT_SECONDS = 10;
+    private static final int SEGMENT_SECONDS = 10;
 
     private final MongoTemplate mongoTemplate;
 

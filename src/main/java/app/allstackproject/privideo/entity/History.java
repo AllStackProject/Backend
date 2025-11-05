@@ -1,8 +1,5 @@
 package app.allstackproject.privideo.entity;
 
-import static app.allstackproject.privideo.service.video.LogService.SEGMENT_SECONDS;
-import static java.lang.Math.ceil;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -43,8 +40,6 @@ public class History extends BaseEntity {
     @NotNull
     private LocalDateTime startedAt;
 
-    private int watchedSegCnt;
-
     private boolean hadEnd;
 
     private boolean isComplete;
@@ -53,13 +48,12 @@ public class History extends BaseEntity {
 
     @Builder(access = AccessLevel.PRIVATE)
     private History(Member member, Video video, Long watchRate, Long recentPositionSec, LocalDateTime startedAt,
-                    int watchedSegCnt, boolean hadEnd, boolean isComplete, LocalDateTime completedAt) {
+                    boolean hadEnd, boolean isComplete, LocalDateTime completedAt) {
         this.member = member;
         this.video = video;
         this.watchRate = watchRate;
         this.recentPositionSec = recentPositionSec;
         this.startedAt = startedAt;
-        this.watchedSegCnt = watchedSegCnt;
         this.hadEnd = hadEnd;
         this.isComplete = isComplete;
         this.completedAt = completedAt;
@@ -72,19 +66,17 @@ public class History extends BaseEntity {
                 .watchRate(0L)
                 .recentPositionSec(0L)
                 .startedAt(LocalDateTime.now())
-                .watchedSegCnt(0)
                 .hadEnd(false)
                 .isComplete(false)
                 .build();
     }
 
-    public void update(Long watchRate, Long recentPositionSec, int watchedSegCnt, boolean hadEnd) {
+    public void update(Long watchRate, Long recentPositionSec, boolean hadEnd) {
         this.watchRate = watchRate;
         this.recentPositionSec = recentPositionSec;
-        this.watchedSegCnt = watchedSegCnt;
         this.hadEnd = hadEnd;
 
-        if (watchedSegCnt > 0.9 * ceil((double) video.getWholeTime() / SEGMENT_SECONDS) && hadEnd) {
+        if (watchRate >= 90 && hadEnd) {
             this.isComplete = true;
             this.completedAt = LocalDateTime.now();
         }
