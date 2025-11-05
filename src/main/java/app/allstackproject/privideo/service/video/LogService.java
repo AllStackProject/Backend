@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class LogService {
     private static final int PACK_SIZE = 100;
-    private static final int SEGMENT_SECONDS = 10;
+    public static final int SEGMENT_SECONDS = 10;
 
     private final MongoTemplate mongoTemplate;
 
@@ -44,8 +44,8 @@ public class LogService {
         mongoTemplate.upsert(q, u, OrgViewLog.class);
     }
 
-    public void incSegViewBucket(Long videoId, BigInteger segments, int totalSegments) {
-        if (segments == null || segments.signum() == 0 || totalSegments <= 0) {
+    public void incSegViewBucket(Long videoId, BigInteger segments, int totalSegCnt) {
+        if (segments == null || segments.signum() == 0 || totalSegCnt <= 0) {
             return;
         }
 
@@ -56,14 +56,12 @@ public class LogService {
             int i = m.getLowestSetBit();
             m = m.clearBit(i);
 
-            if (i >= totalSegments) {
+            if (i >= totalSegCnt) {
                 continue;
             }
 
-            int segIdxFromStart = (totalSegments - 1) - i;
-
-            int packId = segIdxFromStart / PACK_SIZE;
-            int slot = segIdxFromStart % PACK_SIZE;
+            int packId = i / PACK_SIZE;
+            int slot = i % PACK_SIZE;
 
             incByPack.computeIfAbsent(packId, k -> new HashMap<>())
                     .merge(slot, 1, Integer::sum);

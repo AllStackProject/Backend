@@ -8,6 +8,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_ACCESSIBLE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_IN_ORGANIZATION;
+import static app.allstackproject.privideo.service.video.LogService.SEGMENT_SECONDS;
 
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.dto.video.CommentInfo;
@@ -131,21 +132,22 @@ public class VideoService {
 
         // TODO: Redis에서 재시청인지 확인
         boolean isFirstWatch = true;
-        BigInteger watchedSegments = new BigInteger(leaveVideoSessionInfo.getWatchSegments(), 16);
+        BigInteger watchedSegments = new BigInteger(leaveVideoSessionInfo.getWatchSegments(), 2);
+        int totalSegCnt = (int) Math.ceil((double) video.getWholeTime() / SEGMENT_SECONDS);
 
         // TODO: Redis에서 세션 키 삭제
         if (isFirstWatch) {
             History history = historyRepository.findByMemberIdAndVideoIdAndStatus(memberId, videoId, ACTIVE)
                     .orElseThrow(() -> new ApiException(HISTORY_NOT_FOUND));
 
-            boolean watchEnd = watchedSegments.testBit(0);
+            boolean watchEnd = watchedSegments.testBit(totalSegCnt - 1);
             history.update(leaveVideoSessionInfo.getWatchRate(), leaveVideoSessionInfo.getRecentPosition(), watchEnd);
         }
 
-        int totalSegCnt = leaveVideoSessionInfo.getWatchSegments().length() * 4;
         logService.incSegViewBucket(videoId, watchedSegments, totalSegCnt);
 
         if (leaveVideoSessionInfo.getIsQuit()) {
+            // recentPositionSec 기준으로만 이탈 판단
             logService.incSegQuitBucket(videoId, leaveVideoSessionInfo.getRecentPosition(), totalSegCnt);
             video.quit();
         }
