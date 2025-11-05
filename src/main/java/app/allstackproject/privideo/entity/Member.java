@@ -4,10 +4,12 @@ import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPR
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.REJECTED;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_APPROVED_MEMBER;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_REJECTED_MEMBER;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.FORBIDDEN_NO_PERMISSION;
 
 import app.allstackproject.privideo.common.enumStatus.JoinStatusType;
 import app.allstackproject.privideo.common.enumStatus.PermissionType;
 import app.allstackproject.privideo.common.exception.ApiException;
+import app.allstackproject.privideo.service.permission.PermissionService;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -23,6 +25,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.parameters.P;
 
 @Entity
 @Getter
@@ -75,6 +78,20 @@ public class Member extends BaseEntity {
                 .build();
     }
 
+    //creator에게 모든 권한 부여
+    public void adminPermissionSet() {
+        if (!this.isAdmin) {
+            throw new ApiException(FORBIDDEN_NO_PERMISSION);
+        }
+
+        this.permissionCode = PermissionType.combine(
+                PermissionType.VIDEO_QUIZ_MANAGE,
+                PermissionType.STATS_REPORT,
+                PermissionType.NOTICE,
+                PermissionType.ORG_SETTING
+        );
+    }
+
     public void grant(PermissionType... perms) {
         for (PermissionType p : perms) {
             permissionCode |= p.getBit();
@@ -108,7 +125,7 @@ public class Member extends BaseEntity {
                 }
             }
         }
-        
+
         this.joinStatus = destStatus;
     }
 }
