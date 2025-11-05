@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.controller.video;
 
+import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_KEY;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_VIDEO_LEAVE;
 import static app.allstackproject.privideo.common.util.BindingResultUtil.getErrorMessage;
 
@@ -11,6 +12,9 @@ import app.allstackproject.privideo.dto.video.JoinVideoSessionResult;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionInfo;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionRequest;
 import app.allstackproject.privideo.service.video.VideoService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,12 +29,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/{orgId}/video/{videoId}")
+@PreAuthorize("hasAuthority('org:granted')")
+@Tag(name = "Video", description = "영상 관련 API")
+@SecurityRequirement(name = ORG_AUTH_KEY)
 public class WatchVideoController {
 
     private final VideoService videoService;
 
-    @PreAuthorize("hasAuthority('org:granted')")
     @PostMapping("/join")
+    @Operation(summary = "영상 시청 세션 시작")
     public BaseResponse<JoinVideoSessionResponse> joinVideoSession(
             @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId,
             @PathVariable("videoId") Long videoId) {
@@ -38,8 +45,8 @@ public class WatchVideoController {
         return new BaseResponse<>(JoinVideoSessionResponse.from(result));
     }
 
-    @PreAuthorize("hasAuthority('org:granted')")
     @PostMapping("/leave")
+    @Operation(summary = "영상 시청 세션 종료")
     public BaseResponse<SuccessResponse> leaveVideoSession(
             @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId,
             @PathVariable("videoId") Long videoId,
