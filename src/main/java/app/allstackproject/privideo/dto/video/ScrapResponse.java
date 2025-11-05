@@ -31,17 +31,11 @@ public class ScrapResponse {
         private LocalDateTime recentWatch;
 
         public static ScrapVideo of(Scrap scrap, History history) {
-
-            Long wholeTime = history.getVideo().getWholeTime();
-
-            double watchRate = wholeTime == null || wholeTime == 0 ? 0.0 :
-                    (double) history.getActualWatchSec() / history.getVideo().getWholeTime();
-
             return ScrapVideo.builder()
                     .id(scrap.getVideo().getId())
                     .name(scrap.getVideo().getTitle())
                     .img(scrap.getVideo().getThumbnailUrl())
-                    .watchRate(watchRate)
+                    .watchRate(history.getWatchRate())
                     .recentWatch(history.getLastModifiedAt())
                     .build();
         }

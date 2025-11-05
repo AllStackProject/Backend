@@ -38,6 +38,9 @@ public class Video extends BaseEntity {
     private String title;
 
     @NotBlank
+    private String url;
+
+    @NotBlank
     private String thumbnailUrl;
 
     @NotNull
@@ -51,34 +54,35 @@ public class Video extends BaseEntity {
     private LocalDate expiredAt;
 
     @NotNull
-    private Long viewCnt;
+    private Long watchCnt;
 
     @NotNull
     private Long quitCnt;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Video(Organization organization, Member creator, String title, String thumbnailUrl, Long wholeTime,
-                  boolean isComment, boolean isQuiz, LocalDate expiredAt, Long viewCnt, Long quitCnt) {
+    private Video(Organization organization, Member creator, String title, String url, String thumbnailUrl,
+                  Long wholeTime, boolean isComment, boolean isQuiz, LocalDate expiredAt, Long watchCnt, Long quitCnt) {
         this.organization = organization;
         this.creator = creator;
         this.title = title;
+        this.url = url;
         this.thumbnailUrl = thumbnailUrl;
         this.wholeTime = wholeTime;
         this.isComment = isComment;
         this.isQuiz = isQuiz;
         this.expiredAt = expiredAt;
-        this.viewCnt = viewCnt;
+        this.watchCnt = watchCnt;
         this.quitCnt = quitCnt;
     }
 
-    public static Video create(Organization organization, Member creator, String title, String thumbnailUrl,
-                               Long wholeTime, boolean isComment, boolean isQuiz, LocalDate expiredAt, Long viewCnt,
+    public static Video create(Organization organization, Member creator, String title, String url, String thumbnailUrl,
+                               Long wholeTime, boolean isComment, boolean isQuiz, LocalDate expiredAt, Long watchCnt,
                                Long quitCnt) {
         if (expiredAt == null) {
             expiredAt = LocalDate.now().plusYears(100);
         }
-        if (viewCnt == null) {
-            viewCnt = 0L;
+        if (watchCnt == null) {
+            watchCnt = 0L;
         }
         if (quitCnt == null) {
             quitCnt = 0L;
@@ -88,13 +92,22 @@ public class Video extends BaseEntity {
                 .organization(organization)
                 .creator(creator)
                 .title(title)
+                .url(url)
                 .thumbnailUrl(thumbnailUrl)
                 .wholeTime(wholeTime)
                 .isComment(isComment)
                 .isQuiz(isQuiz)
                 .expiredAt(expiredAt)
-                .viewCnt(viewCnt)
+                .watchCnt(watchCnt)
                 .quitCnt(quitCnt)
                 .build();
+    }
+
+    public void watch() {
+        this.watchCnt++;
+    }
+
+    public void quit() {
+        this.quitCnt++;
     }
 }
