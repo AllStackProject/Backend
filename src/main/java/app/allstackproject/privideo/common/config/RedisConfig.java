@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -19,38 +20,38 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
 
     private final RedisProperties redisProperties;
-
-    //lettuce
+    
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        LettuceConnectionFactory factory = new LettuceConnectionFactory(
-                redisProperties.getHost(),
-                redisProperties.getPort()
-        );
+
+        RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
+        redisConfig.setHostName(redisProperties.getHost());
+        redisConfig.setPort(redisProperties.getPort());
+        redisConfig.setDatabase(redisProperties.getDatabase());
 
         if (redisProperties.getPassword() != null && !redisProperties.getPassword().isEmpty()) {
-            factory.setPassword(redisProperties.getPassword());
+            redisConfig.setPassword(redisProperties.getPassword());
         }
 
-        //db 인덱스 기본 값 0
-        factory.setDatabase(redisProperties.getDatabase());
-
-        return factory;
+        return new LettuceConnectionFactory(redisConfig);
     }
 
-    //Redis template
     @Bean
     public RedisTemplate<String, String> redisTemplate() {
         RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory());
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new StringRedisSerializer());
+
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+
+        redisTemplate.setKeySerializer(stringRedisSerializer);
+        redisTemplate.setHashKeySerializer(stringRedisSerializer);
+        redisTemplate.setValueSerializer(stringRedisSerializer);
+        redisTemplate.setHashValueSerializer(stringRedisSerializer);
 
         redisTemplate.afterPropertiesSet();
         return redisTemplate;
     }
 
-    //조직 코드 재발급 Lua 스크립트 등록
     @Bean
     public RedisScript<String> regenerateOrgCode() {
         DefaultRedisScript<String> script = new DefaultRedisScript<>();
