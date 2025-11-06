@@ -21,6 +21,7 @@ public class UpdateUserInfoRequest {
     @JsonProperty(access = Access.WRITE_ONLY)
     private String newPassword;
 
+    //TODO: int로 바꾸기 -> Age Enum으로
     private String changedAge;
 
     @PasswordConstraint

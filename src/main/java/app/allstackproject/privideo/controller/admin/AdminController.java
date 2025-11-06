@@ -1,20 +1,26 @@
 package app.allstackproject.privideo.controller.admin;
 
 import static app.allstackproject.privideo.common.config.SwaggerConfig.BOOTSTRAP_AUTH_KEY;
+import static app.allstackproject.privideo.common.filter.JwtAuthFilter.ACCESS_TOKEN_HEADER;
+import static app.allstackproject.privideo.common.filter.JwtAuthFilter.TOKEN_PREFIX;
 
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.organization.ChangeJoinStateRequest;
+import app.allstackproject.privideo.dto.organization.UpdateMemberPermissionRequest;
 import app.allstackproject.privideo.service.admin.AdminService;
+import app.allstackproject.privideo.service.organization.OrganizationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
 
     private final AdminService adminService;
+    private final OrganizationService organizationService;
 
     @PreAuthorize("hasAuthority('org:admin')")
     @PatchMapping("/orgs/{orgId}/join")
@@ -37,5 +44,38 @@ public class AdminController {
             @PathVariable Long orgId) {
         boolean isSuccess = adminService.changeJoinState(userId, orgId, changeJoinStateRequest);
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
+    }
+
+    @PreAuthorize("hasAuthority('org:admin')")
+    @PutMapping("/orgs/{orgId}/perm")
+    @Operation(summary = "멤버 권한 변경", description = "조직 멤버의 권한을 변경합니다.")
+    public BaseResponse<SuccessResponse> updateMemberPermission(
+            @AuthenticationPrincipal(expression = "userId") Long adminUserId,
+            @PathVariable Long orgId,
+            @Valid @RequestBody UpdateMemberPermissionRequest request) {
+
+        boolean isSuccess = adminService.updateMemberPermission(
+                adminUserId, orgId, request.getMemberId(), request.getPermissions());
+
+        return new BaseResponse<>(SuccessResponse.of(isSuccess));
+    }
+
+
+    @PreAuthorize("hasAuthority('org:admin')")
+    @PatchMapping("/orgs/{orgId}/token")
+    @Operation(summary = "조직 토큰 재발급", description = "조직 코드를 새로 발급하고 해당 코드로 org token을 재생성합니다.")
+    public BaseResponse<SuccessResponse> regenerateOrgToken(
+            @AuthenticationPrincipal(expression = "userId") Long adminUserId,
+            @PathVariable("orgId") Long orgId,
+            HttpServletResponse response) {
+
+        String newOrgToken = adminService.regenerateOrgToken(adminUserId, orgId);
+
+        if (newOrgToken == null || newOrgToken.isBlank()) {
+            return new BaseResponse<>(SuccessResponse.of(false));
+        }
+
+        response.setHeader(ACCESS_TOKEN_HEADER, TOKEN_PREFIX + newOrgToken);
+        return new BaseResponse<>(SuccessResponse.of(true));
     }
 }

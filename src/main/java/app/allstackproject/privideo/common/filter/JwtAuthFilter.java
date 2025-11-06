@@ -2,7 +2,6 @@ package app.allstackproject.privideo.common.filter;
 
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.FORBIDDEN_ORG_MISMATCH;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_TOKEN;
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
 
 import app.allstackproject.privideo.common.enumStatus.AuthPrincipal;
 import app.allstackproject.privideo.common.enumStatus.PermissionType;
@@ -111,13 +110,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         throw new ApiException(FORBIDDEN_ORG_MISMATCH);
                     }
 
-                    //Redis 최신 권한 검증
                     Long redisPermission = null;
 
                     try {
-                        redisPermission = orgRedisRepository.getMemberPermssion(orgId, memberId);
+                        redisPermission = orgRedisRepository.getMemberPermission(orgId, memberId);
 
-                        //권한 변경 감지
                         if (redisPermission != null && !redisPermission.equals(perm)) {
                             log.info("권한 변경 감지 - memberId: {}, 기존: {}, 최신: {}",
                                     memberId, perm, redisPermission);
@@ -134,11 +131,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             res.setHeader(ACCESS_TOKEN_HEADER, TOKEN_PREFIX + newToken);
                         }
                     } catch (Exception e) {
-                        //redis 장애
                         log.warn("Redis 조회 실패");
                     }
 
-                    //filter에서는 redis의 권한이 null이면 토큰으로 동작하게 하고 controller -> permissioservice에서 DB fallback 처리
                     Long finalPerm = (redisPermission != null) ? redisPermission : perm;
 
                     List<GrantedAuthority> auths = new ArrayList<>(List.of(new SimpleGrantedAuthority("org:granted"),
