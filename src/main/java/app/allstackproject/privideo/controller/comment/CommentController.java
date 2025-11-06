@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/{orgId}/{videoId}/comments")
+@RequestMapping("/{orgId}/video/{videoId}")
 @PreAuthorize("hasAuthority('org:granted')")
 @Tag(name = "Comment", description = "댓글 관련 API")
 @SecurityRequirement(name = ORG_AUTH_KEY)
@@ -36,7 +36,7 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    @GetMapping("")
+    @GetMapping("/comments")
     @Operation(summary = "댓글 전체 조회")
     public BaseResponse<ReadCommentsResponse> readComments(
             @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId,
@@ -45,7 +45,7 @@ public class CommentController {
         return new BaseResponse<>(ReadCommentsResponse.of(commentsResult));
     }
 
-    @PostMapping("")
+    @PostMapping("/comment")
     @Operation(summary = "댓글 작성")
     public BaseResponse<SuccessResponse> createComment(
             @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId,
