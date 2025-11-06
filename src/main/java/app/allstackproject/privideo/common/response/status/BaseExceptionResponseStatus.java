@@ -79,6 +79,8 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     VIDEO_ALREADY_WATCHED(8003, HttpStatus.CONFLICT, "해당 영상은 이미 시청 중입니다."),
     VIDEO_NOT_ACCESSIBLE(8004, HttpStatus.BAD_REQUEST, "해당 영상에 접근 권한이 없습니다."),
     INVALID_VIDEO_LEAVE(8005, HttpStatus.BAD_REQUEST, "영상 시청 종료 요청에서 유효하지 않은 값이 존재합니다."),
+    INVALID_SCRAP_REQUEST(8006, HttpStatus.BAD_REQUEST, "영상 스크랩 요청에서 올바르지 않은 값이 존재합니다."),
+    VIDEO_ALREADY_SCRAPPED(8007, HttpStatus.BAD_REQUEST, "해당 영상은 이미 스크랩되었습니다."),
 
     /**
      * 9000: History 오류
