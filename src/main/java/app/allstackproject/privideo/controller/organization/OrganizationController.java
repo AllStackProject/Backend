@@ -39,13 +39,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/orgs")
-@PreAuthorize("hasAuthority('bootstrap:granted')")
 @Tag(name = "Organization", description = "조직 관련 API")
 @SecurityRequirement(name = BOOTSTRAP_AUTH_KEY)
 public class OrganizationController {
 
     private final OrganizationService organizationService;
 
+    @PreAuthorize("hasAuthority('bootstrap:granted')")
     @PostMapping("")
     @Operation(summary = "조직 생성")
     public BaseResponse<CreateOrgResponse> createOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
@@ -59,6 +59,7 @@ public class OrganizationController {
         return new BaseResponse<>(CreateOrgResponse.of(createOrgResult));
     }
 
+    @PreAuthorize("hasAuthority('bootstrap:granted')")
     @GetMapping("")
     @Operation(summary = "전체 조직 조회", description = "가입 요청을 보낸 조직과 가입이 완료된 조직을 모두 조회합니다.")
     public BaseResponse<ReadOrgsResponse> readOrgs(@AuthenticationPrincipal(expression = "userId") Long userId) {
@@ -66,6 +67,7 @@ public class OrganizationController {
         return new BaseResponse<>(ReadOrgsResponse.of(result));
     }
 
+    @PreAuthorize("hasAuthority('bootstrap:granted')")
     @PostMapping("/{orgId}/join")
     @Operation(summary = "조직 가입 요청")
     public BaseResponse<SuccessResponse> joinOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
@@ -76,10 +78,11 @@ public class OrganizationController {
             throw new ApiException(INVALID_ORG_JOIN, getErrorMessage(bindingResult));
         }
 
-        boolean isSuccess = organizationService.joinOrg(userId, orgId, joinOrgRequest.getCode());
+        boolean isSuccess = organizationService.joinOrg(userId, joinOrgRequest.getCode());
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
     }
 
+    @PreAuthorize("hasAuthority('bootstrap:granted')")
     @PatchMapping("/{orgId}")
     @Operation(summary = "조직 선택", description = "org token을 발행합니다.")
     public BaseResponse<SuccessResponse> selectOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
@@ -93,6 +96,7 @@ public class OrganizationController {
         return new BaseResponse<>(SuccessResponse.of(true));
     }
 
+    @PreAuthorize("hasAuthority('bootstrap:granted')")
     @PutMapping("/{orgId}")
     @Operation(summary = "조직 탈퇴")
     public BaseResponse<SuccessResponse> exitOrg(@AuthenticationPrincipal(expression = "userId") Long userId,

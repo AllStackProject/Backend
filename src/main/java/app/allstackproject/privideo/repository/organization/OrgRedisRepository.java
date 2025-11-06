@@ -1,6 +1,7 @@
 package app.allstackproject.privideo.repository.organization;
 
 import app.allstackproject.privideo.common.exception.ApiException;
+import app.allstackproject.privideo.common.util.RedisRetryUtil;
 import app.allstackproject.privideo.common.util.RedisUtil;
 import app.allstackproject.privideo.common.util.RedisUtil.Fields;
 
@@ -22,21 +23,46 @@ public class OrgRedisRepository {
     private final RedisTemplate<String, String> redisTemplate;
     private final RedisScript<String> regenerateOrgCode;
 
-    //orgID로 code 조회
+    public void saveMemberPermission(Long orgId, Long memberId, long permissionCode) {
+        String key = RedisUtil.memberPermission(orgId, memberId);
+        redisTemplate.opsForHash().put(key, Fields.PERMISSION_CODE, String.valueOf(permissionCode));
+    }
+
+    public Long getMemberPermission(Long orgId, Long memberId) {
+        String key = RedisUtil.memberPermission(orgId, memberId);
+        return RedisRetryUtil.executeWithRetry(
+                () -> {
+                    String permission = (String) redisTemplate.opsForHash().get(key, Fields.PERMISSION_CODE);
+                    return permission != null ? Long.parseLong(permission) : null;
+                },
+                "memberPermission - memberId: " + memberId
+        );
+    }
+
+
     public String getOrgcodeById(Long orgId) {
         String key = RedisUtil.org(orgId);
         return (String) redisTemplate.opsForHash()
                 .get(key, Fields.CODE);
     }
 
-    //orgcode로 ID 조회
-    public Long getOrgIdByCode(String code) {
-        String key = RedisUtil.orgCode(code);
-        String orgId = redisTemplate.opsForValue().get(key);
-        return orgId != null ? Long.parseLong(orgId) : null;
+    public void saveOrgCode(Long orgId, String orgCode) {
+        String key = RedisUtil.orgCode(orgCode);
+        redisTemplate.opsForValue().set(key, String.valueOf(orgId));
     }
 
-    //조직 정보 존재 확인
+    public Long getOrgIdByCode(String orgCode) {
+        String key = RedisUtil.orgCode(orgCode);
+
+        return RedisRetryUtil.executeWithRetry(
+                () -> {
+                    String orgId = redisTemplate.opsForValue().get(key);
+                    return orgId != null ? Long.parseLong(orgId) : null;
+                },
+                "getOrgIdByCode - orgCode: " + orgCode
+        );
+    }
+
     public boolean orgExists(Long orgId) {
         if (orgId == null) {
             return false;
@@ -45,7 +71,6 @@ public class OrgRedisRepository {
         return Boolean.TRUE.equals(redisTemplate.hasKey(key));
     }
 
-    //새 조직 코드 발급((최초 생성)
     public void createOrgCode(Long orgId, String code) {
         String orgKey = RedisUtil.org(orgId);
         String codeKey = RedisUtil.orgCode(code);
@@ -56,17 +81,14 @@ public class OrgRedisRepository {
             throw new ApiException(ORGANIZATION_CODE_IN_USE);
         }
 
-        //조직 HASH 생성
         redisTemplate.opsForHash().put(orgKey, RedisUtil.Fields.CODE, code);
         redisTemplate.opsForHash().put(orgKey, RedisUtil.Fields.UPDATED_AT, String.valueOf(now));
 
-        //코드 역인덱스 생성
         redisTemplate.opsForValue().set(codeKey, String.valueOf(orgId));
 
         log.debug("조직 코드 생성 - orgId: {}, code: {}", orgId, code);
     }
 
-    //조직 코드 재발급
     public String regenerateCode(Long orgId, String newCode) {
         String orgKey = RedisUtil.org(orgId);
         String newOrgKey = RedisUtil.orgCode(newCode);
@@ -90,26 +112,9 @@ public class OrgRedisRepository {
         return result;
     }
 
-    //조직 탈퇴 시 조직 정보 삭제
-    public void deleteOrg(Long orgId) {
-        if (orgId == null) {
-            return;
-        }
-
-        if (!orgExists(orgId)) {
-            log.debug("삭제할 조직 없음 - orgId: {}", orgId);
-            return;
-        }
-
-        String code = getOrgcodeById(orgId);
-        String orgKey = RedisUtil.org(orgId);
-        redisTemplate.delete(orgKey);
-
-        if (code != null) {
-            String codeKey = RedisUtil.orgCode(code);
-            redisTemplate.delete(codeKey);
-        }
-
-        log.debug("조직 정보 삭제 - orgId: {}, code: {}", orgId, code);
+    public void deleteMemberPermission(Long orgId, Long memberId) {
+        String key = RedisUtil.memberPermission(orgId, memberId);
+        redisTemplate.delete(key);
+        log.debug("멤버 권한 삭제 - orgId: {}, memberId: {}", orgId, memberId);
     }
 }
