@@ -56,8 +56,10 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
      */
     COMMENT_NOT_FOUND(6001, HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."),
     COMMENT_UNAUTHORIZED_DELETE(6002, HttpStatus.FORBIDDEN, "본인의 댓글만 삭제할 수 있습니다."),
-    INVALID_COMMENT_REQUEST(6003, HttpStatus.BAD_REQUEST, "댓글 조회 요청에서 "),
+    INVALID_COMMENT_REQUEST(6003, HttpStatus.BAD_REQUEST, "댓글 조회 요청에서 올바르지 않은 값이 존재합니다."),
     VIDEO_COMMENT_NOT_ALLOWED(6004, HttpStatus.BAD_REQUEST, "댓글을 허용하지 않는 영상입니다."),
+    INVALID_COMMENT_CREATE(6005, HttpStatus.BAD_REQUEST, "댓글 생성 요청에서 유효하지 않은 값이 존재합니다."),
+    PARENT_COMMENT_NOT_FOUND(6006, HttpStatus.NOT_FOUND, "대댓글의 대상 댓글을 찾을 수 없습니다."),
 
     /**
      * 7000: Organization 오류

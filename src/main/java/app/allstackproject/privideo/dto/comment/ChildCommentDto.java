@@ -1,7 +1,9 @@
 package app.allstackproject.privideo.dto.comment;
 
 import app.allstackproject.privideo.entity.Comment;
+import lombok.Getter;
 
+@Getter
 public class ChildCommentDto extends CommentDto {
     private final Long parentCommentId;
 

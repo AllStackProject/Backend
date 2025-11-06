@@ -33,20 +33,21 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                 .join(c.video, video)
                 .join(c.member, member)
                 .join(member.user, user)
-                .where(video.id.eq(videoId))
+                .where(video.id.eq(videoId)
+                        .and(c.status.eq(ACTIVE)))
                 .orderBy(c.createdAt.desc())
                 .fetch();
     }
 
     @Override
     public boolean isValidMemberAndOrgAndVideo(Long memberId, Long orgId, Long videoId) {
-        BooleanExpression vgaExists = JPAExpressions.selectOne()
+        BooleanExpression openToAll = JPAExpressions.selectOne()
                 .from(videoGroupAuthority)
                 .where(videoGroupAuthority.video.id.eq(videoId),
                         videoGroupAuthority.status.eq(ACTIVE))
-                .exists();
+                .notExists();
 
-        BooleanExpression vgaAndMemberMatch = JPAExpressions.selectOne()
+        BooleanExpression memberGroupMatch = JPAExpressions.selectOne()
                 .from(videoGroupAuthority)
                 .join(memberGroupMapping)
                 .on(memberGroupMapping.memberGroup.id.eq(videoGroupAuthority.memberGroup.id)
@@ -59,7 +60,8 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
         Integer ok = jpaQueryFactory
                 .selectOne()
                 .from(video)
-                .join(member).on(member.id.eq(memberId),
+                .join(member).on(
+                        member.id.eq(memberId),
                         member.organization.id.eq(orgId),
                         member.status.eq(ACTIVE),
                         member.joinStatus.eq(APPROVED))
@@ -67,7 +69,7 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                         video.id.eq(videoId),
                         video.organization.id.eq(orgId),
                         video.status.eq(ACTIVE),
-                        vgaExists.not().or(vgaAndMemberMatch)
+                        openToAll.or(memberGroupMatch)
                 )
                 .fetchFirst();
 
