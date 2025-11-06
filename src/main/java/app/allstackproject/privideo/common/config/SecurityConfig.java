@@ -4,6 +4,7 @@ import app.allstackproject.privideo.common.exception.handler.CustomAccessDeniedH
 import app.allstackproject.privideo.common.exception.handler.CustomAuthEntryPoint;
 import app.allstackproject.privideo.common.filter.JwtAuthFilter;
 import app.allstackproject.privideo.common.jwt.JwtProvider;
+import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +28,7 @@ public class SecurityConfig {
     private final JwtProvider jwtProvider;
     private final CustomAuthEntryPoint customAuthEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final OrgRedisRepository orgRedisRepository;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -52,7 +54,7 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(customAuthEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler))
-                .addFilterAfter(new JwtAuthFilter(jwtProvider), ExceptionTranslationFilter.class)
+                .addFilterAfter(new JwtAuthFilter(jwtProvider, orgRedisRepository), ExceptionTranslationFilter.class)
                 .cors(cors -> {
                 })
                 .formLogin(f -> f.disable())

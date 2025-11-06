@@ -35,6 +35,7 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     EXPIRED_TOKEN(4003, HttpStatus.UNAUTHORIZED, "만료된 token 입니다."),
     FORBIDDEN_ORG_MISMATCH(4004, HttpStatus.FORBIDDEN, "요청된 조직과 토큰의 조직이 다릅니다."),
     FORBIDDEN_NO_PERMISSION(4005, HttpStatus.FORBIDDEN, "해당 요청에 대한 권한이 없습니다."),
+    CREATOR_CANNOT_CHANGE(4006, HttpStatus.FORBIDDEN, "슈퍼관리자 권한은 바꿀 수 없습니다."),
 
     /**
      * 5000: User/Member 오류
@@ -50,6 +51,7 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     MEMBER_NOT_FOUND(5009, HttpStatus.BAD_REQUEST, "존재하지 않는 멤버입니다."),
     ALREADY_APPROVED_MEMBER(5010, HttpStatus.BAD_REQUEST, "이미 해당 조직에 가입 승인 처리된 멤버입니다."),
     ALREADY_REJECTED_MEMBER(5011, HttpStatus.BAD_REQUEST, "이미 해당 조직에 가입 거절 처리된 멤버입니다."),
+    ALREADY_REQUESTED_MEMBER(5021, HttpStatus.BAD_REQUEST, "이미 가입 요청을 보낸 멤버입니다. 관리자 승인을 기다려주세요."),
 
     /**
      * 6000: Comment 오류
