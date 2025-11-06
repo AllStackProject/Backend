@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/{orgId}/{videoId}/comment")
+@RequestMapping("/{orgId}/{videoId}/comments")
 @PreAuthorize("hasAuthority('org:granted')")
 @Tag(name = "Comment", description = "댓글 관련 API")
 @SecurityRequirement(name = ORG_AUTH_KEY)
