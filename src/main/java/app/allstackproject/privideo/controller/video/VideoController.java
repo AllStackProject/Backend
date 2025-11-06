@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("hasAuthority('org:granted')")
 @Tag(name = "Video", description = "영상 관련 API")
 @SecurityRequirement(name = ORG_AUTH_KEY)
-public class WatchVideoController {
+public class VideoController {
 
     private final VideoService videoService;
 
