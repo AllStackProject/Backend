@@ -12,6 +12,7 @@ import app.allstackproject.privideo.common.enumStatus.PermissionType;
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.jwt.JwtProvider;
 import app.allstackproject.privideo.common.util.OrgCodeGenerator;
+import app.allstackproject.privideo.common.util.RedisRetryUtil;
 import app.allstackproject.privideo.dto.organization.ChangeJoinStateRequest;
 import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.dto.organization.OrgTokenDto;

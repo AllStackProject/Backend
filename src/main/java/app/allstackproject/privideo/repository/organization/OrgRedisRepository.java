@@ -23,9 +23,16 @@ public class OrgRedisRepository {
     private final RedisTemplate<String, String> redisTemplate;
     private final RedisScript<String> regenerateOrgCode;
 
-    public void saveMemberPermission(Long orgId, Long memberId, long permissionCode) {
+    public boolean saveMemberPermission(Long orgId, Long memberId, long permissionCode) {
         String key = RedisUtil.memberPermission(orgId, memberId);
-        redisTemplate.opsForHash().put(key, Fields.PERMISSION_CODE, String.valueOf(permissionCode));
+        String logContext = String.format("saveMemberPermission[org:%d,member:%d,code:%d]",
+                orgId, memberId, permissionCode);
+
+        return RedisRetryUtil.executeVoidWithRetry(
+                () -> redisTemplate.opsForHash().put(
+                        key, Fields.PERMISSION_CODE, String.valueOf(permissionCode)
+                ), logContext
+        );
     }
 
     public Long getMemberPermission(Long orgId, Long memberId) {
@@ -42,13 +49,20 @@ public class OrgRedisRepository {
 
     public String getOrgcodeById(Long orgId) {
         String key = RedisUtil.org(orgId);
-        return (String) redisTemplate.opsForHash()
-                .get(key, Fields.CODE);
+        return RedisRetryUtil.executeWithRetry(
+                () -> (String) redisTemplate.opsForHash().get(key, Fields.CODE),
+                String.format("getOrgcodeById[org:%d]", orgId)
+        );
     }
 
-    public void saveOrgCode(Long orgId, String orgCode) {
+    public boolean saveOrgCode(Long orgId, String orgCode) {
         String key = RedisUtil.orgCode(orgCode);
-        redisTemplate.opsForValue().set(key, String.valueOf(orgId));
+        String logContext = String.format("saveOrgCode[org:%d,code:%s]", orgId, orgCode);
+
+        return RedisRetryUtil.executeVoidWithRetry(
+                () -> redisTemplate.opsForValue().set(key, String.valueOf(orgId)),
+                logContext
+        );
     }
 
     public Long getOrgIdByCode(String orgCode) {
@@ -63,50 +77,80 @@ public class OrgRedisRepository {
         );
     }
 
-    public void createOrgCode(Long orgId, String code) {
-        String orgKey = RedisUtil.org(orgId);
-        String codeKey = RedisUtil.orgCode(code);
-        long now = System.currentTimeMillis();
+    public boolean createOrgCode(Long orgId, String code) {
+        String logContext = String.format("createOrgCode[org:%d,code:%s]", orgId, code);
 
-        String existingOrgId = redisTemplate.opsForValue().get(codeKey);
-        if (existingOrgId != null) {
-            throw new ApiException(ORGANIZATION_CODE_IN_USE);
-        }
+        return Boolean.TRUE.equals(RedisRetryUtil.executeWithRetry(
+                () -> {
+                    String orgKey = RedisUtil.org(orgId);
+                    String codeKey = RedisUtil.orgCode(code);
+                    long now = System.currentTimeMillis();
 
-        redisTemplate.opsForHash().put(orgKey, RedisUtil.Fields.CODE, code);
-        redisTemplate.opsForHash().put(orgKey, RedisUtil.Fields.UPDATED_AT, String.valueOf(now));
+                    String existingOrgId = redisTemplate.opsForValue().get(codeKey);
+                    if (existingOrgId != null) {
+                        log.warn("조직 코드 이미 사용중 - code: {}", code);
+                        return false;
+                    }
 
-        redisTemplate.opsForValue().set(codeKey, String.valueOf(orgId));
+                    redisTemplate.multi();
+                    try {
+                        redisTemplate.opsForHash().put(orgKey, Fields.CODE, code);
+                        redisTemplate.opsForHash().put(orgKey, Fields.UPDATED_AT, String.valueOf(now));
+                        redisTemplate.opsForValue().set(codeKey, String.valueOf(orgId));
+                        redisTemplate.exec();
 
-        log.debug("조직 코드 생성 - orgId: {}, code: {}", orgId, code);
+                        log.debug("조직 코드 생성 성공 - orgId: {}, code: {}", orgId, code);
+                        return true;
+                    } catch (Exception e) {
+                        redisTemplate.discard();
+                        throw e;
+                    }
+                },
+                logContext
+        ));
     }
 
     public String regenerateCode(Long orgId, String newCode) {
-        String orgKey = RedisUtil.org(orgId);
-        String newOrgKey = RedisUtil.orgCode(newCode);
-        long now = System.currentTimeMillis();
+        String logContext = String.format("regenerateCode[org:%d,newCode:%s]", orgId, newCode);
 
-        List<String> keys = Arrays.asList(orgKey, newOrgKey);
-        List<String> args = Arrays.asList(
-                String.valueOf(orgId),
-                newCode,
-                String.valueOf(now)
+        String result = RedisRetryUtil.executeWithRetry(
+                () -> {
+                    String orgKey = RedisUtil.org(orgId);
+                    String newOrgKey = RedisUtil.orgCode(newCode);
+                    long now = System.currentTimeMillis();
+
+                    List<String> keys = Arrays.asList(orgKey, newOrgKey);
+                    List<String> args = Arrays.asList(
+                            String.valueOf(orgId),
+                            newCode,
+                            String.valueOf(now)
+                    );
+
+                    return redisTemplate.execute(regenerateOrgCode, keys, args.toArray());
+                },
+                logContext
         );
-
-        String result = redisTemplate.execute(regenerateOrgCode, keys, args.toArray());
 
         if ("CODE_IN_USE".equals(result)) {
             throw new ApiException(ORGANIZATION_CODE_IN_USE);
         }
 
-        log.debug("조직 코드 재발급 - orgId: {}, oldCode: {}, newCode: {}", orgId, result, newCode);
-
+        log.debug("조직 코드 재발급 완료 - orgId: {}, oldCode: {}, newCode: {}",
+                orgId, result, newCode);
         return result;
     }
 
-    public void deleteMemberPermission(Long orgId, Long memberId) {
+    public boolean deleteMemberPermission(Long orgId, Long memberId) {
         String key = RedisUtil.memberPermission(orgId, memberId);
-        redisTemplate.delete(key);
-        log.debug("멤버 권한 삭제 - orgId: {}, memberId: {}", orgId, memberId);
+        String logContext = String.format("deleteMemberPermission[org:%d,member:%d]",
+                orgId, memberId);
+
+        return RedisRetryUtil.executeVoidWithRetry(
+                () -> {
+                    redisTemplate.delete(key);
+                    log.debug("멤버 권한 삭제 - orgId: {}, memberId: {}", orgId, memberId);
+                },
+                logContext
+        );
     }
 }

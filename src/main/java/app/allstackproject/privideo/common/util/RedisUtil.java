@@ -5,11 +5,8 @@ public class RedisUtil {
     private RedisUtil() {
     }
 
-    //조직 정보
     private static final String ORG_PREFIX = "org:";
-    //조직 코드 역인덱스
     private static final String ORG_CODE_PREFIX = "orgcode:";
-    //시청 세션
     private static final String WATCH = "watch:";
 
     public static String org(Long orgId) {

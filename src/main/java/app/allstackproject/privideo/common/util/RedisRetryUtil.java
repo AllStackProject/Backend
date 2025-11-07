@@ -34,4 +34,11 @@ public class RedisRetryUtil {
         log.info("Redis 재시도 실패, fallback 필요", logContext);
         return null;
     }
+
+    public static boolean executeVoidWithRetry(Runnable redisCall, String logContext) {
+        return executeWithRetry(() -> {
+            redisCall.run();
+            return true;
+        }, logContext) != null;
+    }
 }
