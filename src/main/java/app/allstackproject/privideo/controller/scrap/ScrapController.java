@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,6 +33,16 @@ public class ScrapController {
                                                        @PathVariable("orgId") Long orgId,
                                                        @PathVariable("videoId") Long videoId) {
         boolean result = scrapService.addVideoScrap(memberId, orgId, videoId);
+        return new BaseResponse<>(SuccessResponse.of(result));
+    }
+
+    @DeleteMapping("")
+    @Operation(summary = "영상 스크랩 취소")
+    public BaseResponse<SuccessResponse> deleteVideoScrap(
+            @AuthenticationPrincipal(expression = "memberId") Long memberId,
+            @PathVariable("orgId") Long orgId,
+            @PathVariable("videoId") Long videoId) {
+        boolean result = scrapService.deleteVideoScrap(memberId, orgId, videoId);
         return new BaseResponse<>(SuccessResponse.of(result));
     }
 }

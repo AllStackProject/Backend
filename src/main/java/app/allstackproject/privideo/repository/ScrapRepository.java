@@ -12,4 +12,6 @@ public interface ScrapRepository extends JpaRepository<Scrap, Long>, ScrapReposi
     List<Scrap> findByMemberIdAndVideoOrganizationId(Long memberId, Long orgId);
 
     boolean existsByMemberIdAndVideoId(Long memberId, Long videoId);
+
+    long deleteByMember_IdAndVideo_Id(Long memberId, Long videoId);
 }
