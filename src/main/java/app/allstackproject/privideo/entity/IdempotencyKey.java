@@ -1,6 +1,7 @@
 package app.allstackproject.privideo.entity;
 
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,12 +22,16 @@ public class IdempotencyKey {
     @Id
     private String id;
 
+    @NotNull
     private String sessionId;
 
+    @NotNull
     private String type;      // "JOIN" | "FLUSH"
 
+    @NotNull
     private Instant createdAt;
 
+    @NotNull
     @Indexed(name = "ttl_expireAt", expireAfter = "0s")
     private Instant expiredAt;
 }

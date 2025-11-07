@@ -20,21 +20,13 @@ public class HistoryResponse {
 
     public static HistoryResponse of(List<History> histories) {
         List<VideoItem> videoItems = histories.stream()
-                .map(h -> {
-
-                    Long wholeTime = h.getVideo().getWholeTime();
-
-                    double watchRate = wholeTime == null || wholeTime == 0 ? 0.0 :
-                            (double) h.getActualWatchSec() / wholeTime;
-
-                    return VideoItem.builder()
-                            .id(h.getVideo().getId())
-                            .name(h.getVideo().getTitle())
-                            .img(h.getVideo().getThumbnailUrl())
-                            .watchRate(watchRate)
-                            .recentWatch(h.getLastModifiedAt())
-                            .build();
-                })
+                .map(h -> VideoItem.builder()
+                        .id(h.getVideo().getId())
+                        .name(h.getVideo().getTitle())
+                        .img(h.getVideo().getThumbnailUrl())
+                        .watchRate(h.getWatchRate())
+                        .recentWatch(h.getLastModifiedAt())
+                        .build())
                 .collect(Collectors.toList());
 
         return HistoryResponse.builder()

@@ -13,7 +13,6 @@ import app.allstackproject.privideo.common.enumStatus.AgeType;
 import app.allstackproject.privideo.common.enumStatus.GenderType;
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.jwt.JwtProvider;
-import app.allstackproject.privideo.dto.user.PatchPasswordRequest;
 import app.allstackproject.privideo.dto.user.PostLoginRequest;
 import app.allstackproject.privideo.dto.user.PostSignupRequest;
 import app.allstackproject.privideo.dto.user.UpdateUserInfoRequest;
@@ -85,18 +84,6 @@ public class UserService {
         }
 
         return jwtProvider.createBootstrapToken(user.getId());
-    }
-
-    public boolean patchPassword(Long userId, @Valid PatchPasswordRequest patchPasswordRequest) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(USER_NOT_FOUND));
-
-        if (!passwordEncoder.matches(patchPasswordRequest.getCurrentPassword(), user.getPassword())) {
-            throw new ApiException(INVALID_PASSWORD);
-        }
-
-        user.changePassword(patchPasswordRequest.getNewPassword(), passwordEncoder);
-        return true;
     }
 
     public UserInfoResponse getUserInfo(Long userId) {

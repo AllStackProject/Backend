@@ -12,10 +12,8 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.USER_NOT_FOUND;
 import static app.allstackproject.privideo.common.util.OrgCodeGenerator.generateCode;
 
-
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.jwt.JwtProvider;
-import app.allstackproject.privideo.common.util.OrgCodeGenerator;
 import app.allstackproject.privideo.dto.organization.CreateOrgRequest;
 import app.allstackproject.privideo.dto.organization.CreateOrgResult;
 import app.allstackproject.privideo.dto.organization.OrgTokenDto;
@@ -104,7 +102,7 @@ public class OrganizationService {
                     .orElseThrow(() -> new ApiException(INVALID_ORG_CODE));
 
             orgId = organization.getId();
-            
+
             orgRedisRepository.saveOrgCode(orgId, orgCode);
         } else {
             organization = organizationRepository.findById(orgId)

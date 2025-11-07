@@ -1,7 +1,6 @@
 package app.allstackproject.privideo.common.response.status;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.graphql.GraphQlProperties.Http;
 import org.springframework.http.HttpStatus;
 
 @RequiredArgsConstructor
@@ -51,13 +50,18 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     MEMBER_NOT_FOUND(5009, HttpStatus.BAD_REQUEST, "존재하지 않는 멤버입니다."),
     ALREADY_APPROVED_MEMBER(5010, HttpStatus.BAD_REQUEST, "이미 해당 조직에 가입 승인 처리된 멤버입니다."),
     ALREADY_REJECTED_MEMBER(5011, HttpStatus.BAD_REQUEST, "이미 해당 조직에 가입 거절 처리된 멤버입니다."),
-    ALREADY_REQUESTED_MEMBER(5021, HttpStatus.BAD_REQUEST, "이미 가입 요청을 보낸 멤버입니다. 관리자 승인을 기다려주세요."),
+    ALREADY_REQUESTED_MEMBER(5012, HttpStatus.BAD_REQUEST, "이미 가입 요청을 보낸 멤버입니다. 관리자 승인을 기다려주세요."),
+    MEMBER_NOT_IN_ORGANIZATION(5013, HttpStatus.NOT_FOUND, "해당 조직에서 찾을 수 없는 멤버입니다."),
 
     /**
      * 6000: Comment 오류
      */
     COMMENT_NOT_FOUND(6001, HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."),
     COMMENT_UNAUTHORIZED_DELETE(6002, HttpStatus.FORBIDDEN, "본인의 댓글만 삭제할 수 있습니다."),
+    INVALID_COMMENT_REQUEST(6003, HttpStatus.BAD_REQUEST, "댓글 조회 요청에서 올바르지 않은 값이 존재합니다."),
+    VIDEO_COMMENT_NOT_ALLOWED(6004, HttpStatus.BAD_REQUEST, "댓글을 허용하지 않는 영상입니다."),
+    INVALID_COMMENT_CREATE(6005, HttpStatus.BAD_REQUEST, "댓글 생성 요청에서 유효하지 않은 값이 존재합니다."),
+    PARENT_COMMENT_NOT_FOUND(6006, HttpStatus.NOT_FOUND, "대댓글의 대상 댓글을 찾을 수 없습니다."),
 
     /**
      * 7000: Organization 오류
@@ -68,11 +72,32 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     ORGANIZATION_NOT_FOUND(7004, HttpStatus.NOT_FOUND, "존재하지 않는 조직입니다."),
     INVALID_ORG_SELECT(7005, HttpStatus.BAD_REQUEST, "조직 선택 요청에서 유효하지 않은 값이 존재합니다."),
     INVALID_ORG_EXIT(7006, HttpStatus.BAD_REQUEST, "조직 탈퇴 요청에서 유효하지 않은 값이 존재합니다."),
-    ORGANIZATION_CODE_IN_USE(7007, HttpStatus.CONFLICT, "조직 코드가 이미 사용중입니다.");
+    ORGANIZATION_CODE_IN_USE(7007, HttpStatus.CONFLICT, "조직 코드가 이미 사용중입니다."),
 
     /**
-     * 8000:
+     * 8000: Video 오류
      */
+    VIDEO_NOT_FOUND(8001, HttpStatus.NOT_FOUND, "존재하지 않는 영상입니다."),
+    VIDEO_NOT_IN_ORGANIZATION(8002, HttpStatus.NOT_FOUND, "해당 조직에서 찾을 수 없는 영상입니다."),
+    VIDEO_ALREADY_WATCHED(8003, HttpStatus.CONFLICT, "해당 영상은 이미 시청 중입니다."),
+    VIDEO_NOT_ACCESSIBLE(8004, HttpStatus.BAD_REQUEST, "해당 영상에 접근 권한이 없습니다."),
+    INVALID_VIDEO_LEAVE(8005, HttpStatus.BAD_REQUEST, "영상 시청 종료 요청에서 유효하지 않은 값이 존재합니다."),
+    INVALID_SCRAP_REQUEST(8006, HttpStatus.BAD_REQUEST, "영상 스크랩 요청에서 올바르지 않은 값이 존재합니다."),
+    VIDEO_ALREADY_SCRAPPED(8007, HttpStatus.BAD_REQUEST, "해당 영상은 이미 스크랩되었습니다."),
+    VIDEO_NOT_SCRAPPED(8008, HttpStatus.NOT_FOUND, "해당 영상은 스크랩되어있지 않습니다."),
+
+    /**
+     * 9000: History 오류
+     */
+    HISTORY_NOT_FOUND(9001, HttpStatus.NOT_FOUND, "시청 내역을 찾을 수 없습니다."),
+
+    /**
+     * 10000: Quiz 오류
+     */
+    INVALID_SOLVE_REQUEST(10001, HttpStatus.BAD_REQUEST, "퀴즈 풀이 요청에서 유효하지 않은 값이 존재합니다."),
+    INVALID_QUIZ_REQUEST(10002, HttpStatus.BAD_REQUEST, "퀴즈 요청에서 올바르지 않은 값이 존재합니다."),
+    ALREADY_SOLVED_QUIZ(10003, HttpStatus.BAD_REQUEST, "이미 제출 이력이 있는 퀴즈가 포함되어있습니다."),
+    QUIZ_NOT_FOUND(10004, HttpStatus.NOT_FOUND, "퀴즈를 찾을 수 없습니다.");
 
     private final int code;
     private final HttpStatus httpStatus;

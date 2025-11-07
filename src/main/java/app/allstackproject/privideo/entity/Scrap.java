@@ -8,6 +8,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -27,4 +28,17 @@ public class Scrap extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "video_id")
     private Video video;
+
+    @Builder(access = AccessLevel.PRIVATE)
+    private Scrap(Member member, Video video) {
+        this.member = member;
+        this.video = video;
+    }
+
+    public static Scrap create(Member member, Video video) {
+        return Scrap.builder()
+                .member(member)
+                .video(video)
+                .build();
+    }
 }

@@ -51,14 +51,14 @@ public class Video extends BaseEntity {
     private LocalDate expiredAt;
 
     @NotNull
-    private Long viewCnt;
+    private Long watchCnt;
 
     @NotNull
     private Long quitCnt;
 
     @Builder(access = AccessLevel.PRIVATE)
     private Video(Organization organization, Member creator, String title, String thumbnailUrl, Long wholeTime,
-                  boolean isComment, boolean isQuiz, LocalDate expiredAt, Long viewCnt, Long quitCnt) {
+                  boolean isComment, boolean isQuiz, LocalDate expiredAt, Long watchCnt, Long quitCnt) {
         this.organization = organization;
         this.creator = creator;
         this.title = title;
@@ -67,18 +67,18 @@ public class Video extends BaseEntity {
         this.isComment = isComment;
         this.isQuiz = isQuiz;
         this.expiredAt = expiredAt;
-        this.viewCnt = viewCnt;
+        this.watchCnt = watchCnt;
         this.quitCnt = quitCnt;
     }
 
     public static Video create(Organization organization, Member creator, String title, String thumbnailUrl,
-                               Long wholeTime, boolean isComment, boolean isQuiz, LocalDate expiredAt, Long viewCnt,
+                               Long wholeTime, boolean isComment, boolean isQuiz, LocalDate expiredAt, Long watchCnt,
                                Long quitCnt) {
         if (expiredAt == null) {
             expiredAt = LocalDate.now().plusYears(100);
         }
-        if (viewCnt == null) {
-            viewCnt = 0L;
+        if (watchCnt == null) {
+            watchCnt = 0L;
         }
         if (quitCnt == null) {
             quitCnt = 0L;
@@ -93,8 +93,16 @@ public class Video extends BaseEntity {
                 .isComment(isComment)
                 .isQuiz(isQuiz)
                 .expiredAt(expiredAt)
-                .viewCnt(viewCnt)
+                .watchCnt(watchCnt)
                 .quitCnt(quitCnt)
                 .build();
+    }
+
+    public void watch() {
+        this.watchCnt++;
+    }
+
+    public void quit() {
+        this.quitCnt++;
     }
 }
