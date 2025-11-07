@@ -86,7 +86,15 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     /**
      * 9000: History 오류
      */
-    HISTORY_NOT_FOUND(9001, HttpStatus.NOT_FOUND, "시청 내역을 찾을 수 없습니다.");
+    HISTORY_NOT_FOUND(9001, HttpStatus.NOT_FOUND, "시청 내역을 찾을 수 없습니다."),
+
+    /**
+     * 10000: Quiz 오류
+     */
+    INVALID_SOLVE_REQUEST(10001, HttpStatus.BAD_REQUEST, "퀴즈 풀이 요청에서 유효하지 않은 값이 존재합니다."),
+    INVALID_QUIZ_REQUEST(10002, HttpStatus.BAD_REQUEST, "퀴즈 요청에서 올바르지 않은 값이 존재합니다."),
+    ALREADY_SOLVED_QUIZ(10003, HttpStatus.BAD_REQUEST, "이미 제출 이력이 있는 퀴즈가 포함되어있습니다."),
+    QUIZ_NOT_FOUND(10004, HttpStatus.NOT_FOUND, "퀴즈를 찾을 수 없습니다.");
 
     private final int code;
     private final HttpStatus httpStatus;
