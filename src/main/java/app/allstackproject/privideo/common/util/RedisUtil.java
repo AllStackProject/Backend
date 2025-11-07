@@ -1,22 +1,26 @@
-package app.allstackproject.privideo.common.redis;
+package app.allstackproject.privideo.common.util;
 
-public class RedisKeys {
+public class RedisUtil {
 
-    private RedisKeys() {
+    private RedisUtil() {
     }
 
     private static final String ORG_PREFIX = "org:";
     private static final String ORG_CODE_PREFIX = "orgcode:";
+    private static final String WATCH = "watch:";
 
     public static String org(Long orgId) {
         return ORG_PREFIX + orgId;
     }
 
-    public static String getOrgCode(String code) {
+    public static String orgCode(String code) {
         return ORG_CODE_PREFIX + code;
     }
 
-    //TODO: enum으로 빼기
+    public static String memberPermission(Long orgId, Long memberId) {
+        return String.format("org:%d:member:%d", orgId, memberId);
+    }
+
     public static final class Fields {
         private Fields() {
         }

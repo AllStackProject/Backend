@@ -39,3 +39,6 @@ out/
 ### application-local.yml ###
 src/main/resource/application-local.yml
 /**/application-local.yml
+
+### Redis ###
+/redis/redis.conf

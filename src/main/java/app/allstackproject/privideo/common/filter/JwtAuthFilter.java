@@ -8,6 +8,8 @@ import app.allstackproject.privideo.common.enumStatus.PermissionType;
 import app.allstackproject.privideo.common.enumStatus.TokenType;
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.jwt.JwtProvider;
+import app.allstackproject.privideo.dto.organization.OrgTokenDto;
+import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,10 +32,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+@Slf4j
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtProvider;
+    private final OrgRedisRepository orgRedisRepository;
 
     public final static String ACCESS_TOKEN_HEADER = "Authorization";
     public final static String TOKEN_PREFIX = "Bearer ";
@@ -98,13 +103,38 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     Long orgId = getLong(c, "orgId");
                     String orgJoinStatus = getString(c, "orgJoinStatus");
                     String orgIsAdmin = getString(c, "orgIsAdmin");
-                    Integer perm = getInt(c, "orgPermission");
+                    Number n = c.get("orgPermission", Number.class);
+                    Long perm = n != null ? n.longValue() : 0L;
 
                     if (pathOrgId != null && !Objects.equals(pathOrgId, String.valueOf(orgId))) {
                         throw new ApiException(FORBIDDEN_ORG_MISMATCH);
                     }
 
-                    // TODO: Redis 최신 권한 검증
+                    Long redisPermission = null;
+
+                    try {
+                        redisPermission = orgRedisRepository.getMemberPermission(orgId, memberId);
+
+                        if (redisPermission != null && !redisPermission.equals(perm)) {
+                            log.info("권한 변경 감지 - memberId: {}, 기존: {}, 최신: {}",
+                                    memberId, perm, redisPermission);
+
+                            String newToken = jwtProvider.createOrgToken(OrgTokenDto.builder()
+                                    .userId(userId)
+                                    .memberId(memberId)
+                                    .orgId(orgId)
+                                    .orgJoinStatus(orgJoinStatus)
+                                    .orgIsAdmin(Boolean.parseBoolean(orgIsAdmin))
+                                    .orgPermission(redisPermission)
+                                    .build()
+                            );
+                            res.setHeader(ACCESS_TOKEN_HEADER, TOKEN_PREFIX + newToken);
+                        }
+                    } catch (Exception e) {
+                        log.warn("Redis 조회 실패");
+                    }
+
+                    Long finalPerm = (redisPermission != null) ? redisPermission : perm;
 
                     List<GrantedAuthority> auths = new ArrayList<>(List.of(new SimpleGrantedAuthority("org:granted"),
                             new SimpleGrantedAuthority("org:" + orgJoinStatus)));
@@ -113,14 +143,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         auths.add(new SimpleGrantedAuthority("org:admin"));
                     }
 
-                    if (PermissionType.has(perm, PermissionType.UPLOAD_VIDEO)) {
-                        auths.add(new SimpleGrantedAuthority("video:upload"));
+                    if (PermissionType.has(finalPerm, PermissionType.VIDEO_QUIZ_MANAGE)) {
+                        auths.add(new SimpleGrantedAuthority("perm:video_quiz_manage"));
                     }
-                    if (PermissionType.has(perm, PermissionType.CREATE_GROUP)) {
-                        auths.add(new SimpleGrantedAuthority("group:create"));
+                    if (PermissionType.has(finalPerm, PermissionType.STATS_REPORT)) {
+                        auths.add(new SimpleGrantedAuthority("perm:stats_report"));
                     }
-                    if (PermissionType.has(perm, PermissionType.CREATE_HASHTAG)) {
-                        auths.add(new SimpleGrantedAuthority("hashtag:create"));
+                    if (PermissionType.has(finalPerm, PermissionType.NOTICE)) {
+                        auths.add(new SimpleGrantedAuthority("perm:notice"));
+                    }
+                    if (PermissionType.has(finalPerm, PermissionType.ORG_SETTING)) {
+                        auths.add(new SimpleGrantedAuthority("perm:org_setting"));
                     }
 
                     var principal = new AuthPrincipal(userId, memberId, orgId, Boolean.getBoolean(orgIsAdmin), perm,

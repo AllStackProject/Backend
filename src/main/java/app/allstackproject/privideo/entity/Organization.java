@@ -69,4 +69,8 @@ public class Organization extends BaseEntity {
                 .code(code)
                 .build();
     }
+
+    public void updateCode(String newCode) {
+        this.code = newCode.trim();
+    }
 }

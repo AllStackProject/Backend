@@ -9,6 +9,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.PASSWORD_SAME_AS_CURRENT;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.USER_NOT_FOUND;
 
+import app.allstackproject.privideo.common.enumStatus.AgeType;
 import app.allstackproject.privideo.common.enumStatus.GenderType;
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.jwt.JwtProvider;
@@ -123,10 +124,14 @@ public class UserService {
     }
 
     private void updateUserFields(User user, UpdateUserInfoRequest request) {
+
+        if (isPasswordChangeRequested(request)) {
+            validateAndUpdatePassword(user, request);
+        }
         user.updateInfo(
                 request.getChangedPhoneNum(),
                 GenderType.valueOf(request.getChangedGender().toUpperCase()),
-                Integer.parseInt(request.getChangedAge())
+                request.getChangedAge()
         );
     }
 }
