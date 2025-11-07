@@ -42,7 +42,7 @@ public class HistoryResponse {
         private Long id;
         private String name;
         private String img;
-        private double watchRate;
+        private Long watchRate;
         private LocalDateTime recentWatch;
     }
 }

@@ -27,7 +27,7 @@ public class ScrapResponse {
         private Long id;
         private String name;
         private String img;
-        private double watchRate;
+        private Long watchRate;
         private LocalDateTime recentWatch;
 
         public static ScrapVideo of(Scrap scrap, History history) {
