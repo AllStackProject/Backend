@@ -2,6 +2,7 @@ package app.allstackproject.privideo.dto.user;
 
 import app.allstackproject.privideo.common.annotation.EnumConstraint;
 import app.allstackproject.privideo.common.annotation.PasswordConstraint;
+import app.allstackproject.privideo.common.enumStatus.AgeType;
 import app.allstackproject.privideo.common.enumStatus.GenderType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
@@ -21,8 +22,7 @@ public class UpdateUserInfoRequest {
     @JsonProperty(access = Access.WRITE_ONLY)
     private String newPassword;
 
-    //TODO: int로 바꾸기 -> Age Enum으로
-    private String changedAge;
+    private AgeType changedAge;
 
     @PasswordConstraint
     @JsonProperty(access = Access.WRITE_ONLY)

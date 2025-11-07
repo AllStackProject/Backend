@@ -139,7 +139,7 @@ public class UserService {
         user.updateInfo(
                 request.getChangedPhoneNum(),
                 GenderType.valueOf(request.getChangedGender().toUpperCase()),
-                Integer.parseInt(request.getChangedAge())
+                request.getChangedAge().getValue()
         );
     }
 }
