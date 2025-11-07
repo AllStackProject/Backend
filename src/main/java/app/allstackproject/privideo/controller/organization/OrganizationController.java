@@ -68,11 +68,10 @@ public class OrganizationController {
     }
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")
-    @PostMapping("/{orgId}/join")
+    @PostMapping("/join")
     @Operation(summary = "조직 가입 요청")
     public BaseResponse<SuccessResponse> joinOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
                                                  @Valid @RequestBody JoinOrgRequest joinOrgRequest,
-                                                 @PathVariable("orgId") Long orgId,
                                                  BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             throw new ApiException(INVALID_ORG_JOIN, getErrorMessage(bindingResult));
