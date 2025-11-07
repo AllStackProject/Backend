@@ -69,11 +69,11 @@ public class ScrapService {
             throw new ApiException(INVALID_SCRAP_REQUEST);
         }
 
-        long affected = scrapRepository.deleteByMember_IdAndVideo_Id(memberId, videoId);
+        int affected = scrapRepository.deleteByMemberIdAndVideoId(memberId, videoId);
         if (affected == 0) {
             throw new ApiException(VIDEO_NOT_SCRAPPED);
         }
 
-        return true;
+        return affected == 1;
     }
 }

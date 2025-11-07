@@ -4,6 +4,7 @@ import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTI
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.entity.QMember.member;
 import static app.allstackproject.privideo.entity.QMemberGroupMapping.memberGroupMapping;
+import static app.allstackproject.privideo.entity.QScrap.scrap;
 import static app.allstackproject.privideo.entity.QVideo.video;
 import static app.allstackproject.privideo.entity.QVideoGroupAuthority.videoGroupAuthority;
 
@@ -52,5 +53,16 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
                 .fetchFirst();
 
         return ok != null;
+    }
+
+    @Override
+    public int deleteByMemberIdAndVideoId(Long memberId, Long videoId) {
+        return (int) jpaQueryFactory
+                .delete(scrap)
+                .where(
+                        scrap.member.id.eq(memberId),
+                        scrap.video.id.eq(videoId)
+                )
+                .execute();
     }
 }
