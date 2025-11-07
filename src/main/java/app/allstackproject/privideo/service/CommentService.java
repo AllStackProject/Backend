@@ -12,8 +12,6 @@ import app.allstackproject.privideo.dto.CommentResponse;
 import app.allstackproject.privideo.dto.comment.CommentsResult;
 import app.allstackproject.privideo.dto.comment.CreateCommentRequest;
 import app.allstackproject.privideo.entity.Comment;
-import app.allstackproject.privideo.entity.Member;
-import app.allstackproject.privideo.entity.Video;
 import app.allstackproject.privideo.repository.CommentRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
@@ -50,7 +48,7 @@ public class CommentService {
     }
 
     public CommentsResult readVideoComments(Long memberId, Long orgId, Long videoId) {
-        if (!commentRepository.isValidMemberAndOrgAndVideo(memberId, orgId, videoId)) {
+        if (!videoRepository.isValidMemberAndOrgAndVideo(memberId, orgId, videoId)) {
             throw new ApiException(INVALID_COMMENT_REQUEST);
         }
 
@@ -64,7 +62,7 @@ public class CommentService {
 
     public boolean createComment(Long memberId, Long orgId, Long videoId,
                                  @Valid CreateCommentRequest createCommentRequest) {
-        if (!commentRepository.isValidMemberAndOrgAndVideo(memberId, orgId, videoId)) {
+        if (!videoRepository.isValidMemberAndOrgAndVideo(memberId, orgId, videoId)) {
             throw new ApiException(INVALID_COMMENT_REQUEST);
         }
         if (!videoRepository.findById(videoId).get().isComment()) {

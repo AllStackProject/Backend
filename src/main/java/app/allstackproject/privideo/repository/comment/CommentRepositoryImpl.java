@@ -38,41 +38,4 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                 .orderBy(c.createdAt.desc())
                 .fetch();
     }
-
-    @Override
-    public boolean isValidMemberAndOrgAndVideo(Long memberId, Long orgId, Long videoId) {
-        BooleanExpression openToAll = JPAExpressions.selectOne()
-                .from(videoGroupAuthority)
-                .where(videoGroupAuthority.video.id.eq(videoId),
-                        videoGroupAuthority.status.eq(ACTIVE))
-                .notExists();
-
-        BooleanExpression memberGroupMatch = JPAExpressions.selectOne()
-                .from(videoGroupAuthority)
-                .join(memberGroupMapping)
-                .on(memberGroupMapping.memberGroup.id.eq(videoGroupAuthority.memberGroup.id)
-                        .and(memberGroupMapping.member.id.eq(memberId))
-                        .and(memberGroupMapping.status.eq(ACTIVE)))
-                .where(videoGroupAuthority.video.id.eq(videoId),
-                        videoGroupAuthority.status.eq(ACTIVE))
-                .exists();
-
-        Integer ok = jpaQueryFactory
-                .selectOne()
-                .from(video)
-                .join(member).on(
-                        member.id.eq(memberId),
-                        member.organization.id.eq(orgId),
-                        member.status.eq(ACTIVE),
-                        member.joinStatus.eq(APPROVED))
-                .where(
-                        video.id.eq(videoId),
-                        video.organization.id.eq(orgId),
-                        video.status.eq(ACTIVE),
-                        openToAll.or(memberGroupMatch)
-                )
-                .fetchFirst();
-
-        return ok != null;
-    }
 }

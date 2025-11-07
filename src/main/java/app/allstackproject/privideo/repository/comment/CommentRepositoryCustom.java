@@ -5,6 +5,4 @@ import java.util.List;
 
 public interface CommentRepositoryCustom {
     List<CommentInfo> findAllByVideoId(Long videoId);
-
-    boolean isValidMemberAndOrgAndVideo(Long memberId, Long orgId, Long videoId);
 }
