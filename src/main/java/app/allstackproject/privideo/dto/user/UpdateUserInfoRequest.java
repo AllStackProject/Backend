@@ -1,8 +1,8 @@
 package app.allstackproject.privideo.dto.user;
 
+import app.allstackproject.privideo.common.annotation.AgeTypeConstraint;
 import app.allstackproject.privideo.common.annotation.EnumConstraint;
 import app.allstackproject.privideo.common.annotation.PasswordConstraint;
-import app.allstackproject.privideo.common.enumStatus.AgeType;
 import app.allstackproject.privideo.common.enumStatus.GenderType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
@@ -11,7 +11,6 @@ import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.Length;
 
 @Data
 @NoArgsConstructor
@@ -22,7 +21,8 @@ public class UpdateUserInfoRequest {
     @JsonProperty(access = Access.WRITE_ONLY)
     private String newPassword;
 
-    private AgeType changedAge;
+    @AgeTypeConstraint
+    private Integer changedAge;
 
     @PasswordConstraint
     @JsonProperty(access = Access.WRITE_ONLY)
