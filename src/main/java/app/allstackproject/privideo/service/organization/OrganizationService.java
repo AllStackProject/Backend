@@ -59,7 +59,7 @@ public class OrganizationService {
         String code = generateCode(user.getId());
         Organization organization = Organization.create(user, createOrgRequest.getName(), createOrgRequest.getImgUrl(),
                 createOrgRequest.getDesc(), code);
-        Member member = Member.create(user, organization, true, APPROVED);
+        Member member = Member.create(user, organization, true, APPROVED); // TODO: 생성자인 멤버이므로 권한 모두 줘야 함
 
         member.adminPermissionSet();
 

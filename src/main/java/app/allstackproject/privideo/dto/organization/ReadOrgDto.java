@@ -18,6 +18,8 @@ public class ReadOrgDto {
 
     private LocalDateTime joinAt;
 
+    private Boolean isSuperAdmin;
+    
     private Boolean isAdmin;
 
     private JoinStatusType joinStatus;

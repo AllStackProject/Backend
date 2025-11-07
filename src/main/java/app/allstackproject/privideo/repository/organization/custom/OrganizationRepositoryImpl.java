@@ -25,6 +25,7 @@ public class OrganizationRepositoryImpl implements OrganizationRepositoryCustom 
                         organization.code,
                         member.createdAt,
                         member.isAdmin,
+                        member.permissionCode.gt(0L), // member가 권한을 갖고 있는지 여부
                         member.joinStatus
                 ))
                 .from(member)
