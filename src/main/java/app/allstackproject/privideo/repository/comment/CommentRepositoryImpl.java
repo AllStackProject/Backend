@@ -1,12 +1,19 @@
 package app.allstackproject.privideo.repository.comment;
 
+import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
+import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.entity.QMember.member;
+import static app.allstackproject.privideo.entity.QMemberGroupMapping.memberGroupMapping;
 import static app.allstackproject.privideo.entity.QUser.user;
 import static app.allstackproject.privideo.entity.QVideo.video;
+import static app.allstackproject.privideo.entity.QVideoGroupAuthority.videoGroupAuthority;
 
 import app.allstackproject.privideo.dto.video.CommentInfo;
 import app.allstackproject.privideo.entity.QComment;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +33,8 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                 .join(c.video, video)
                 .join(c.member, member)
                 .join(member.user, user)
-                .where(video.id.eq(videoId))
+                .where(video.id.eq(videoId)
+                        .and(c.status.eq(ACTIVE)))
                 .orderBy(c.createdAt.desc())
                 .fetch();
     }

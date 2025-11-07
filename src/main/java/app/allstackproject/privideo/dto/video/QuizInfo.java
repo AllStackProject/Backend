@@ -10,5 +10,6 @@ public class QuizInfo {
 
     private final String question;
 
+    // TODO: isCorrect로 수정
     private final Boolean isRight;
 }

@@ -70,7 +70,7 @@ public class OrganizationService {
         if (!organization.getCode().equals(orgCode)) {
             throw new ApiException(INVALID_ORG_CODE);
         }
-        
+
         Optional<Member> member = memberRepository.findByUserIdAndOrganizationId(userId, organization.getId());
 
         if (member.isPresent()) {
@@ -109,6 +109,6 @@ public class OrganizationService {
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
 
         member.updateToInactive();
-        return false;
+        return true;
     }
 }

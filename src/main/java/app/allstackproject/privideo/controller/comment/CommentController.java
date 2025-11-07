@@ -1,17 +1,16 @@
-package app.allstackproject.privideo.controller.video;
+package app.allstackproject.privideo.controller.comment;
 
 import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_KEY;
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_VIDEO_LEAVE;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_COMMENT_CREATE;
 import static app.allstackproject.privideo.common.util.BindingResultUtil.getErrorMessage;
 
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
-import app.allstackproject.privideo.dto.video.JoinVideoSessionResponse;
-import app.allstackproject.privideo.dto.video.JoinVideoSessionResult;
-import app.allstackproject.privideo.dto.video.LeaveVideoSessionInfo;
-import app.allstackproject.privideo.dto.video.LeaveVideoSessionRequest;
-import app.allstackproject.privideo.service.video.VideoService;
+import app.allstackproject.privideo.dto.comment.CommentsResult;
+import app.allstackproject.privideo.dto.comment.CreateCommentRequest;
+import app.allstackproject.privideo.dto.comment.ReadCommentsResponse;
+import app.allstackproject.privideo.service.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,34 +30,32 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/{orgId}/video/{videoId}")
 @PreAuthorize("hasAuthority('org:granted')")
-@Tag(name = "Video", description = "영상 관련 API")
+@Tag(name = "Comment", description = "댓글 관련 API")
 @SecurityRequirement(name = ORG_AUTH_KEY)
-public class WatchVideoController {
+public class CommentController {
 
-    private final VideoService videoService;
+    private final CommentService commentService;
 
-    @PostMapping("/join")
-    @Operation(summary = "영상 시청 세션 시작")
-    public BaseResponse<JoinVideoSessionResponse> joinVideoSession(
+    @GetMapping("/comments")
+    @Operation(summary = "댓글 전체 조회")
+    public BaseResponse<ReadCommentsResponse> readComments(
             @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId,
             @PathVariable("videoId") Long videoId) {
-        JoinVideoSessionResult result = videoService.joinVideoSession(memberId, orgId, videoId);
-        return new BaseResponse<>(JoinVideoSessionResponse.from(result));
+        CommentsResult commentsResult = commentService.readVideoComments(memberId, orgId, videoId);
+        return new BaseResponse<>(ReadCommentsResponse.of(commentsResult));
     }
 
-    @PostMapping("/leave")
-    @Operation(summary = "영상 시청 세션 종료")
-    public BaseResponse<SuccessResponse> leaveVideoSession(
+    @PostMapping("/comment")
+    @Operation(summary = "댓글 작성")
+    public BaseResponse<SuccessResponse> createComment(
             @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId,
-            @PathVariable("videoId") Long videoId,
-            @Valid @RequestBody LeaveVideoSessionRequest leaveVideoSessionRequest, BindingResult bindingResult) {
+            @PathVariable("videoId") Long videoId, @Valid @RequestBody CreateCommentRequest createCommentRequest,
+            BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            throw new ApiException(INVALID_VIDEO_LEAVE, getErrorMessage(bindingResult));
+            throw new ApiException(INVALID_COMMENT_CREATE, getErrorMessage(bindingResult));
         }
 
-        LeaveVideoSessionInfo leaveVideoSessionInfo = LeaveVideoSessionInfo.create(memberId, orgId, videoId,
-                leaveVideoSessionRequest);
-        boolean result = videoService.leaveVideoSession(leaveVideoSessionInfo);
+        boolean result = commentService.createComment(memberId, orgId, videoId, createCommentRequest);
         return new BaseResponse<>(SuccessResponse.of(result));
     }
 }
