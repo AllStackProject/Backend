@@ -13,6 +13,7 @@ import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.jwt.JwtProvider;
 import app.allstackproject.privideo.common.util.OrgCodeGenerator;
 import app.allstackproject.privideo.dto.organization.ChangeJoinStateRequest;
+import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.dto.organization.OrgTokenDto;
 import app.allstackproject.privideo.dto.organization.UpdateMemberPermissionRequest;
 import app.allstackproject.privideo.entity.Member;
@@ -41,7 +42,6 @@ public class AdminService {
     private final OrganizationRepository organizationRepository;
     private final OrgRedisRepository orgRedisRepository;
     private final UserRepository userRepository;
-    private final PermissionService permissionService;
 
     private final JwtProvider jwtProvider;
 
@@ -60,7 +60,7 @@ public class AdminService {
 
         Member targetMember = memberRepository.findByIdAndOrganizationId(targetMemberId, orgId)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
-        
+
         targetMember.changeJoinStatus(targetStatus);
 
         TransactionSynchronizationManager.registerSynchronization(
@@ -150,7 +150,7 @@ public class AdminService {
     }
 
     @Transactional
-    public String regenerateOrgToken(Long userId, Long orgId) {
+    public OrgCodeResponse regenerateOrgCode(Long userId, Long orgId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(USER_NOT_FOUND));
 
@@ -168,16 +168,6 @@ public class AdminService {
 
         orgRedisRepository.regenerateCode(orgId, newCode);
 
-        long latestPerm = permissionService.getMemberPermission(orgId, member.getId());
-
-        return jwtProvider.createOrgToken(OrgTokenDto.builder()
-                .userId(userId)
-                .memberId(member.getId())
-                .orgId(orgId)
-                .orgJoinStatus(member.getJoinStatus().toString())
-                .orgIsAdmin(member.isAdmin())
-                .orgPermission(latestPerm)
-                .build());
+        return new OrgCodeResponse(newCode);
     }
 }
-

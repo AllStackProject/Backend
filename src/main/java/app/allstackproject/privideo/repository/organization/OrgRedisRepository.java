@@ -63,14 +63,6 @@ public class OrgRedisRepository {
         );
     }
 
-    public boolean orgExists(Long orgId) {
-        if (orgId == null) {
-            return false;
-        }
-        String key = RedisUtil.org(orgId);
-        return Boolean.TRUE.equals(redisTemplate.hasKey(key));
-    }
-
     public void createOrgCode(Long orgId, String code) {
         String orgKey = RedisUtil.org(orgId);
         String codeKey = RedisUtil.orgCode(code);

@@ -1,12 +1,11 @@
 package app.allstackproject.privideo.controller.admin;
 
 import static app.allstackproject.privideo.common.config.SwaggerConfig.BOOTSTRAP_AUTH_KEY;
-import static app.allstackproject.privideo.common.filter.JwtAuthFilter.ACCESS_TOKEN_HEADER;
-import static app.allstackproject.privideo.common.filter.JwtAuthFilter.TOKEN_PREFIX;
 
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.organization.ChangeJoinStateRequest;
+import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.dto.organization.UpdateMemberPermissionRequest;
 import app.allstackproject.privideo.service.admin.AdminService;
 import app.allstackproject.privideo.service.organization.OrganizationService;
@@ -62,20 +61,14 @@ public class AdminController {
 
 
     @PreAuthorize("hasAuthority('org:admin')")
-    @PatchMapping("/orgs/{orgId}/token")
-    @Operation(summary = "조직 토큰 재발급", description = "조직 코드를 새로 발급하고 해당 코드로 org token을 재생성합니다.")
-    public BaseResponse<SuccessResponse> regenerateOrgToken(
+    @PatchMapping("/orgs/{orgId}/code")
+    @Operation(summary = "조직 코드 재발급", description = "조직 코드를 새로 발급합니다.")
+    public BaseResponse<OrgCodeResponse> regenerateOrgToken(
             @AuthenticationPrincipal(expression = "userId") Long adminUserId,
             @PathVariable("orgId") Long orgId,
             HttpServletResponse response) {
 
-        String newOrgToken = adminService.regenerateOrgToken(adminUserId, orgId);
-
-        if (newOrgToken == null || newOrgToken.isBlank()) {
-            return new BaseResponse<>(SuccessResponse.of(false));
-        }
-
-        response.setHeader(ACCESS_TOKEN_HEADER, TOKEN_PREFIX + newOrgToken);
-        return new BaseResponse<>(SuccessResponse.of(true));
+        OrgCodeResponse newOrgCode = adminService.regenerateOrgCode(adminUserId, orgId);
+        return new BaseResponse<>(newOrgCode);
     }
 }
