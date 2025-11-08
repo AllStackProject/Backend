@@ -6,7 +6,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
@@ -41,8 +40,6 @@ public class Organization extends BaseEntity {
     private String adImgUrl;
 
     @NotBlank
-    @Lob
-    @Column(columnDefinition = "TEXT")
     private String description;
 
     // TODO: 추후 Redis로 이관 예정
