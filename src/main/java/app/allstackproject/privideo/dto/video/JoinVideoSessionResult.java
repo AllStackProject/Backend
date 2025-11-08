@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.dto.video;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -7,13 +8,17 @@ import lombok.Getter;
 
 @Getter
 public class JoinVideoSessionResult {
-    private String sessionId;
+    private final String sessionId;
 
-    private Boolean watchCompleted;
+    private final Boolean watchCompleted;
 
-    private VideoInfo video;
+    private final VideoInfo video;
 
-    private boolean isComment;
+    private final List<Long> segViewCnts;
+
+    private final Boolean isComment;
+
+    private final Boolean isScrapped;
 
     private final List<String> hashtags;
 
@@ -21,43 +26,55 @@ public class JoinVideoSessionResult {
 
     private final List<QuizInfo> quizzes;
 
+    private final LocalDateTime createdAt;
+
     @Builder(access = AccessLevel.PRIVATE)
-    private JoinVideoSessionResult(String sessionId, Boolean watchCompleted, VideoInfo video, Boolean isComment,
-                                   List<String> hashtags, List<CommentInfo> comments, List<QuizInfo> quizzes) {
+    private JoinVideoSessionResult(String sessionId, Boolean watchCompleted, VideoInfo video, List<Long> segViewCnts,
+                                   Boolean isComment, Boolean isScrapped, List<String> hashtags,
+                                   List<CommentInfo> comments, List<QuizInfo> quizzes, LocalDateTime createdAt) {
         this.sessionId = sessionId;
         this.watchCompleted = watchCompleted;
         this.video = video;
+        this.segViewCnts = segViewCnts == null ? List.of() : List.copyOf(segViewCnts);
         this.isComment = isComment;
-        this.hashtags = hashtags;
-        this.comments = comments;
-        this.quizzes = quizzes;
+        this.isScrapped = isScrapped;
+        this.hashtags = hashtags == null ? List.of() : List.copyOf(hashtags);
+        this.comments = comments == null ? List.of() : List.copyOf(comments);
+        this.quizzes = quizzes == null ? List.of() : List.copyOf(quizzes);
+        this.createdAt = createdAt;
     }
 
-    public static JoinVideoSessionResult completed(String sessionId, VideoInfo video, Boolean isComment,
-                                                   List<String> hashtags, List<CommentInfo> comments,
-                                                   List<QuizInfo> quizzes) {
+    public static JoinVideoSessionResult completed(String sessionId, VideoInfo video, List<Long> segViewCnts,
+                                                   Boolean isComment, Boolean isScrapped, List<String> hashtags,
+                                                   List<CommentInfo> comments, List<QuizInfo> quizzes) {
         return JoinVideoSessionResult.builder()
                 .sessionId(sessionId)
                 .watchCompleted(true)
                 .video(video)
+                .segViewCnts(segViewCnts)
                 .isComment(isComment)
+                .isScrapped(isScrapped)
                 .hashtags(hashtags)
                 .comments(comments)
                 .quizzes(quizzes)
+                .createdAt(video.getCreatedAt())
                 .build();
     }
 
-    public static JoinVideoSessionResult create(String sessionId, VideoInfo video, Boolean isComment,
-                                                List<String> hashtags, List<CommentInfo> comments,
-                                                List<QuizInfo> quizzes) {
+    public static JoinVideoSessionResult create(String sessionId, VideoInfo video, List<Long> segViewCnts,
+                                                Boolean isComment, Boolean isScrapped, List<String> hashtags,
+                                                List<CommentInfo> comments, List<QuizInfo> quizzes) {
         return JoinVideoSessionResult.builder()
                 .sessionId(sessionId)
                 .watchCompleted(false)
                 .video(video)
+                .segViewCnts(segViewCnts)
                 .isComment(isComment)
+                .isScrapped(isScrapped)
                 .hashtags(hashtags)
                 .comments(comments)
                 .quizzes(quizzes)
+                .createdAt(video.getCreatedAt())
                 .build();
     }
 }

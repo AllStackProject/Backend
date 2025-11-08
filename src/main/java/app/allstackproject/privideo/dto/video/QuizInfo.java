@@ -10,5 +10,9 @@ public class QuizInfo {
 
     private final String question;
 
-    private final Boolean isCorrect;
+    private final Boolean answer;
+
+    private final Boolean memberAnswer;
+    
+    private final String description;
 }

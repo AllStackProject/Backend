@@ -7,8 +7,10 @@ import java.math.BigInteger;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import lombok.RequiredArgsConstructor;
@@ -131,6 +133,46 @@ public class LogService {
                 .currentDate("updatedAt");
         mongoTemplate.updateFirst(q, inc, SegQuitLogs.class);
     }
+
+    public List<Long> getSegViewCounts(Long videoId, int totalSegCnt) {
+        if (videoId == null || totalSegCnt <= 0) {
+            return List.of();
+        }
+
+        long[] result = new long[totalSegCnt];
+
+        Query q = Query.query(Criteria.where("videoId").is(videoId));
+        q.fields().include("packId").include("counts");
+
+        List<SegViewLogs> packs = mongoTemplate.find(q, SegViewLogs.class);
+
+        for (SegViewLogs pack : packs) {
+            int base = Math.toIntExact(pack.getPackId()) * PACK_SIZE;
+            Long[] counts = pack.getCounts();
+
+            if (counts == null) {
+                continue;
+            }
+
+            for (int i = 0; i < counts.length; i++) {
+                int idx = base + i;
+                if (idx >= totalSegCnt) {
+                    break;
+                }
+                Long v = counts[i];
+                if (v != null) {
+                    result[idx] += v;
+                }
+            }
+        }
+
+        List<Long> out = new ArrayList<>(totalSegCnt);
+        for (long v : result) {
+            out.add(v);
+        }
+        return out;
+    }
+
 
     private String to3hBucketKey(int hour) {
         int start = (hour / 3) * 3;

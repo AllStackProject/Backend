@@ -20,6 +20,7 @@ import app.allstackproject.privideo.entity.History;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.Video;
 import app.allstackproject.privideo.repository.CommentRepository;
+import app.allstackproject.privideo.repository.ScrapRepository;
 import app.allstackproject.privideo.repository.member.MemberGroupRepository;
 import app.allstackproject.privideo.repository.video.HashtagRepository;
 import app.allstackproject.privideo.repository.HistoryRepository;
@@ -48,6 +49,7 @@ public class VideoService {
     private final LogService logService;
     private final HashtagRepository hashtagRepository;
     private final CommentRepository commentRepository;
+    private final ScrapRepository scrapRepository;
     private final QuizRepository quizRepository;
 
     public JoinVideoSessionResult joinVideoSession(Long memberId, Long orgId, Long videoId) {
@@ -82,14 +84,22 @@ public class VideoService {
         List<QuizInfo> quizInfos = quizRepository.findByVideoId(videoId);
         List<String> hashtags = hashtagRepository.findAllByVideoId(videoId);
 
+        boolean isScrapped = false;
+        if (scrapRepository.existsByMemberIdAndVideoId(memberId, videoId)) {
+            isScrapped = true;
+        }
+        
+        List<Long> segViewCnts = logService.getSegViewCounts(videoId,
+                (int) Math.ceil((double) video.getWholeTime() / SEGMENT_SECONDS));
+
         boolean isFirstWatch = true;
         Optional<History> history = historyRepository.findByMemberIdAndVideoIdAndStatus(memberId, videoId, ACTIVE);
         // 시청 기록 있는지 확인
         if (history.isPresent()) {
             if (history.get().isComplete()) {
                 isFirstWatch = false;
-                return JoinVideoSessionResult.completed(sessionId, videoInfo, commentInfos.isEmpty(), hashtags,
-                        commentInfos, quizInfos);
+                return JoinVideoSessionResult.completed(sessionId, videoInfo, segViewCnts, video.isComment(),
+                        isScrapped, hashtags, commentInfos, quizInfos);
             }
             logService.incOrgViewBucket(orgId, Instant.now());
         } else {
@@ -102,8 +112,8 @@ public class VideoService {
             // TODO: Redis에 해당 멤버 + 재시청 여부 + 영상 아이디에 대해 세션 키 저장
         }
 
-        return JoinVideoSessionResult.create(sessionId, videoInfo, commentInfos.isEmpty(), hashtags, commentInfos,
-                quizInfos);
+        return JoinVideoSessionResult.create(sessionId, videoInfo, segViewCnts, video.isComment(), isScrapped, hashtags,
+                commentInfos, quizInfos);
     }
 
     public boolean leaveVideoSession(LeaveVideoSessionInfo leaveVideoSessionInfo) {
