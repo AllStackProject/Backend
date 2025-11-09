@@ -49,7 +49,7 @@ public class OrganizationService {
 
     private final JwtProvider jwtProvider;
 
-    public CreateOrgResult createOrg(Long userId, @Valid CreateOrgRequest createOrgRequest) {
+    public CreateOrgResult createOrg(Long userId, @Valid CreateOrgRequest createOrgRequest, String imgUrl) {
         if (organizationRepository.findByName(createOrgRequest.getName()).isPresent()) {
             throw new ApiException(DUPLICATE_ORG_NAME);
         }
@@ -57,7 +57,7 @@ public class OrganizationService {
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
 
         String code = generateCode(user.getId());
-        Organization organization = Organization.create(user, createOrgRequest.getName(), createOrgRequest.getImgUrl(),
+        Organization organization = Organization.create(user, createOrgRequest.getName(), imgUrl,
                 createOrgRequest.getDesc(), code);
         Member member = Member.create(user, organization, true, APPROVED); // TODO: 생성자인 멤버이므로 권한 모두 줘야 함
 
