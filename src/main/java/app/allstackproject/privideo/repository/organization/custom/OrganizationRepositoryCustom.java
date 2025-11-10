@@ -1,8 +1,8 @@
 package app.allstackproject.privideo.repository.organization.custom;
 
-import app.allstackproject.privideo.dto.organization.ReadOrgDto;
+import app.allstackproject.privideo.dto.organization.ReadOrgResult;
 import java.util.List;
 
 public interface OrganizationRepositoryCustom {
-    List<ReadOrgDto> findAllByUserId(Long userId);
+    List<ReadOrgResult> findAllByUserId(Long userId);
 }

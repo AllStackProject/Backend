@@ -15,9 +15,9 @@ import static app.allstackproject.privideo.common.util.OrgCodeGenerator.generate
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.jwt.JwtProvider;
 import app.allstackproject.privideo.dto.organization.CreateOrgRequest;
-import app.allstackproject.privideo.dto.organization.CreateOrgResult;
 import app.allstackproject.privideo.dto.organization.OrgTokenDto;
 import app.allstackproject.privideo.dto.organization.ReadOrgDto;
+import app.allstackproject.privideo.dto.organization.ReadOrgResult;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.entity.User;
@@ -28,6 +28,7 @@ import app.allstackproject.privideo.repository.user.UserRepository;
 import app.allstackproject.privideo.service.permission.PermissionService;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,24 +50,19 @@ public class OrganizationService {
 
     private final JwtProvider jwtProvider;
 
-    public CreateOrgResult createOrg(Long userId, @Valid CreateOrgRequest createOrgRequest, String imgUrl) {
+    public String createOrg(Long userId, @Valid CreateOrgRequest createOrgRequest, String imgUrl) {
         if (organizationRepository.findByName(createOrgRequest.getName()).isPresent()) {
             throw new ApiException(DUPLICATE_ORG_NAME);
         }
 
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
-
-        String code = generateCode(user.getId());
         Organization organization = Organization.create(user, createOrgRequest.getName(), imgUrl,
-                createOrgRequest.getDesc(), code);
-        Member member = Member.create(user, organization, user.getName(), true,
-                APPROVED);
+                createOrgRequest.getDesc());
 
+        Member member = Member.create(user, organization, user.getName(), true, APPROVED);
         member.adminPermissionSet();
 
-        organizationRepository.save(organization);
-        memberRepository.save(member);
-
+        String code = generateCode(user.getId());
         try {
             orgRedisRepository.createOrgCode(organization.getId(), code);
             log.info("조직 코드 Redis 저장 완료 - orgId: {}, code: {}", organization.getId(), code);
@@ -81,13 +77,42 @@ public class OrganizationService {
             log.info("Redis 저장 실패 - orgId: {}", organization.getId());
         }
 
-        return new CreateOrgResult(organization.getId(), code);
+        organizationRepository.save(organization);
+        memberRepository.save(member);
+
+        return jwtProvider.createOrgToken(OrgTokenDto.builder()
+                .userId(userId)
+                .memberId(member.getId())
+                .orgId(organization.getId())
+                .orgJoinStatus(member.getJoinStatus().toString())
+                .orgIsAdmin(member.isAdmin())
+                .orgPermission(member.getPermissionCode())
+                .build());
     }
 
     @Transactional(readOnly = true)
     public List<ReadOrgDto> readOrgs(Long userId) {
-        userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
-        return organizationRepository.findAllByUserId(userId);
+        if (!userRepository.existsById(userId)) {
+            throw new ApiException(USER_NOT_FOUND);
+        }
+
+        List<ReadOrgResult> rows = organizationRepository.findAllByUserId(userId);
+        List<Long> orgIds = rows.stream().map(ReadOrgResult::getId).toList();
+
+        Map<Long, String> codeMap = orgRedisRepository.getOrgCodesByIds(orgIds);
+
+        return rows.stream()
+                .map(r -> new ReadOrgDto(
+                        r.getId(),
+                        r.getName(),
+                        r.getImgUrl(),
+                        r.getJoinAt(),
+                        r.getIsSuperAdmin(),
+                        r.getIsAdmin(),
+                        r.getJoinStatus(),
+                        codeMap.get(r.getId())
+                ))
+                .toList();
     }
 
     public boolean joinOrg(Long userId, String orgCode, String nickname) {
@@ -154,7 +179,6 @@ public class OrganizationService {
                 .orgIsAdmin(member.isAdmin())
                 .orgPermission(latestPerm)
                 .build());
-
     }
 
     public boolean exitOrg(Long userId, Long orgId) {

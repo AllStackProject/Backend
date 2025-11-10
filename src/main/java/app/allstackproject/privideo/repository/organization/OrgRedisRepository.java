@@ -8,9 +8,16 @@ import app.allstackproject.privideo.common.util.RedisUtil.Fields;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_CODE_IN_USE;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Repository;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +60,34 @@ public class OrgRedisRepository {
                 () -> (String) redisTemplate.opsForHash().get(key, Fields.CODE),
                 String.format("getOrgcodeById[org:%d]", orgId)
         );
+    }
+
+    public Map<Long, String> getOrgCodesByIds(List<Long> orgIds) {
+        if (orgIds == null || orgIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<Object> results = redisTemplate.executePipelined(
+                new SessionCallback<Object>() {
+                    @Override
+                    @SuppressWarnings("unchecked")
+                    public Object execute(RedisOperations operations) throws DataAccessException {
+                        HashOperations<String, String, String> hash =
+                                ((RedisOperations<String, String>) operations).opsForHash();
+
+                        for (Long orgId : orgIds) {
+                            hash.get(RedisUtil.org(orgId), Fields.CODE);
+                        }
+                        return null;
+                    }
+                }
+        );
+
+        Map<Long, String> map = new HashMap<>(orgIds.size());
+        for (int i = 0; i < orgIds.size(); i++) {
+            map.put(orgIds.get(i), (String) results.get(i));
+        }
+        return map;
     }
 
     public boolean saveOrgCode(Long orgId, String orgCode) {

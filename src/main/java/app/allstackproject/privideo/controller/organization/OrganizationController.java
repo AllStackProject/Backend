@@ -11,8 +11,6 @@ import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.organization.CreateOrgRequest;
-import app.allstackproject.privideo.dto.organization.CreateOrgResponse;
-import app.allstackproject.privideo.dto.organization.CreateOrgResult;
 import app.allstackproject.privideo.dto.organization.JoinOrgRequest;
 import app.allstackproject.privideo.dto.organization.ReadOrgDto;
 import app.allstackproject.privideo.dto.organization.ReadOrgsResponse;
@@ -60,9 +58,9 @@ public class OrganizationController {
                     )
             )
     )
-    public BaseResponse<CreateOrgResponse> createOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
-                                                     @Valid @ModelAttribute CreateOrgRequest createOrgRequest,
-                                                     BindingResult bindingResult) {
+    public BaseResponse<SuccessResponse> createOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
+                                                   @Valid @ModelAttribute CreateOrgRequest createOrgRequest,
+                                                   BindingResult bindingResult, HttpServletResponse response) {
         if (bindingResult.hasErrors()) {
             throw new ApiException(INVALID_ORG_CREATE, getErrorMessage(bindingResult));
         }
@@ -71,8 +69,13 @@ public class OrganizationController {
         String imgUrl = "imgUrl";
         // TODO: S3에 이미지 업로드
 
-        CreateOrgResult createOrgResult = organizationService.createOrg(userId, createOrgRequest, imgUrl);
-        return new BaseResponse<>(CreateOrgResponse.of(createOrgResult));
+        String orgToken = organizationService.createOrg(userId, createOrgRequest, imgUrl);
+        if (orgToken == null || orgToken.isBlank()) {
+            return new BaseResponse<>(SuccessResponse.of(false));
+        }
+
+        response.setHeader(ACCESS_TOKEN_HEADER, TOKEN_PREFIX + orgToken);
+        return new BaseResponse<>(SuccessResponse.of(true));
     }
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")

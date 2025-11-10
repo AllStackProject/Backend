@@ -42,32 +42,23 @@ public class Organization extends BaseEntity {
     @NotBlank
     private String description;
 
-    // TODO: 추후 Redis로 이관 예정
-    @NotBlank
-    private String code;
-
     @Builder(access = AccessLevel.PRIVATE)
-    private Organization(User creator, String name, String imgUrl, String adImgUrl, String description, String code) {
+    private Organization(User creator, String name, String imgUrl, String adImgUrl, String description) {
         this.creator = creator;
         this.name = name;
         this.imgUrl = imgUrl;
         this.adImgUrl = adImgUrl;
         this.description = description;
-        this.code = code;
     }
 
-    public static Organization create(User creator, String name, String imgUrl, String description, String code) {
+    public static Organization create(User creator, String name, String imgUrl, String description) {
         return Organization.builder()
                 .creator(creator)
                 .name(name)
                 .imgUrl(imgUrl)
                 .adImgUrl("")
                 .description(description)
-                .code(code)
                 .build();
     }
 
-    public void updateCode(String newCode) {
-        this.code = newCode.trim();
-    }
 }
