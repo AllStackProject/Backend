@@ -5,10 +5,10 @@ import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_
 import app.allstackproject.privideo.common.enumStatus.AuthPrincipal;
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
-import app.allstackproject.privideo.dto.CommentResponse;
-import app.allstackproject.privideo.dto.QuizResponse;
-import app.allstackproject.privideo.dto.video.ScrapResponse;
-import app.allstackproject.privideo.dto.video.HistoryResponse;
+import app.allstackproject.privideo.dto.comment.CommentResponse;
+import app.allstackproject.privideo.dto.quiz.QuizResponse;
+import app.allstackproject.privideo.dto.scrap.ScrapResponse;
+import app.allstackproject.privideo.dto.history.HistoryResponse;
 import app.allstackproject.privideo.service.CommentService;
 import app.allstackproject.privideo.service.QuizService;
 import app.allstackproject.privideo.service.video.ScrapService;

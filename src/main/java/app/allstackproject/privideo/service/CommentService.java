@@ -8,11 +8,11 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_COMMENT_NOT_ALLOWED;
 
 import app.allstackproject.privideo.common.exception.ApiException;
-import app.allstackproject.privideo.dto.CommentResponse;
+import app.allstackproject.privideo.dto.comment.CommentResponse;
 import app.allstackproject.privideo.dto.comment.CommentsResult;
 import app.allstackproject.privideo.dto.comment.CreateCommentRequest;
 import app.allstackproject.privideo.entity.Comment;
-import app.allstackproject.privideo.repository.CommentRepository;
+import app.allstackproject.privideo.repository.comment.CommentRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
 import jakarta.validation.Valid;

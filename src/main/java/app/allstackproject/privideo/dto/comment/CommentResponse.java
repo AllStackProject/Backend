@@ -1,4 +1,4 @@
-package app.allstackproject.privideo.dto;
+package app.allstackproject.privideo.dto.comment;
 
 import app.allstackproject.privideo.entity.Comment;
 import java.time.LocalDateTime;

@@ -1,16 +1,13 @@
-package app.allstackproject.privideo.repository;
+package app.allstackproject.privideo.repository.history;
 
 import app.allstackproject.privideo.common.enumStatus.BaseStatusType;
 import app.allstackproject.privideo.entity.History;
+import app.allstackproject.privideo.repository.history.custom.HistoryRepositoryCustom;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
-public interface HistoryRepository extends JpaRepository<History, Long> {
-    List<History> findByMemberIdAndVideoOrganizationId(Long memberId, Long orgId);
-
+public interface HistoryRepository extends JpaRepository<History, Long>, HistoryRepositoryCustom {
     Optional<History> findByMemberIdAndVideoIdAndStatus(Long memberId, Long videoId, BaseStatusType status);
 }

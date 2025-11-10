@@ -1,7 +1,7 @@
-package app.allstackproject.privideo.repository;
+package app.allstackproject.privideo.repository.scrap;
 
 import app.allstackproject.privideo.entity.Scrap;
-import app.allstackproject.privideo.repository.scrap.ScrapRepositoryCustom;
+import app.allstackproject.privideo.repository.scrap.custom.ScrapRepositoryCustom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

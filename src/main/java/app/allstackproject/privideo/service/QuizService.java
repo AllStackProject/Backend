@@ -5,11 +5,11 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.QUIZ_NOT_FOUND;
 
 import app.allstackproject.privideo.common.exception.ApiException;
-import app.allstackproject.privideo.dto.QuizResponse;
+import app.allstackproject.privideo.dto.quiz.QuizResponse;
 import app.allstackproject.privideo.dto.quiz.MemberQuizDto;
 import app.allstackproject.privideo.dto.quiz.SolveResultDto;
 import app.allstackproject.privideo.entity.MemberQuizResult;
-import app.allstackproject.privideo.repository.QuizRepository;
+import app.allstackproject.privideo.repository.quiz.QuizRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.quiz.MemberQuizResultRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;

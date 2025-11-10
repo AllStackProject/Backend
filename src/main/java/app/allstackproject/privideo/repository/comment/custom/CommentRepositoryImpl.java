@@ -1,4 +1,4 @@
-package app.allstackproject.privideo.repository.comment;
+package app.allstackproject.privideo.repository.comment.custom;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.entity.QMember.member;

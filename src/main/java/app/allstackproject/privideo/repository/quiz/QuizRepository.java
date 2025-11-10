@@ -1,7 +1,7 @@
-package app.allstackproject.privideo.repository;
+package app.allstackproject.privideo.repository.quiz;
 
 import app.allstackproject.privideo.entity.Quiz;
-import app.allstackproject.privideo.repository.quiz.QuizRepositoryCustom;
+import app.allstackproject.privideo.repository.quiz.custom.QuizRepositoryCustom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
