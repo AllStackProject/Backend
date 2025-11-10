@@ -12,6 +12,8 @@ public class VideoInfo {
 
     private final String title;
 
+    private final String desc;
+
     private final Long watchCnt;
 
     private final Long wholeTime;
@@ -19,9 +21,10 @@ public class VideoInfo {
     private final LocalDateTime createdAt;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private VideoInfo(Long id, String title, Long watchCnt, Long wholeTime, LocalDateTime createdAt) {
+    private VideoInfo(Long id, String title, String desc, Long watchCnt, Long wholeTime, LocalDateTime createdAt) {
         this.id = id;
         this.title = title;
+        this.desc = desc;
         this.watchCnt = watchCnt;
         this.wholeTime = wholeTime;
         this.createdAt = createdAt;
@@ -30,6 +33,7 @@ public class VideoInfo {
     public static VideoInfo from(Video video) {
         return VideoInfo.builder()
                 .id(video.getId())
+                .desc(video.getDescription())
                 .title(video.getTitle())
                 .watchCnt(video.getWatchCnt())
                 .wholeTime(video.getWholeTime())
