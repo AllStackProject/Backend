@@ -73,6 +73,7 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     INVALID_ORG_SELECT(7005, HttpStatus.BAD_REQUEST, "조직 선택 요청에서 유효하지 않은 값이 존재합니다."),
     INVALID_ORG_EXIT(7006, HttpStatus.BAD_REQUEST, "조직 탈퇴 요청에서 유효하지 않은 값이 존재합니다."),
     ORGANIZATION_CODE_IN_USE(7007, HttpStatus.CONFLICT, "조직 코드가 이미 사용중입니다."),
+    ORG_CODE_NOT_AVAILABLE(7008, HttpStatus.NOT_FOUND, "조직 코드를 찾을 수 없습니다. 잠시 후 다시 시도해주세요."),
 
     /**
      * 8000: Video 오류

@@ -1,6 +1,6 @@
 package app.allstackproject.privideo.controller.admin;
 
-import static app.allstackproject.privideo.common.config.SwaggerConfig.BOOTSTRAP_AUTH_KEY;
+import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_KEY;
 
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/admin")
 @Tag(name = "Admin", description = "관리자 관련 API")
-@SecurityRequirement(name = BOOTSTRAP_AUTH_KEY)
+@SecurityRequirement(name = ORG_AUTH_KEY)
 public class AdminController {
 
     private final AdminService adminService;

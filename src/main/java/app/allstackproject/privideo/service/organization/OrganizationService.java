@@ -6,9 +6,9 @@ import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.REJE
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_APPROVED_MEMBER;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_REQUESTED_MEMBER;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DUPLICATE_ORG_NAME;
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_ORG_CODE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORG_CODE_NOT_AVAILABLE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.USER_NOT_FOUND;
 import static app.allstackproject.privideo.common.util.OrgCodeGenerator.generateCode;
 
@@ -62,6 +62,9 @@ public class OrganizationService {
         Member member = Member.create(user, organization, user.getName(), true, APPROVED);
         member.adminPermissionSet();
 
+        organizationRepository.save(organization);
+        memberRepository.save(member);
+        
         String code = generateCode(user.getId());
         try {
             orgRedisRepository.createOrgCode(organization.getId(), code);
@@ -76,9 +79,6 @@ public class OrganizationService {
         } catch (Exception e) {
             log.info("Redis 저장 실패 - orgId: {}", organization.getId());
         }
-
-        organizationRepository.save(organization);
-        memberRepository.save(member);
 
         return jwtProvider.createOrgToken(OrgTokenDto.builder()
                 .userId(userId)
@@ -122,16 +122,17 @@ public class OrganizationService {
         Long orgId = orgRedisRepository.getOrgIdByCode(orgCode);
 
         Organization organization = null;
-        if (orgId == null) {
-            organization = organizationRepository.findByCode(orgCode)
-                    .orElseThrow(() -> new ApiException(INVALID_ORG_CODE));
-
-            orgId = organization.getId();
-
-            orgRedisRepository.saveOrgCode(orgId, orgCode);
-        } else {
+        if (orgId != null) {
             organization = organizationRepository.findById(orgId)
                     .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
+        } else {
+//            organization = orgRedisRepository.findByCode(orgCode)
+//                    .orElseThrow(() -> new ApiException(INVALID_ORG_CODE));
+//
+//            orgId = organization.getId();
+//
+//            orgRedisRepository.saveOrgCode(orgId, orgCode);
+            throw new ApiException(ORG_CODE_NOT_AVAILABLE);
         }
 
         Optional<Member> existMember = memberRepository.findByUserIdAndOrganizationId(userId, orgId);
