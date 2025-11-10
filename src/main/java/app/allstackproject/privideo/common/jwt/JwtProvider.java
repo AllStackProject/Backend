@@ -54,7 +54,7 @@ public class JwtProvider {
                 "memberId", dto.getMemberId(),
                 "orgId", dto.getOrgId(),
                 "orgJoinStatus", dto.getOrgJoinStatus(),
-                "orgIsAdmin", dto.getOrgIsAdmin().toString(),
+                "orgIsAdmin", dto.getOrgIsAdmin(),
                 "orgPermission", dto.getOrgPermission()
         ), expTime);
     }
