@@ -18,12 +18,15 @@ import app.allstackproject.privideo.dto.organization.ReadOrgDto;
 import app.allstackproject.privideo.dto.organization.ReadOrgsResponse;
 import app.allstackproject.privideo.service.organization.OrganizationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
@@ -48,7 +51,15 @@ public class OrganizationController {
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")
     @PostMapping(value = "", consumes = "multipart/form-data")
-    @Operation(summary = "조직 생성")
+    @Operation(
+            summary = "조직 생성",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = @Content(
+                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                            schema = @Schema(implementation = CreateOrgRequest.class)
+                    )
+            )
+    )
     public BaseResponse<CreateOrgResponse> createOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
                                                      @Valid @ModelAttribute CreateOrgRequest createOrgRequest,
                                                      BindingResult bindingResult) {
@@ -56,8 +67,8 @@ public class OrganizationController {
             throw new ApiException(INVALID_ORG_CREATE, getErrorMessage(bindingResult));
         }
 
-        String bucketName = "eventImg";
-        String imgUrl = null;
+        String bucketName = "bucketName";
+        String imgUrl = "imgUrl";
         // TODO: S3에 이미지 업로드
 
         CreateOrgResult createOrgResult = organizationService.createOrg(userId, createOrgRequest, imgUrl);
