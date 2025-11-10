@@ -9,7 +9,6 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import app.allstackproject.privideo.common.enumStatus.JoinStatusType;
 import app.allstackproject.privideo.common.enumStatus.PermissionType;
 import app.allstackproject.privideo.common.exception.ApiException;
-import app.allstackproject.privideo.service.permission.PermissionService;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -20,12 +19,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.security.core.parameters.P;
 
 @Entity
 @Getter
@@ -52,9 +49,9 @@ public class Member extends BaseEntity {
 
     private long permissionCode = 0L;
 
-    // TODO: 낙관적 락
-    @Version
-    private Long version;
+//    // TODO: 낙관적 락
+//    @Version
+//    private Long version;
 
     @Builder(access = AccessLevel.PRIVATE)
     private Member(User user, Organization organization, boolean isAdmin, JoinStatusType joinStatus,

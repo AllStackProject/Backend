@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "Video_Group_Authority")
+@Table(name = "Video_Member_Group_Mapping")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class VideoGroupAuthority extends BaseEntity {
+public class VideoMemberGroupMapping extends BaseEntity {
     @Id
     @GeneratedValue
     private Long id;
@@ -30,13 +30,13 @@ public class VideoGroupAuthority extends BaseEntity {
     private Video video;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private VideoGroupAuthority(MemberGroup memberGroup, Video video) {
+    private VideoMemberGroupMapping(MemberGroup memberGroup, Video video) {
         this.memberGroup = memberGroup;
         this.video = video;
     }
 
-    public static VideoGroupAuthority create(MemberGroup memberGroup, Video video) {
-        return VideoGroupAuthority.builder()
+    public static VideoMemberGroupMapping create(MemberGroup memberGroup, Video video) {
+        return VideoMemberGroupMapping.builder()
                 .memberGroup(memberGroup)
                 .video(video)
                 .build();
