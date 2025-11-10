@@ -93,7 +93,7 @@ public class OrganizationController {
             throw new ApiException(INVALID_ORG_JOIN, getErrorMessage(bindingResult));
         }
 
-        boolean isSuccess = organizationService.joinOrg(userId, joinOrgRequest.getCode());
+        boolean isSuccess = organizationService.joinOrg(userId, joinOrgRequest.getCode(), joinOrgRequest.getNickname());
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
     }
 

@@ -59,7 +59,8 @@ public class OrganizationService {
         String code = generateCode(user.getId());
         Organization organization = Organization.create(user, createOrgRequest.getName(), imgUrl,
                 createOrgRequest.getDesc(), code);
-        Member member = Member.create(user, organization, true, APPROVED); // TODO: 생성자인 멤버이므로 권한 모두 줘야 함
+        Member member = Member.create(user, organization, user.getName(), true,
+                APPROVED);
 
         member.adminPermissionSet();
 
@@ -89,8 +90,7 @@ public class OrganizationService {
         return organizationRepository.findAllByUserId(userId);
     }
 
-
-    public boolean joinOrg(Long userId, String orgCode) {
+    public boolean joinOrg(Long userId, String orgCode, String nickname) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(USER_NOT_FOUND));
 
@@ -125,7 +125,7 @@ public class OrganizationService {
             }
 
         } else {
-            Member newMember = Member.create(user, organization, false, PENDING);
+            Member newMember = Member.create(user, organization, nickname, false, PENDING);
             memberRepository.save(newMember);
         }
 

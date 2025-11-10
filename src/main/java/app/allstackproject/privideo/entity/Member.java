@@ -19,6 +19,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -42,6 +43,9 @@ public class Member extends BaseEntity {
     @JoinColumn(name = "organization_id")
     private Organization organization;
 
+    @NotNull
+    private String nickname;
+
     private boolean isAdmin;
 
     @Enumerated(EnumType.STRING)
@@ -54,21 +58,24 @@ public class Member extends BaseEntity {
 //    private Long version;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Member(User user, Organization organization, boolean isAdmin, JoinStatusType joinStatus,
+    private Member(User user, Organization organization, String nickname, boolean isAdmin, JoinStatusType joinStatus,
                    Long permissionCode) {
         this.user = user;
         this.organization = organization;
-        this.joinStatus = joinStatus;
+        this.nickname = nickname;
         this.isAdmin = isAdmin;
+        this.joinStatus = joinStatus;
         if (permissionCode != null) {
             this.permissionCode = permissionCode;
         }
     }
 
-    public static Member create(User user, Organization organization, boolean isAdmin, JoinStatusType joinStatus) {
+    public static Member create(User user, Organization organization, String nickname, boolean isAdmin,
+                                JoinStatusType joinStatus) {
         return Member.builder()
                 .user(user)
                 .organization(organization)
+                .nickname(nickname)
                 .isAdmin(isAdmin)
                 .joinStatus(joinStatus)
                 .permissionCode(0L)

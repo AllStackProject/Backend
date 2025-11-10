@@ -66,7 +66,7 @@ public class UserService {
         if (orgCode != null && !orgCode.isBlank()) {
             Organization org = organizationRepository.findByCode(orgCode.trim())
                     .orElseThrow(() -> new ApiException(INVALID_ORG_CODE));
-            memberRepository.save(Member.create(user, org, false, PENDING));
+            memberRepository.save(Member.create(user, org, postSignupRequest.getName(), false, PENDING));
         }
 
         return true;
