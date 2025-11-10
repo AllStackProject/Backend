@@ -18,16 +18,20 @@ import app.allstackproject.privideo.dto.organization.ReadOrgDto;
 import app.allstackproject.privideo.dto.organization.ReadOrgsResponse;
 import app.allstackproject.privideo.service.organization.OrganizationService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,16 +50,28 @@ public class OrganizationController {
     private final OrganizationService organizationService;
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")
-    @PostMapping("")
-    @Operation(summary = "조직 생성")
+    @PostMapping(value = "", consumes = "multipart/form-data")
+    @Operation(
+            summary = "조직 생성",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    content = @Content(
+                            mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+                            schema = @Schema(implementation = CreateOrgRequest.class)
+                    )
+            )
+    )
     public BaseResponse<CreateOrgResponse> createOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
-                                                     @Valid @RequestBody CreateOrgRequest createOrgRequest,
+                                                     @Valid @ModelAttribute CreateOrgRequest createOrgRequest,
                                                      BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             throw new ApiException(INVALID_ORG_CREATE, getErrorMessage(bindingResult));
         }
 
-        CreateOrgResult createOrgResult = organizationService.createOrg(userId, createOrgRequest);
+        String bucketName = "bucketName";
+        String imgUrl = "imgUrl";
+        // TODO: S3에 이미지 업로드
+
+        CreateOrgResult createOrgResult = organizationService.createOrg(userId, createOrgRequest, imgUrl);
         return new BaseResponse<>(CreateOrgResponse.of(createOrgResult));
     }
 
@@ -68,11 +84,10 @@ public class OrganizationController {
     }
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")
-    @PostMapping("/{orgId}/join")
+    @PostMapping("/join")
     @Operation(summary = "조직 가입 요청")
     public BaseResponse<SuccessResponse> joinOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
                                                  @Valid @RequestBody JoinOrgRequest joinOrgRequest,
-                                                 @PathVariable("orgId") Long orgId,
                                                  BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             throw new ApiException(INVALID_ORG_JOIN, getErrorMessage(bindingResult));

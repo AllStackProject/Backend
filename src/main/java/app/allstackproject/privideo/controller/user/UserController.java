@@ -6,18 +6,24 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_USER_SIGNUP;
 import static app.allstackproject.privideo.common.util.BindingResultUtil.getErrorMessage;
 
+import app.allstackproject.privideo.common.enumStatus.AuthPrincipal;
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.user.PostLoginRequest;
 import app.allstackproject.privideo.dto.user.PostSignupRequest;
+import app.allstackproject.privideo.dto.user.UpdateUserInfoRequest;
+import app.allstackproject.privideo.dto.user.UserInfoResponse;
 import app.allstackproject.privideo.service.user.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,5 +64,26 @@ public class UserController {
 
         response.setHeader(ACCESS_TOKEN_HEADER, TOKEN_PREFIX + accessToken);
         return new BaseResponse<>(SuccessResponse.of(true));
+    }
+
+    @GetMapping("/info")
+    @Operation(summary = "유저 정보 조회")
+    public BaseResponse<UserInfoResponse> getMyInfo(
+            @AuthenticationPrincipal AuthPrincipal me) {
+
+        Long useerId = me.userId();
+        UserInfoResponse user = userService.getUserInfo(useerId);
+        return new BaseResponse<>(user);
+    }
+
+    @PatchMapping("/info")
+    @Operation(summary = "유저 정보 수정")
+    public BaseResponse<SuccessResponse> updateMyInfo(
+            @AuthenticationPrincipal AuthPrincipal me,
+            @RequestBody @Valid UpdateUserInfoRequest request) {
+
+        Long userId = me.userId();
+        boolean result = userService.updateUserInfo(userId, request);
+        return new BaseResponse<>(SuccessResponse.of(result));
     }
 }

@@ -48,9 +48,12 @@ public class QuizRepositoryImpl implements QuizRepositoryCustom {
                         QuizInfo.class,
                         quiz.id,
                         quiz.question,
-                        quiz.answer
+                        quiz.answer,
+                        memberQuizResult.isCorrect,
+                        quiz.description
                 ))
-                .from(quiz)
+                .from(memberQuizResult)
+                .join(memberQuizResult.quiz, quiz)
                 .join(quiz.video, video)
                 .where(
                         video.id.eq(videoId)

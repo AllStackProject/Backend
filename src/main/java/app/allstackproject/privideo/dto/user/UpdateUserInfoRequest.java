@@ -18,14 +18,12 @@ import lombok.NoArgsConstructor;
 public class UpdateUserInfoRequest {
 
     @PasswordConstraint
-    @JsonProperty(access = Access.WRITE_ONLY)
     private String newPassword;
 
     @AgeTypeConstraint
     private Integer changedAge;
 
     @PasswordConstraint
-    @JsonProperty(access = Access.WRITE_ONLY)
     private String confirmPassword;
 
     @EnumConstraint(enumClass = GenderType.class, message = "성별의 유형은 MALE 또는 FEMALE 이어야 합니다.")
