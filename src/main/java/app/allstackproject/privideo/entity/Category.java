@@ -24,14 +24,18 @@ public class Category extends BaseEntity {
     @Column(unique = true)
     private String title;
 
+    private Long memberGroupId;
+
     @Builder(access = AccessLevel.PRIVATE)
-    private Category(String title) {
+    private Category(String title, Long memberGroupId) {
         this.title = title;
+        this.memberGroupId = memberGroupId;
     }
 
-    public static Category create(String title) {
+    public static Category create(String title, Long memberGroupId) {
         return Category.builder()
                 .title(title)
+                .memberGroupId(memberGroupId)
                 .build();
     }
 }
