@@ -19,6 +19,7 @@ import app.allstackproject.privideo.dto.organization.CreateOrgRequest;
 import app.allstackproject.privideo.dto.organization.OrgTokenDto;
 import app.allstackproject.privideo.dto.organization.ReadOrgDto;
 import app.allstackproject.privideo.dto.organization.ReadOrgResult;
+import app.allstackproject.privideo.dto.organization.SelectOrgResult;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.entity.User;
@@ -189,7 +190,7 @@ public class OrganizationService {
     }
 
     @Transactional(readOnly = true)
-    public String selectOrg(Long userId, Long orgId) {
+    public SelectOrgResult selectOrg(Long userId, Long orgId) {
         userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
         organizationRepository.findById(orgId)
                 .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
@@ -202,14 +203,16 @@ public class OrganizationService {
 
         long latestPerm = permissionService.getMemberPermission(orgId, member.getId());
 
-        return jwtProvider.createOrgToken(OrgTokenDto.builder()
-                .userId(userId)
-                .memberId(member.getId())
-                .orgId(orgId)
-                .orgJoinStatus(member.getJoinStatus().toString())
-                .orgIsAdmin(member.isAdmin())
-                .orgPermission(latestPerm)
-                .build());
+        return new SelectOrgResult(
+                jwtProvider.createOrgToken(OrgTokenDto.builder()
+                        .userId(userId)
+                        .memberId(member.getId())
+                        .orgId(orgId)
+                        .orgJoinStatus(member.getJoinStatus().toString())
+                        .orgIsAdmin(member.isAdmin())
+                        .orgPermission(latestPerm)
+                        .build()),
+                member.getNickname());
     }
 
     public boolean exitOrg(Long userId, Long orgId) {
