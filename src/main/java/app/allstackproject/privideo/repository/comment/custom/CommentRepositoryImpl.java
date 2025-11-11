@@ -22,7 +22,8 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
         QComment c = new QComment("c");
 
         return jpaQueryFactory
-                .select(Projections.constructor(CommentInfo.class, c.id, c.text, user.name, c.createdAt))
+                .select(Projections.constructor(CommentInfo.class, c.id, c.text, user.name, c.createdAt,
+                        c.parentCommentId.isNotNull(), c.parentCommentId))
                 .from(c)
                 .join(c.video, video)
                 .join(c.member, member)

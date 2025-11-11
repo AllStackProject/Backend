@@ -1,6 +1,6 @@
 package app.allstackproject.privideo.dto.comment;
 
-import app.allstackproject.privideo.entity.Comment;
+import app.allstackproject.privideo.dto.video.CommentInfo;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -16,15 +16,15 @@ public class CommentsResult {
         this.childComments = childComments;
     }
 
-    public static CommentsResult create(List<Comment> comments) {
+    public static CommentsResult create(List<CommentInfo> comments) {
         List<CommentDto> resultComments = new ArrayList<>();
         List<ChildCommentDto> resultChildComments = new ArrayList<>();
 
-        for (Comment comment : comments) {
-            if (comment.isChild()) {
-                resultChildComments.add(ChildCommentDto.of(comment));
+        for (CommentInfo commentInfo : comments) {
+            if (commentInfo.getIsChild()) {
+                resultChildComments.add(ChildCommentDto.of(commentInfo));
             } else {
-                resultComments.add(CommentDto.of(comment));
+                resultComments.add(CommentDto.of(commentInfo));
             }
         }
 

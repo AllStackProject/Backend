@@ -15,7 +15,12 @@ public class CommentInfo {
 
     private final LocalDateTime createdAt;
 
-    public static CommentInfo of(Long id, String text, String creator, LocalDateTime createdAt) {
-        return new CommentInfo(id, text, creator, createdAt);
+    private final Boolean isChild;
+
+    private final Long parentCommentId;
+
+    public static CommentInfo of(Long id, String text, String creator, LocalDateTime createdAt, Boolean isChild,
+                                 Long parentCommentId) {
+        return new CommentInfo(id, text, creator, createdAt, isChild, parentCommentId);
     }
 }
