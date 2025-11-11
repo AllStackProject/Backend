@@ -55,7 +55,7 @@ public class OrganizationService {
         Organization organization = Organization.create(user, createOrgRequest.getName(), imgUrl,
                 createOrgRequest.getDesc());
 
-        Member member = Member.create(user, organization, user.getName(), true, APPROVED);
+        Member member = Member.create(user, organization, createOrgRequest.getNickname(), true, APPROVED);
         member.adminPermissionSet();
 
         organizationRepository.save(organization);
