@@ -9,7 +9,6 @@ import static app.allstackproject.privideo.entity.QScrap.scrap;
 import static app.allstackproject.privideo.entity.QVideo.video;
 import static app.allstackproject.privideo.entity.QVideoMemberGroupMapping.videoMemberGroupMapping;
 
-import app.allstackproject.privideo.common.enumStatus.BaseStatusType;
 import app.allstackproject.privideo.dto.history.HistoryItem;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -28,6 +27,7 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
         BooleanExpression openToAll = JPAExpressions.selectOne()
                 .from(videoMemberGroupMapping)
                 .where(videoMemberGroupMapping.video.id.eq(videoId),
+                        videoMemberGroupMapping.memberGroup.status.eq(ACTIVE),
                         videoMemberGroupMapping.status.eq(ACTIVE))
                 .notExists();
 
@@ -38,6 +38,7 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
                         .and(memberGroupMapping.member.id.eq(memberId))
                         .and(memberGroupMapping.status.eq(ACTIVE)))
                 .where(videoMemberGroupMapping.video.id.eq(videoId),
+                        videoMemberGroupMapping.memberGroup.status.eq(ACTIVE),
                         videoMemberGroupMapping.status.eq(ACTIVE))
                 .exists();
 
@@ -78,9 +79,7 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
                 .from(scrap)
                 .where(
                         scrap.member.id.eq(memberId),
-                        scrap.video.id.eq(history.video.id),
-                        scrap.status.eq(BaseStatusType.ACTIVE)
-                )
+                        scrap.video.id.eq(history.video.id))
                 .exists();
 
         return jpaQueryFactory
@@ -97,7 +96,8 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
                 .join(history.video, video)
                 .where(
                         history.member.id.eq(memberId),
-                        history.status.eq(BaseStatusType.ACTIVE),
+                        history.member.status.eq(ACTIVE),
+                        history.member.joinStatus.eq(APPROVED),
                         video.organization.id.eq(orgId),
                         scrappedExists
                 )

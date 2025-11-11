@@ -1,5 +1,7 @@
 package app.allstackproject.privideo.entity;
 
+import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
+
 import app.allstackproject.privideo.common.enumStatus.BaseStatusType;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
@@ -31,7 +33,7 @@ public abstract class BaseEntity {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         lastModifiedAt = LocalDateTime.now();
-        status = BaseStatusType.ACTIVE;
+        status = ACTIVE;
     }
 
     @PreUpdate
@@ -40,7 +42,7 @@ public abstract class BaseEntity {
     }
 
     public void updateToActive() {
-        this.status = BaseStatusType.ACTIVE;
+        this.status = ACTIVE;
     }
 
     public void updateToInactive() {
@@ -48,6 +50,6 @@ public abstract class BaseEntity {
     }
 
     public boolean isActive() {
-        return this.status == BaseStatusType.ACTIVE;
+        return this.status == ACTIVE;
     }
 }

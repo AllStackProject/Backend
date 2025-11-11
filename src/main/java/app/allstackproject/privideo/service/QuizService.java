@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.service;
 
+import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_SOLVED_QUIZ;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_QUIZ_REQUEST;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.QUIZ_NOT_FOUND;
@@ -50,7 +51,7 @@ public class QuizService {
                 throw new ApiException(QUIZ_NOT_FOUND);
             }
 
-            if (memberQuizResultRepository.existsByQuizId(quizId)) {
+            if (memberQuizResultRepository.existsByQuizIdAndStatus(quizId, ACTIVE)) {
                 throw new ApiException(ALREADY_SOLVED_QUIZ);
             }
 

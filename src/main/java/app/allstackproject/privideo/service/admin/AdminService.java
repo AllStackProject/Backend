@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.service.admin;
 
+import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.CREATOR_CANNOT_CHANGE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.FORBIDDEN_NO_PERMISSION;
@@ -46,7 +47,7 @@ public class AdminService {
         if (!organizationRepository.existsById(orgId)) {
             throw new ApiException(ORGANIZATION_NOT_FOUND);
         }
-        Member admin = memberRepository.findByUserIdAndOrganizationId(adminUserId, orgId)
+        Member admin = memberRepository.findByUserIdAndOrganizationIdAndStatus(adminUserId, orgId, ACTIVE)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
         if (!admin.isAdmin()) {
             throw new ApiException(FORBIDDEN_NO_PERMISSION);
@@ -55,7 +56,7 @@ public class AdminService {
         Long targetMemberId = changeJoinStateRequest.getMemberId();
         JoinStatusType targetStatus = JoinStatusType.valueOf(changeJoinStateRequest.getStatus());
 
-        Member targetMember = memberRepository.findByIdAndOrganizationId(targetMemberId, orgId)
+        Member targetMember = memberRepository.findByIdAndOrganizationIdAndStatus(targetMemberId, orgId, ACTIVE)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
 
         targetMember.changeJoinStatus(targetStatus);
@@ -95,14 +96,14 @@ public class AdminService {
         }
 
         // TODO: 여기서 MEMBER_NOT_FOUND : /admin/orgs/perm
-        Member admin = memberRepository.findByIdAndOrganizationId(adminUserId, orgId)
+        Member admin = memberRepository.findByIdAndOrganizationIdAndStatus(adminUserId, orgId, ACTIVE)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
 
         if (!admin.isAdmin()) {
             throw new ApiException(FORBIDDEN_NO_PERMISSION);
         }
 
-        Member targetMember = memberRepository.findByUserIdAndOrganizationId(targetMemberId, orgId)
+        Member targetMember = memberRepository.findByUserIdAndOrganizationIdAndStatus(targetMemberId, orgId, ACTIVE)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
 
         if (targetMember.isAdmin() && targetMember.getOrganization().getCreator().getId()
@@ -155,7 +156,7 @@ public class AdminService {
         organizationRepository.findById(orgId)
                 .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
 
-        Member member = memberRepository.findByUserIdAndOrganizationId(userId, orgId)
+        Member member = memberRepository.findByUserIdAndOrganizationIdAndStatus(userId, orgId, ACTIVE)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
 
         if (member.getJoinStatus() != APPROVED) {

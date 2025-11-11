@@ -19,38 +19,60 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     @Override
     public boolean isValidMemberAndOrgAndVideo(Long memberId, Long orgId, Long videoId) {
-        BooleanExpression openToAll = JPAExpressions.selectOne()
-                .from(videoMemberGroupMapping)
-                .where(videoMemberGroupMapping.video.id.eq(videoId),
-                        videoMemberGroupMapping.status.eq(ACTIVE))
-                .notExists();
-
-        BooleanExpression memberGroupMatch = JPAExpressions.selectOne()
-                .from(videoMemberGroupMapping)
-                .join(memberGroupMapping)
-                .on(memberGroupMapping.memberGroup.id.eq(videoMemberGroupMapping.memberGroup.id)
-                        .and(memberGroupMapping.member.id.eq(memberId))
-                        .and(memberGroupMapping.status.eq(ACTIVE)))
-                .where(videoMemberGroupMapping.video.id.eq(videoId),
-                        videoMemberGroupMapping.status.eq(ACTIVE))
-                .exists();
-
-        Integer ok = jpaQueryFactory
+        Integer result = jpaQueryFactory
                 .selectOne()
                 .from(video)
-                .join(member).on(
-                        member.id.eq(memberId),
-                        member.organization.id.eq(orgId),
-                        member.status.eq(ACTIVE),
-                        member.joinStatus.eq(APPROVED))
+                .join(member).on(member.id.eq(memberId))
                 .where(
                         video.id.eq(videoId),
                         video.organization.id.eq(orgId),
                         video.status.eq(ACTIVE),
-                        openToAll.or(memberGroupMatch)
+
+                        member.organization.id.eq(orgId),
+                        member.status.eq(ACTIVE),
+                        member.joinStatus.eq(APPROVED),
+
+                        isVideoAccessibleByMember(videoId, memberId)
                 )
                 .fetchFirst();
 
-        return ok != null;
+        return result != null;
+    }
+
+    /**
+     * 비디오에 대한 멤버의 접근 권한 확인
+     * - VideoMemberGroupMapping이 없으면 전체 공개 (OK)
+     * - VideoMemberGroupMapping이 있으면 멤버가 해당 그룹에 속해야 함
+     */
+    private BooleanExpression isVideoAccessibleByMember(Long videoId, Long memberId) {
+        BooleanExpression noGroupRestriction = JPAExpressions
+                .selectOne()
+                .from(videoMemberGroupMapping)
+                .where(
+                        videoMemberGroupMapping.video.id.eq(videoId),
+                        videoMemberGroupMapping.status.eq(ACTIVE)
+                )
+                .notExists();
+
+        BooleanExpression memberInAllowedGroup = JPAExpressions
+                .select(memberGroupMapping.memberGroup.id)
+                .from(memberGroupMapping)
+                .where(
+                        memberGroupMapping.member.id.eq(memberId),
+                        memberGroupMapping.status.eq(ACTIVE),
+                        memberGroupMapping.member.joinStatus.eq(APPROVED),
+                        memberGroupMapping.memberGroup.id.in(
+                                JPAExpressions
+                                        .select(videoMemberGroupMapping.memberGroup.id)
+                                        .from(videoMemberGroupMapping)
+                                        .where(
+                                                videoMemberGroupMapping.video.id.eq(videoId),
+                                                videoMemberGroupMapping.status.eq(ACTIVE)
+                                        )
+                        )
+                )
+                .exists();
+
+        return noGroupRestriction.or(memberInAllowedGroup);
     }
 }

@@ -1,6 +1,7 @@
 package app.allstackproject.privideo.repository.quiz.custom;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
+import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.entity.QMemberQuizResult.memberQuizResult;
 import static app.allstackproject.privideo.entity.QQuiz.quiz;
 import static app.allstackproject.privideo.entity.QVideo.video;
@@ -35,7 +36,9 @@ public class QuizRepositoryImpl implements QuizRepositoryCustom {
                 .join(quiz.video, video)
                 .where(
                         memberQuizResult.member.id.eq(memberId),
-                        video.organization.id.eq(orgId)
+                        video.organization.id.eq(orgId),
+                        memberQuizResult.member.status.eq(ACTIVE),
+                        memberQuizResult.member.joinStatus.eq(APPROVED)
                 )
                 .orderBy(memberQuizResult.submittedAt.desc())
                 .fetch();
@@ -56,8 +59,10 @@ public class QuizRepositoryImpl implements QuizRepositoryCustom {
                 .join(memberQuizResult.quiz, quiz)
                 .join(quiz.video, video)
                 .where(
-                        video.id.eq(videoId)
-                                .and(video.status.eq(ACTIVE)))
+                        video.id.eq(videoId),
+                        video.status.eq(ACTIVE),
+                        memberQuizResult.member.status.eq(ACTIVE),
+                        memberQuizResult.member.joinStatus.eq(APPROVED))
                 .fetch();
     }
 

@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.service.video;
 
+import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_SCRAP_REQUEST;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_ALREADY_SCRAPPED;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_SCRAPPED;
@@ -38,7 +39,7 @@ public class ScrapService {
         }
 
         try {
-            if (scrapRepository.existsByMemberIdAndVideoId(memberId, videoId)) {
+            if (scrapRepository.existsByMemberIdAndVideoIdAndStatus(memberId, videoId, ACTIVE)) {
                 throw new ApiException(VIDEO_ALREADY_SCRAPPED);
             }
             scrapRepository.save(Scrap.create(memberRepository.getReferenceById(memberId),
