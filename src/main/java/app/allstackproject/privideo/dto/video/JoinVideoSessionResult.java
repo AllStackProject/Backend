@@ -22,8 +22,6 @@ public class JoinVideoSessionResult {
 
     private final List<String> categories;
 
-    private final List<CommentInfo> comments;
-
     private final List<QuizInfo> quizzes;
 
     private final LocalDateTime createdAt;
@@ -31,7 +29,7 @@ public class JoinVideoSessionResult {
     @Builder(access = AccessLevel.PRIVATE)
     private JoinVideoSessionResult(String sessionId, Boolean watchCompleted, VideoInfo video, List<Long> segViewCnts,
                                    Boolean isComment, Boolean isScrapped, List<String> categories,
-                                   List<CommentInfo> comments, List<QuizInfo> quizzes, LocalDateTime createdAt) {
+                                   List<QuizInfo> quizzes, LocalDateTime createdAt) {
         this.sessionId = sessionId;
         this.watchCompleted = watchCompleted;
         this.video = video;
@@ -39,14 +37,13 @@ public class JoinVideoSessionResult {
         this.isComment = isComment;
         this.isScrapped = isScrapped;
         this.categories = categories == null ? List.of() : List.copyOf(categories);
-        this.comments = comments == null ? List.of() : List.copyOf(comments);
         this.quizzes = quizzes == null ? List.of() : List.copyOf(quizzes);
         this.createdAt = createdAt;
     }
 
     public static JoinVideoSessionResult completed(String sessionId, VideoInfo video, List<Long> segViewCnts,
                                                    Boolean isComment, Boolean isScrapped, List<String> categories,
-                                                   List<CommentInfo> comments, List<QuizInfo> quizzes) {
+                                                   List<QuizInfo> quizzes) {
         return JoinVideoSessionResult.builder()
                 .sessionId(sessionId)
                 .watchCompleted(true)
@@ -55,7 +52,6 @@ public class JoinVideoSessionResult {
                 .isComment(isComment)
                 .isScrapped(isScrapped)
                 .categories(categories)
-                .comments(comments)
                 .quizzes(quizzes)
                 .createdAt(video.getCreatedAt())
                 .build();
@@ -63,7 +59,7 @@ public class JoinVideoSessionResult {
 
     public static JoinVideoSessionResult create(String sessionId, VideoInfo video, List<Long> segViewCnts,
                                                 Boolean isComment, Boolean isScrapped, List<String> categories,
-                                                List<CommentInfo> comments, List<QuizInfo> quizzes) {
+                                                List<QuizInfo> quizzes) {
         return JoinVideoSessionResult.builder()
                 .sessionId(sessionId)
                 .watchCompleted(false)
@@ -72,7 +68,6 @@ public class JoinVideoSessionResult {
                 .isComment(isComment)
                 .isScrapped(isScrapped)
                 .categories(categories)
-                .comments(comments)
                 .quizzes(quizzes)
                 .createdAt(video.getCreatedAt())
                 .build();

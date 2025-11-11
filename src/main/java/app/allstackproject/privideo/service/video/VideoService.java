@@ -11,7 +11,6 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.service.video.LogService.SEGMENT_SECONDS;
 
 import app.allstackproject.privideo.common.exception.ApiException;
-import app.allstackproject.privideo.dto.video.CommentInfo;
 import app.allstackproject.privideo.dto.video.JoinVideoSessionResult;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionInfo;
 import app.allstackproject.privideo.dto.video.QuizInfo;
@@ -19,7 +18,6 @@ import app.allstackproject.privideo.dto.video.VideoInfo;
 import app.allstackproject.privideo.entity.History;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.Video;
-import app.allstackproject.privideo.repository.comment.CommentRepository;
 import app.allstackproject.privideo.repository.scrap.ScrapRepository;
 import app.allstackproject.privideo.repository.member.MemberGroupRepository;
 import app.allstackproject.privideo.repository.video.CategoryRepository;
@@ -48,7 +46,6 @@ public class VideoService {
     private final HistoryRepository historyRepository;
     private final LogService logService;
     private final CategoryRepository categoryRepository;
-    private final CommentRepository commentRepository;
     private final ScrapRepository scrapRepository;
     private final QuizRepository quizRepository;
 
@@ -80,7 +77,6 @@ public class VideoService {
         video.watch();
 
         VideoInfo videoInfo = VideoInfo.from(video);
-        List<CommentInfo> commentInfos = commentRepository.findAllByVideoId(videoId);
         List<QuizInfo> quizInfos = quizRepository.findByVideoId(videoId);
         List<String> categories = categoryRepository.findAllByVideoId(videoId);
 
@@ -99,7 +95,7 @@ public class VideoService {
             if (history.get().isComplete()) {
                 isFirstWatch = false;
                 return JoinVideoSessionResult.completed(sessionId, videoInfo, segViewCnts, video.isComment(),
-                        isScrapped, categories, commentInfos, quizInfos);
+                        isScrapped, categories, quizInfos);
             }
             logService.incOrgViewBucket(orgId, Instant.now());
         } else {
@@ -113,8 +109,7 @@ public class VideoService {
         }
 
         return JoinVideoSessionResult.create(sessionId, videoInfo, segViewCnts, video.isComment(), isScrapped,
-                categories,
-                commentInfos, quizInfos);
+                categories, quizInfos);
     }
 
     public boolean leaveVideoSession(LeaveVideoSessionInfo leaveVideoSessionInfo) {

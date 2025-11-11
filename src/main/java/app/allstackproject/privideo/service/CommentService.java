@@ -11,6 +11,7 @@ import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.dto.comment.CommentResponse;
 import app.allstackproject.privideo.dto.comment.CommentsResult;
 import app.allstackproject.privideo.dto.comment.CreateCommentRequest;
+import app.allstackproject.privideo.dto.video.CommentInfo;
 import app.allstackproject.privideo.entity.Comment;
 import app.allstackproject.privideo.repository.comment.CommentRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
@@ -60,8 +61,8 @@ public class CommentService {
             throw new ApiException(VIDEO_COMMENT_NOT_ALLOWED);
         }
 
-        List<Comment> comments = commentRepository.findByVideoIdAndStatus(videoId, ACTIVE);
-        return CommentsResult.create(comments);
+        List<CommentInfo> commentInfos = commentRepository.findAllByVideoId(videoId);
+        return CommentsResult.create(commentInfos);
     }
 
     public boolean createComment(Long memberId, Long orgId, Long videoId,

@@ -16,4 +16,6 @@ public class HistoryItem {
     private Long watchRate;
 
     private LocalDateTime recentWatch;
+
+    private Long wholeTime;
 }

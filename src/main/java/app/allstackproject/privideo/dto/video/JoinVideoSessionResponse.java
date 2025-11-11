@@ -20,15 +20,13 @@ public class JoinVideoSessionResponse {
 
     private final List<String> categories;
 
-    private final List<CommentInfo> comments;
-
     private final List<QuizInfo> quizzes;
 
     private final LocalDateTime createdAt;
 
     private JoinVideoSessionResponse(String sessionId, Boolean watchCompleted, VideoInfo video, List<Long> segViewCnts,
                                      Boolean isComment, Boolean isScrapped, List<String> categories,
-                                     List<CommentInfo> comments, List<QuizInfo> quizzes, LocalDateTime createdAt) {
+                                     List<QuizInfo> quizzes, LocalDateTime createdAt) {
         this.sessionId = sessionId;
         this.watchCompleted = watchCompleted;
         this.video = video;
@@ -36,7 +34,6 @@ public class JoinVideoSessionResponse {
         this.isComment = isComment;
         this.isScrapped = isScrapped;
         this.categories = categories == null ? List.of() : List.copyOf(categories);
-        this.comments = comments == null ? List.of() : List.copyOf(comments);
         this.quizzes = quizzes == null ? List.of() : List.copyOf(quizzes);
         this.createdAt = createdAt;
     }
@@ -44,6 +41,6 @@ public class JoinVideoSessionResponse {
     public static JoinVideoSessionResponse from(JoinVideoSessionResult result) {
         return new JoinVideoSessionResponse(result.getSessionId(), result.getWatchCompleted(), result.getVideo(),
                 result.getSegViewCnts(), result.getIsComment(), result.getIsScrapped(), result.getCategories(),
-                result.getComments(), result.getQuizzes(), result.getCreatedAt());
+                result.getQuizzes(), result.getCreatedAt());
     }
 }
