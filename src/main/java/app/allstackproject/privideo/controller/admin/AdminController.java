@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/admin/{orgId}")
+@PreAuthorize("hasAuthority('org:admin')")
 @Tag(name = "Admin", description = "관리자 관련 API")
 @SecurityRequirement(name = ORG_AUTH_KEY)
 public class AdminController {
@@ -33,7 +34,6 @@ public class AdminController {
     private final AdminService adminService;
     private final OrganizationService organizationService;
 
-    @PreAuthorize("hasAuthority('org:admin')")
     @PatchMapping("/orgs/join")
     @Operation(summary = "조직 가입 요청 처리", description = "조직 가입 요청을 승인 또는 거절합니다.")
     public BaseResponse<SuccessResponse> changeJoinState(
@@ -44,7 +44,6 @@ public class AdminController {
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
     }
 
-    @PreAuthorize("hasAuthority('org:admin')")
     @PutMapping("/orgs/perm")
     @Operation(summary = "멤버 권한 변경", description = "조직 멤버의 권한을 변경합니다.")
     public BaseResponse<SuccessResponse> updateMemberPermission(
@@ -59,7 +58,6 @@ public class AdminController {
     }
 
 
-    @PreAuthorize("hasAuthority('org:admin')")
     @PatchMapping("/orgs/code")
     @Operation(summary = "조직 코드 재발급", description = "조직 코드를 새로 발급합니다.")
     public BaseResponse<OrgCodeResponse> regenerateOrgToken(

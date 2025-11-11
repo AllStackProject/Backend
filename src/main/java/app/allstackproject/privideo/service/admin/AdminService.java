@@ -98,6 +98,7 @@ public class AdminService {
             throw new ApiException(ORGANIZATION_NOT_FOUND);
         }
 
+        // TODO: 여기서 MEMBER_NOT_FOUND : /admin/orgs/perm
         Member admin = memberRepository.findByIdAndOrganizationId(adminUserId, orgId)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
 

@@ -44,7 +44,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     public static final String SECURITY_EXCEPTION_KEY = "SECURITY_RESPONSE_STATUS";
 
     private static final Set<String> EXCLUDED_ROOTS = Set.of(
-            "user", "org",
+            "user", "orgs",
             "error", "favicon.ico",
             "public", "assets", "static"
     );
@@ -75,13 +75,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 throw new ApiException(INVALID_TOKEN, ex.getMessage());
             }
 
-            String pathOrgId = extractOrgIdFromPath(req);
+            String uri = req.getRequestURI();
+            String firstPath = firstSegment(req);
             Authentication auth;
 
             switch (tokenType) {
                 case BOOTSTRAP -> {
-                    String firstPath = firstSegment(req);
-                    if (pathOrgId != null && !EXCLUDED_ROOTS.contains(firstPath)) {
+                    // BOOTSTRAP 토큰은 /orgs 경로에만 허용
+//                    if (!"orgs".equals(firstPath)) {
+                    if (!EXCLUDED_ROOTS.contains(firstPath)) {
                         throw new ApiException(FORBIDDEN_ORG_MISMATCH);
                     }
 
@@ -98,6 +100,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 }
 
                 case ORG -> {
+                    String pathOrgId = extractOrgIdFromPath(uri, firstPath);
+
                     Long userId = getLongFlexible(c, "userId");
                     Long memberId = getLongFlexible(c, "memberId");
                     Long orgId = getLongFlexible(c, "orgId");
@@ -136,7 +140,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             new SimpleGrantedAuthority("org:granted"),
                             new SimpleGrantedAuthority("org:" + orgJoinStatus)
                     ));
-                    
+
                     if (orgIsAdmin) {
                         auths.add(new SimpleGrantedAuthority("org:admin"));
                     }
@@ -186,39 +190,43 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         return null;
     }
 
-    private String extractOrgIdFromPath(HttpServletRequest req) {
-        String uri = req.getRequestURI();
+    /**
+     * ORG 토큰용 orgId 추출
+     * - /{orgId}/... 형식: 첫 번째 세그먼트가 숫자면 반환
+     * - /admin/{orgId}/... 형식: 두 번째 세그먼트가 숫자면 반환
+     */
+    private String extractOrgIdFromPath(String uri, String firstPath) {
         if (!StringUtils.hasText(uri) || "/".equals(uri)) {
             return null;
         }
 
-        String[] parts = uri.split("/");
-        String first = null;
-
-        // 첫 번째 유효 세그먼트 찾기
-        for (String s : parts) {
-            if (!StringUtils.hasText(s)) {
-                continue;
-            }
-            first = cleanSegment(s);
-            break;
-        }
-        if (first != null && EXCLUDED_ROOTS.contains(first)) {
+        if (firstPath != null && (EXCLUDED_ROOTS.contains(firstPath) || "orgs".equals(firstPath))) {
             return null;
         }
 
+        String[] parts = uri.split("/");
+        List<String> segments = new ArrayList<>();
+
         for (String raw : parts) {
-            if (!StringUtils.hasText(raw)) {
-                continue;
-            }
-            String seg = cleanSegment(raw);
-            if (isAllDigits(seg)) {
-                return seg;
+            if (StringUtils.hasText(raw)) {
+                segments.add(cleanSegment(raw));
             }
         }
+
+        if (segments.isEmpty()) {
+            return null;
+        }
+
+        if (isAllDigits(segments.get(0))) {
+            return segments.get(0);
+        }
+
+        if ("admin".equals(segments.get(0)) && segments.size() > 1 && isAllDigits(segments.get(1))) {
+            return segments.get(1);
+        }
+
         return null;
     }
-
 
     private static Long getLongFlexible(Claims c, String key) {
         Object v = c.get(key);
