@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.service.organization;
 
+import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.PENDING;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.REJECTED;
@@ -161,6 +162,24 @@ public class OrganizationService {
         } else {
             Member newMember = Member.create(user, organization, nickname, false, PENDING);
             memberRepository.save(newMember);
+        }
+
+        return true;
+    }
+
+    @Transactional(readOnly = true)
+    public boolean validateOrgNickname(Long userId, String nickname, String code) {
+        if (!userRepository.existsById(userId)) {
+            throw new ApiException(USER_NOT_FOUND);
+        }
+
+        Long orgId = orgRedisRepository.getOrgIdByCode(code);
+        if (orgId == null) {
+            throw new ApiException(ORG_CODE_NOT_AVAILABLE);
+        }
+
+        if (memberRepository.findByOrganizationIdAndNicknameAndStatus(orgId, nickname, ACTIVE).isPresent()) {
+            return false;
         }
 
         return true;

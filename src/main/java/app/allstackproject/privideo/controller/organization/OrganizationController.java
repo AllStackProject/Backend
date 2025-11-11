@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -79,10 +80,10 @@ public class OrganizationController {
     }
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")
-    @GetMapping("/availability?name={orgName}")
-    @Operation(summary = "조직명 중복 조회", description = "새로 생성할 조직에 대해 중복 조직명이 존재하는지 조회합니다..")
+    @GetMapping("/availability")
+    @Operation(summary = "조직명 중복 조회", description = "새로 생성할 조직에 대해 중복 조직명이 존재하는지 조회합니다.")
     public BaseResponse<SuccessResponse> validateOrgName(@AuthenticationPrincipal(expression = "userId") Long userId,
-                                                         @PathVariable("orgName") String orgName) {
+                                                         @RequestParam("name") String orgName) {
         return new BaseResponse<>(SuccessResponse.of(organizationService.validateOrgName(userId, orgName)));
     }
 
@@ -106,6 +107,15 @@ public class OrganizationController {
 
         boolean isSuccess = organizationService.joinOrg(userId, joinOrgRequest.getCode(), joinOrgRequest.getNickname());
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
+    }
+
+    @PreAuthorize("hasAuthority('bootstrap:granted')")
+    @GetMapping("/availability/nickname")
+    @Operation(summary = "조직 닉네임 중복 조회", description = "조직 내에서 사용할 닉네임에 대해 중복 닉네임이 존재하는지 조회합니다.")
+    public BaseResponse<SuccessResponse> validateOrgNickname(
+            @AuthenticationPrincipal(expression = "userId") Long userId, @RequestParam("nickname") String nickname,
+            @RequestParam("code") String code) {
+        return new BaseResponse<>(SuccessResponse.of(organizationService.validateOrgNickname(userId, nickname, code)));
     }
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")
