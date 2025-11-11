@@ -11,7 +11,6 @@ import static app.allstackproject.privideo.entity.QVideoMemberGroupMapping.video
 
 import app.allstackproject.privideo.common.enumStatus.BaseStatusType;
 import app.allstackproject.privideo.dto.history.HistoryItem;
-import app.allstackproject.privideo.dto.history.VideoHistory;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
@@ -101,7 +100,7 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
                         video.organization.id.eq(orgId),
                         scrappedExists
                 )
-                .orderBy(scrap.lastModifiedAt.desc())
+                .orderBy(history.lastModifiedAt.desc())
                 .fetch();
     }
 }
