@@ -90,7 +90,8 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
                         video.title,
                         video.thumbnailUrl,
                         history.watchRate,
-                        history.lastModifiedAt
+                        history.lastModifiedAt,
+                        video.wholeTime
                 ))
                 .from(history)
                 .join(history.video, video)

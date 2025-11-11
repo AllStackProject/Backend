@@ -38,6 +38,7 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                         video.thumbnailUrl,
                         history.watchRate,
                         history.lastModifiedAt,
+                        video.wholeTime,
                         scrappedExists
                 ))
                 .from(history)
