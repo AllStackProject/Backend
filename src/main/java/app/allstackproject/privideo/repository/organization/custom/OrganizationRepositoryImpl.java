@@ -4,7 +4,6 @@ import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTI
 import static app.allstackproject.privideo.entity.QMember.member;
 import static app.allstackproject.privideo.entity.QOrganization.organization;
 
-import app.allstackproject.privideo.dto.organization.ReadOrgDto;
 import app.allstackproject.privideo.dto.organization.ReadOrgResult;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -31,7 +30,8 @@ public class OrganizationRepositoryImpl implements OrganizationRepositoryCustom 
                 .from(member)
                 .join(member.organization, organization)
                 .where(member.user.id.eq(userId)
-                        .and(member.status.eq(ACTIVE)))
+                        .and(member.status.eq(ACTIVE))
+                        .and(organization.status.eq(ACTIVE)))
                 .fetch();
     }
 }

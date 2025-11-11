@@ -11,13 +11,13 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom {
 
-    List<Member> findByUserId(Long userId);
+    List<Member> findByUserIdAndStatus(Long userId, BaseStatusType status);
 
     Optional<Member> findByIdAndStatus(Long id, BaseStatusType status);
 
-    Optional<Member> findByIdAndOrganizationId(Long id, Long orgId);
+    Optional<Member> findByIdAndOrganizationIdAndStatus(Long id, Long orgId, BaseStatusType status);
 
-    Optional<Member> findByUserIdAndOrganizationId(Long userId, Long orgId);
+    Optional<Member> findByUserIdAndOrganizationIdAndStatus(Long userId, Long orgId, BaseStatusType status);
 
     Optional<Member> findByOrganizationIdAndNicknameAndStatus(Long orgId, String nickname,
                                                               BaseStatusType baseStatusType);

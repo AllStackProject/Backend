@@ -55,7 +55,7 @@ public class OrganizationService {
         Organization organization = Organization.create(user, createOrgRequest.getName(), imgUrl,
                 createOrgRequest.getDesc());
 
-        Member member = Member.create(user, organization, user.getName(), true, APPROVED);
+        Member member = Member.create(user, organization, createOrgRequest.getNickname(), true, APPROVED);
         member.adminPermissionSet();
 
         organizationRepository.save(organization);
@@ -92,7 +92,7 @@ public class OrganizationService {
             throw new ApiException(USER_NOT_FOUND);
         }
 
-        if (organizationRepository.findByName(orgName).isPresent()) {
+        if (organizationRepository.findByNameAndStatus(orgName, ACTIVE).isPresent()) {
             return false;
         }
 
@@ -144,7 +144,7 @@ public class OrganizationService {
             throw new ApiException(ORG_CODE_NOT_AVAILABLE);
         }
 
-        Optional<Member> existMember = memberRepository.findByUserIdAndOrganizationId(userId, orgId);
+        Optional<Member> existMember = memberRepository.findByUserIdAndOrganizationIdAndStatus(userId, orgId, ACTIVE);
 
         if (existMember.isPresent()) {
             Member member = existMember.get();
@@ -190,7 +190,7 @@ public class OrganizationService {
         userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
         organizationRepository.findById(orgId)
                 .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
-        Member member = memberRepository.findByUserIdAndOrganizationId(userId, orgId)
+        Member member = memberRepository.findByUserIdAndOrganizationIdAndStatus(userId, orgId, ACTIVE)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
 
         if (member.getJoinStatus() != APPROVED) {
@@ -213,7 +213,7 @@ public class OrganizationService {
         userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
         organizationRepository.findById(orgId)
                 .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
-        Member member = memberRepository.findByUserIdAndOrganizationId(userId, orgId)
+        Member member = memberRepository.findByUserIdAndOrganizationIdAndStatus(userId, orgId, ACTIVE)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
 
         try {

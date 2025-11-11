@@ -81,7 +81,7 @@ public class VideoService {
         List<String> categories = categoryRepository.findAllByVideoId(videoId);
 
         boolean isScrapped = false;
-        if (scrapRepository.existsByMemberIdAndVideoId(memberId, videoId)) {
+        if (scrapRepository.existsByMemberIdAndVideoIdAndStatus(memberId, videoId, ACTIVE)) {
             isScrapped = true;
         }
 
@@ -89,7 +89,7 @@ public class VideoService {
                 (int) Math.ceil((double) video.getWholeTime() / SEGMENT_SECONDS));
 
         boolean isFirstWatch = true;
-        Optional<History> history = historyRepository.findByMemberIdAndVideoIdAndStatus(memberId, videoId, ACTIVE);
+        Optional<History> history = historyRepository.findByMemberIdAndVideoId(memberId, videoId);
         // 시청 기록 있는지 확인
         if (history.isPresent()) {
             if (history.get().isComplete()) {
@@ -143,7 +143,7 @@ public class VideoService {
 
         // TODO: Redis에서 세션 키 삭제
         if (isFirstWatch) {
-            History history = historyRepository.findByMemberIdAndVideoIdAndStatus(memberId, videoId, ACTIVE)
+            History history = historyRepository.findByMemberIdAndVideoId(memberId, videoId)
                     .orElseThrow(() -> new ApiException(HISTORY_NOT_FOUND));
 
             boolean watchEnd = watchedSegments.testBit(totalSegCnt - 1);

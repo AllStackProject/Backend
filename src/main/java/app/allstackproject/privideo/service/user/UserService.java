@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.service.user;
 
+import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.PENDING;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DB_CONSTRAINT_VIOLATE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DUPLICATE_EMAIL;
@@ -45,7 +46,7 @@ public class UserService {
     private final OrgRedisRepository orgRedisRepository;
 
     public boolean signup(@Valid PostSignupRequest postSignupRequest) {
-        if (userRepository.existsByEmail(postSignupRequest.getEmail())) {
+        if (userRepository.existsByEmailAndStatus(postSignupRequest.getEmail(), ACTIVE)) {
             throw new ApiException(DUPLICATE_EMAIL);
         }
 
@@ -83,7 +84,7 @@ public class UserService {
     public String login(@Valid PostLoginRequest postLoginRequest) {
         String email = postLoginRequest.getEmail();
 
-        User user = userRepository.findByEmail(email)
+        User user = userRepository.findByEmailAndStatus(email, ACTIVE)
                 .orElseThrow(() -> new ApiException(USER_NOT_FOUND));
 
         if (!user.matchPassword(postLoginRequest.getPassword(), passwordEncoder)) {
@@ -97,7 +98,7 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(USER_NOT_FOUND));
 
-        List<Member> members = memberRepository.findByUserId(userId);
+        List<Member> members = memberRepository.findByUserIdAndStatus(userId, ACTIVE);
         return UserInfoResponse.of(user, members);
     }
 

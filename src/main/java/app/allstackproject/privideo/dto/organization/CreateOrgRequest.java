@@ -23,4 +23,7 @@ public class CreateOrgRequest {
 
     @NotNull
     private String desc;
+
+    @NotNull
+    private String nickname;
 }

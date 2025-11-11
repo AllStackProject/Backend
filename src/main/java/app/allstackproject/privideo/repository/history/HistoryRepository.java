@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface HistoryRepository extends JpaRepository<History, Long>, HistoryRepositoryCustom {
-    Optional<History> findByMemberIdAndVideoIdAndStatus(Long memberId, Long videoId, BaseStatusType status);
+    Optional<History> findByMemberIdAndVideoId(Long memberId, Long videoId);
 }

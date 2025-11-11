@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
 
 @Slf4j
@@ -32,7 +33,7 @@ public class PermissionService {
 
         log.info("Redis fallback, DB 조회");
 
-        Member member = memberRepository.findByIdAndOrganizationId(orgId, memberId)
+        Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
                 .orElseThrow(() -> {
                     return new ApiException(MEMBER_NOT_FOUND);
                 });

@@ -39,7 +39,6 @@ public class CommentService {
     }
 
     public boolean deleteComment(Long memberId, Long orgId, Long commentId) {
-
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ApiException(COMMENT_NOT_FOUND));
 

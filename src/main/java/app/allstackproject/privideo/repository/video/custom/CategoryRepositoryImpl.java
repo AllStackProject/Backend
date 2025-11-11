@@ -1,9 +1,9 @@
 package app.allstackproject.privideo.repository.video.custom;
 
+import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.entity.QCategory.category;
 import static app.allstackproject.privideo.entity.QVideoCategoryMapping.videoCategoryMapping;
 
-import app.allstackproject.privideo.common.enumStatus.BaseStatusType;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +20,8 @@ public class CategoryRepositoryImpl implements CategoryRepositoryCustom {
                 .from(videoCategoryMapping)
                 .join(videoCategoryMapping.category, category)
                 .where(videoCategoryMapping.video.id.eq(videoId)
-                        .and(videoCategoryMapping.status.eq(BaseStatusType.ACTIVE))
-                        .and(category.status.eq(BaseStatusType.ACTIVE)))
+                        .and(videoCategoryMapping.status.eq(ACTIVE))
+                        .and(category.status.eq(ACTIVE)))
                 .orderBy(category.title.asc())
                 .fetch();
     }

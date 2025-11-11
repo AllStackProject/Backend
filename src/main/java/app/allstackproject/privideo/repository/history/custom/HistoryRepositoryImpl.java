@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.repository.history.custom;
 
+import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.entity.QHistory.history;
 import static app.allstackproject.privideo.entity.QScrap.scrap;
 import static app.allstackproject.privideo.entity.QVideo.video;
@@ -26,7 +27,7 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .where(
                         scrap.member.id.eq(memberId),
                         scrap.video.id.eq(history.video.id),
-                        scrap.status.eq(BaseStatusType.ACTIVE)
+                        scrap.video.status.eq(ACTIVE)
                 )
                 .exists();
 
@@ -45,7 +46,6 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .join(history.video, video)
                 .where(
                         history.member.id.eq(memberId),
-                        history.status.eq(BaseStatusType.ACTIVE),
                         video.organization.id.eq(orgId)
                 )
                 .orderBy(history.lastModifiedAt.desc())
