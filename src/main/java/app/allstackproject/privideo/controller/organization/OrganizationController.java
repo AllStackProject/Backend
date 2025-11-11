@@ -79,6 +79,14 @@ public class OrganizationController {
     }
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")
+    @GetMapping("/availability?name={orgName}")
+    @Operation(summary = "조직명 중복 조회", description = "새로 생성할 조직에 대해 중복 조직명이 존재하는지 조회합니다..")
+    public BaseResponse<SuccessResponse> validateOrgName(@AuthenticationPrincipal(expression = "userId") Long userId,
+                                                         @PathVariable("orgName") String orgName) {
+        return new BaseResponse<>(SuccessResponse.of(organizationService.validateOrgName(userId, orgName)));
+    }
+
+    @PreAuthorize("hasAuthority('bootstrap:granted')")
     @GetMapping("")
     @Operation(summary = "전체 조직 조회", description = "가입 요청을 보낸 조직과 가입이 완료된 조직을 모두 조회합니다.")
     public BaseResponse<ReadOrgsResponse> readOrgs(@AuthenticationPrincipal(expression = "userId") Long userId) {

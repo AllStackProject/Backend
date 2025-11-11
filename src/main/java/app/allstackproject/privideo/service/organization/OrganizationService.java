@@ -5,7 +5,6 @@ import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.PEND
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.REJECTED;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_APPROVED_MEMBER;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_REQUESTED_MEMBER;
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DUPLICATE_ORG_NAME;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORG_CODE_NOT_AVAILABLE;
@@ -51,10 +50,6 @@ public class OrganizationService {
     private final JwtProvider jwtProvider;
 
     public String createOrg(Long userId, @Valid CreateOrgRequest createOrgRequest, String imgUrl) {
-        if (organizationRepository.findByName(createOrgRequest.getName()).isPresent()) {
-            throw new ApiException(DUPLICATE_ORG_NAME);
-        }
-
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
         Organization organization = Organization.create(user, createOrgRequest.getName(), imgUrl,
                 createOrgRequest.getDesc());
@@ -64,7 +59,7 @@ public class OrganizationService {
 
         organizationRepository.save(organization);
         memberRepository.save(member);
-        
+
         String code = generateCode(user.getId());
         try {
             orgRedisRepository.createOrgCode(organization.getId(), code);
@@ -88,6 +83,19 @@ public class OrganizationService {
                 .orgIsAdmin(member.isAdmin())
                 .orgPermission(member.getPermissionCode())
                 .build());
+    }
+
+    @Transactional(readOnly = true)
+    public boolean validateOrgName(Long userId, String orgName) {
+        if (!userRepository.existsById(userId)) {
+            throw new ApiException(USER_NOT_FOUND);
+        }
+
+        if (organizationRepository.findByName(orgName).isPresent()) {
+            return false;
+        }
+
+        return true;
     }
 
     @Transactional(readOnly = true)
