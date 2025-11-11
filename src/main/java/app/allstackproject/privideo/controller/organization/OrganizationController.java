@@ -10,10 +10,14 @@ import static app.allstackproject.privideo.common.util.BindingResultUtil.getErro
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
+import app.allstackproject.privideo.dto.organization.CreatOrgResult;
 import app.allstackproject.privideo.dto.organization.CreateOrgRequest;
+import app.allstackproject.privideo.dto.organization.CreateOrgResponse;
 import app.allstackproject.privideo.dto.organization.JoinOrgRequest;
 import app.allstackproject.privideo.dto.organization.ReadOrgDto;
 import app.allstackproject.privideo.dto.organization.ReadOrgsResponse;
+import app.allstackproject.privideo.dto.organization.SelectOrgResponse;
+import app.allstackproject.privideo.dto.organization.SelectOrgResult;
 import app.allstackproject.privideo.service.organization.OrganizationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -59,9 +63,9 @@ public class OrganizationController {
                     )
             )
     )
-    public BaseResponse<SuccessResponse> createOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
-                                                   @Valid @ModelAttribute CreateOrgRequest createOrgRequest,
-                                                   BindingResult bindingResult, HttpServletResponse response) {
+    public BaseResponse<CreateOrgResponse> createOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
+                                                     @Valid @ModelAttribute CreateOrgRequest createOrgRequest,
+                                                     BindingResult bindingResult, HttpServletResponse response) {
         if (bindingResult.hasErrors()) {
             throw new ApiException(INVALID_ORG_CREATE, getErrorMessage(bindingResult));
         }
@@ -70,13 +74,9 @@ public class OrganizationController {
         String imgUrl = "imgUrl";
         // TODO: S3에 이미지 업로드
 
-        String orgToken = organizationService.createOrg(userId, createOrgRequest, imgUrl);
-        if (orgToken == null || orgToken.isBlank()) {
-            return new BaseResponse<>(SuccessResponse.of(false));
-        }
-
-        response.setHeader(ACCESS_TOKEN_HEADER, TOKEN_PREFIX + orgToken);
-        return new BaseResponse<>(SuccessResponse.of(true));
+        CreatOrgResult result = organizationService.createOrg(userId, createOrgRequest, imgUrl);
+        response.setHeader(ACCESS_TOKEN_HEADER, TOKEN_PREFIX + result.getToken());
+        return new BaseResponse<>(CreateOrgResponse.of(result.getId()));
     }
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")
@@ -121,15 +121,11 @@ public class OrganizationController {
     @PreAuthorize("hasAuthority('bootstrap:granted')")
     @PatchMapping("/{orgId}")
     @Operation(summary = "조직 선택", description = "org token을 발행합니다.")
-    public BaseResponse<SuccessResponse> selectOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
-                                                   @PathVariable("orgId") Long orgId, HttpServletResponse response) {
-        String orgToken = organizationService.selectOrg(userId, orgId);
-        if (orgToken == null || orgToken.isBlank()) {
-            return new BaseResponse<>(SuccessResponse.of(false));
-        }
-
-        response.setHeader(ACCESS_TOKEN_HEADER, TOKEN_PREFIX + orgToken);
-        return new BaseResponse<>(SuccessResponse.of(true));
+    public BaseResponse<SelectOrgResponse> selectOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
+                                                     @PathVariable("orgId") Long orgId, HttpServletResponse response) {
+        SelectOrgResult result = organizationService.selectOrg(userId, orgId);
+        response.setHeader(ACCESS_TOKEN_HEADER, TOKEN_PREFIX + result.getToken());
+        return new BaseResponse<>(SelectOrgResponse.of(result.getNickname()));
     }
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")
