@@ -141,4 +141,13 @@ public class UserService {
                 request.getChangedAge()
         );
     }
+
+    public boolean deleteUser(Long userId) {
+        memberRepository.inactivateAllByUserId(userId);
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
+        user.updateToInactive();
+
+        return true;
+    }
 }

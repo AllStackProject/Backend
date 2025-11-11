@@ -2,13 +2,14 @@ package app.allstackproject.privideo.repository.member;
 
 import app.allstackproject.privideo.common.enumStatus.BaseStatusType;
 import app.allstackproject.privideo.entity.Member;
+import app.allstackproject.privideo.repository.member.custom.MemberRepositoryCustom;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface MemberRepository extends JpaRepository<Member, Long> {
+public interface MemberRepository extends JpaRepository<Member, Long>, MemberRepositoryCustom {
 
     List<Member> findByUserId(Long userId);
 
