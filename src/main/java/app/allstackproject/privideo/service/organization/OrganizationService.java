@@ -14,6 +14,7 @@ import static app.allstackproject.privideo.common.util.OrgCodeGenerator.generate
 
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.jwt.JwtProvider;
+import app.allstackproject.privideo.dto.organization.CreatOrgResult;
 import app.allstackproject.privideo.dto.organization.CreateOrgRequest;
 import app.allstackproject.privideo.dto.organization.OrgTokenDto;
 import app.allstackproject.privideo.dto.organization.ReadOrgDto;
@@ -50,7 +51,7 @@ public class OrganizationService {
 
     private final JwtProvider jwtProvider;
 
-    public String createOrg(Long userId, @Valid CreateOrgRequest createOrgRequest, String imgUrl) {
+    public CreatOrgResult createOrg(Long userId, @Valid CreateOrgRequest createOrgRequest, String imgUrl) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
         Organization organization = Organization.create(user, createOrgRequest.getName(), imgUrl,
                 createOrgRequest.getDesc());
@@ -76,14 +77,16 @@ public class OrganizationService {
             log.info("Redis 저장 실패 - orgId: {}", organization.getId());
         }
 
-        return jwtProvider.createOrgToken(OrgTokenDto.builder()
-                .userId(userId)
-                .memberId(member.getId())
-                .orgId(organization.getId())
-                .orgJoinStatus(member.getJoinStatus().toString())
-                .orgIsAdmin(member.isAdmin())
-                .orgPermission(member.getPermissionCode())
-                .build());
+        Long orgId = organization.getId();
+        return new CreatOrgResult(orgId,
+                jwtProvider.createOrgToken(OrgTokenDto.builder()
+                        .userId(userId)
+                        .memberId(member.getId())
+                        .orgId(orgId)
+                        .orgJoinStatus(member.getJoinStatus().toString())
+                        .orgIsAdmin(member.isAdmin())
+                        .orgPermission(member.getPermissionCode())
+                        .build()));
     }
 
     @Transactional(readOnly = true)
