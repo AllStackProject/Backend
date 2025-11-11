@@ -1,4 +1,4 @@
-package app.allstackproject.privideo.repository.comment;
+package app.allstackproject.privideo.repository.comment.custom;
 
 import app.allstackproject.privideo.dto.video.CommentInfo;
 import java.util.List;

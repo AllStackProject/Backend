@@ -5,7 +5,7 @@ import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPR
 import static app.allstackproject.privideo.entity.QMember.member;
 import static app.allstackproject.privideo.entity.QMemberGroupMapping.memberGroupMapping;
 import static app.allstackproject.privideo.entity.QVideo.video;
-import static app.allstackproject.privideo.entity.QVideoGroupAuthority.videoGroupAuthority;
+import static app.allstackproject.privideo.entity.QVideoMemberGroupMapping.videoMemberGroupMapping;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
@@ -20,19 +20,19 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     @Override
     public boolean isValidMemberAndOrgAndVideo(Long memberId, Long orgId, Long videoId) {
         BooleanExpression openToAll = JPAExpressions.selectOne()
-                .from(videoGroupAuthority)
-                .where(videoGroupAuthority.video.id.eq(videoId),
-                        videoGroupAuthority.status.eq(ACTIVE))
+                .from(videoMemberGroupMapping)
+                .where(videoMemberGroupMapping.video.id.eq(videoId),
+                        videoMemberGroupMapping.status.eq(ACTIVE))
                 .notExists();
 
         BooleanExpression memberGroupMatch = JPAExpressions.selectOne()
-                .from(videoGroupAuthority)
+                .from(videoMemberGroupMapping)
                 .join(memberGroupMapping)
-                .on(memberGroupMapping.memberGroup.id.eq(videoGroupAuthority.memberGroup.id)
+                .on(memberGroupMapping.memberGroup.id.eq(videoMemberGroupMapping.memberGroup.id)
                         .and(memberGroupMapping.member.id.eq(memberId))
                         .and(memberGroupMapping.status.eq(ACTIVE)))
-                .where(videoGroupAuthority.video.id.eq(videoId),
-                        videoGroupAuthority.status.eq(ACTIVE))
+                .where(videoMemberGroupMapping.video.id.eq(videoId),
+                        videoMemberGroupMapping.status.eq(ACTIVE))
                 .exists();
 
         Integer ok = jpaQueryFactory

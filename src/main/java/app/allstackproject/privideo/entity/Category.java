@@ -13,9 +13,9 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "Hashtag")
+@Table(name = "Category")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Hashtag extends BaseEntity {
+public class Category extends BaseEntity {
     @Id
     @GeneratedValue
     private Long id;
@@ -25,12 +25,12 @@ public class Hashtag extends BaseEntity {
     private String title;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Hashtag(String title) {
+    private Category(String title) {
         this.title = title;
     }
 
-    public static Hashtag create(String title) {
-        return Hashtag.builder()
+    public static Category create(String title) {
+        return Category.builder()
                 .title(title)
                 .build();
     }

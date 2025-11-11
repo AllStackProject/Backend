@@ -11,8 +11,6 @@ import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.organization.CreateOrgRequest;
-import app.allstackproject.privideo.dto.organization.CreateOrgResponse;
-import app.allstackproject.privideo.dto.organization.CreateOrgResult;
 import app.allstackproject.privideo.dto.organization.JoinOrgRequest;
 import app.allstackproject.privideo.dto.organization.ReadOrgDto;
 import app.allstackproject.privideo.dto.organization.ReadOrgsResponse;
@@ -38,6 +36,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -60,9 +59,9 @@ public class OrganizationController {
                     )
             )
     )
-    public BaseResponse<CreateOrgResponse> createOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
-                                                     @Valid @ModelAttribute CreateOrgRequest createOrgRequest,
-                                                     BindingResult bindingResult) {
+    public BaseResponse<SuccessResponse> createOrg(@AuthenticationPrincipal(expression = "userId") Long userId,
+                                                   @Valid @ModelAttribute CreateOrgRequest createOrgRequest,
+                                                   BindingResult bindingResult, HttpServletResponse response) {
         if (bindingResult.hasErrors()) {
             throw new ApiException(INVALID_ORG_CREATE, getErrorMessage(bindingResult));
         }
@@ -71,8 +70,21 @@ public class OrganizationController {
         String imgUrl = "imgUrl";
         // TODO: S3에 이미지 업로드
 
-        CreateOrgResult createOrgResult = organizationService.createOrg(userId, createOrgRequest, imgUrl);
-        return new BaseResponse<>(CreateOrgResponse.of(createOrgResult));
+        String orgToken = organizationService.createOrg(userId, createOrgRequest, imgUrl);
+        if (orgToken == null || orgToken.isBlank()) {
+            return new BaseResponse<>(SuccessResponse.of(false));
+        }
+
+        response.setHeader(ACCESS_TOKEN_HEADER, TOKEN_PREFIX + orgToken);
+        return new BaseResponse<>(SuccessResponse.of(true));
+    }
+
+    @PreAuthorize("hasAuthority('bootstrap:granted')")
+    @GetMapping("/availability")
+    @Operation(summary = "조직명 중복 조회", description = "새로 생성할 조직에 대해 중복 조직명이 존재하는지 조회합니다.")
+    public BaseResponse<SuccessResponse> validateOrgName(@AuthenticationPrincipal(expression = "userId") Long userId,
+                                                         @RequestParam("name") String orgName) {
+        return new BaseResponse<>(SuccessResponse.of(organizationService.validateOrgName(userId, orgName)));
     }
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")
@@ -93,8 +105,17 @@ public class OrganizationController {
             throw new ApiException(INVALID_ORG_JOIN, getErrorMessage(bindingResult));
         }
 
-        boolean isSuccess = organizationService.joinOrg(userId, joinOrgRequest.getCode());
+        boolean isSuccess = organizationService.joinOrg(userId, joinOrgRequest.getCode(), joinOrgRequest.getNickname());
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
+    }
+
+    @PreAuthorize("hasAuthority('bootstrap:granted')")
+    @GetMapping("/availability/nickname")
+    @Operation(summary = "조직 닉네임 중복 조회", description = "조직 내에서 사용할 닉네임에 대해 중복 닉네임이 존재하는지 조회합니다.")
+    public BaseResponse<SuccessResponse> validateOrgNickname(
+            @AuthenticationPrincipal(expression = "userId") Long userId, @RequestParam("nickname") String nickname,
+            @RequestParam("code") String code) {
+        return new BaseResponse<>(SuccessResponse.of(organizationService.validateOrgNickname(userId, nickname, code)));
     }
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")

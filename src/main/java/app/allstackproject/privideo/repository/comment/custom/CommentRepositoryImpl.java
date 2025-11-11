@@ -1,19 +1,13 @@
-package app.allstackproject.privideo.repository.comment;
+package app.allstackproject.privideo.repository.comment.custom;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
-import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.entity.QMember.member;
-import static app.allstackproject.privideo.entity.QMemberGroupMapping.memberGroupMapping;
 import static app.allstackproject.privideo.entity.QUser.user;
 import static app.allstackproject.privideo.entity.QVideo.video;
-import static app.allstackproject.privideo.entity.QVideoGroupAuthority.videoGroupAuthority;
 
 import app.allstackproject.privideo.dto.video.CommentInfo;
 import app.allstackproject.privideo.entity.QComment;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.JPAExpressions;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

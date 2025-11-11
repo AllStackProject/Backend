@@ -19,12 +19,12 @@ import app.allstackproject.privideo.dto.video.VideoInfo;
 import app.allstackproject.privideo.entity.History;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.Video;
-import app.allstackproject.privideo.repository.CommentRepository;
-import app.allstackproject.privideo.repository.ScrapRepository;
+import app.allstackproject.privideo.repository.comment.CommentRepository;
+import app.allstackproject.privideo.repository.scrap.ScrapRepository;
 import app.allstackproject.privideo.repository.member.MemberGroupRepository;
-import app.allstackproject.privideo.repository.video.HashtagRepository;
-import app.allstackproject.privideo.repository.HistoryRepository;
-import app.allstackproject.privideo.repository.QuizRepository;
+import app.allstackproject.privideo.repository.video.CategoryRepository;
+import app.allstackproject.privideo.repository.history.HistoryRepository;
+import app.allstackproject.privideo.repository.quiz.QuizRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
 import java.math.BigInteger;
@@ -47,7 +47,7 @@ public class VideoService {
     private final VideoRepository videoRepository;
     private final HistoryRepository historyRepository;
     private final LogService logService;
-    private final HashtagRepository hashtagRepository;
+    private final CategoryRepository categoryRepository;
     private final CommentRepository commentRepository;
     private final ScrapRepository scrapRepository;
     private final QuizRepository quizRepository;
@@ -82,13 +82,13 @@ public class VideoService {
         VideoInfo videoInfo = VideoInfo.from(video);
         List<CommentInfo> commentInfos = commentRepository.findAllByVideoId(videoId);
         List<QuizInfo> quizInfos = quizRepository.findByVideoId(videoId);
-        List<String> hashtags = hashtagRepository.findAllByVideoId(videoId);
+        List<String> categories = categoryRepository.findAllByVideoId(videoId);
 
         boolean isScrapped = false;
         if (scrapRepository.existsByMemberIdAndVideoId(memberId, videoId)) {
             isScrapped = true;
         }
-        
+
         List<Long> segViewCnts = logService.getSegViewCounts(videoId,
                 (int) Math.ceil((double) video.getWholeTime() / SEGMENT_SECONDS));
 
@@ -99,7 +99,7 @@ public class VideoService {
             if (history.get().isComplete()) {
                 isFirstWatch = false;
                 return JoinVideoSessionResult.completed(sessionId, videoInfo, segViewCnts, video.isComment(),
-                        isScrapped, hashtags, commentInfos, quizInfos);
+                        isScrapped, categories, commentInfos, quizInfos);
             }
             logService.incOrgViewBucket(orgId, Instant.now());
         } else {
@@ -112,7 +112,8 @@ public class VideoService {
             // TODO: Redis에 해당 멤버 + 재시청 여부 + 영상 아이디에 대해 세션 키 저장
         }
 
-        return JoinVideoSessionResult.create(sessionId, videoInfo, segViewCnts, video.isComment(), isScrapped, hashtags,
+        return JoinVideoSessionResult.create(sessionId, videoInfo, segViewCnts, video.isComment(), isScrapped,
+                categories,
                 commentInfos, quizInfos);
     }
 

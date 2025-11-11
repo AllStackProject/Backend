@@ -5,6 +5,7 @@ import static app.allstackproject.privideo.entity.QMember.member;
 import static app.allstackproject.privideo.entity.QOrganization.organization;
 
 import app.allstackproject.privideo.dto.organization.ReadOrgDto;
+import app.allstackproject.privideo.dto.organization.ReadOrgResult;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
@@ -16,13 +17,12 @@ public class OrganizationRepositoryImpl implements OrganizationRepositoryCustom 
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<ReadOrgDto> findAllByUserId(Long userId) {
+    public List<ReadOrgResult> findAllByUserId(Long userId) {
         return jpaQueryFactory
-                .select(Projections.constructor(ReadOrgDto.class,
+                .select(Projections.constructor(ReadOrgResult.class,
                         organization.id,
                         organization.name,
                         organization.imgUrl,
-                        organization.code,
                         member.createdAt,
                         member.isAdmin,
                         member.permissionCode.gt(0L), // member가 권한을 갖고 있는지 여부

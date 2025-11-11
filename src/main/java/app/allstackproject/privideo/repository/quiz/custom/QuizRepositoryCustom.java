@@ -1,4 +1,4 @@
-package app.allstackproject.privideo.repository.quiz;
+package app.allstackproject.privideo.repository.quiz.custom;
 
 import app.allstackproject.privideo.dto.quiz.MemberQuizDto;
 import app.allstackproject.privideo.dto.video.QuizInfo;

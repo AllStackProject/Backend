@@ -5,11 +5,11 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DUPLICATE_EMAIL;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_ORG_CODE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_PASSWORD;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORG_CODE_NOT_AVAILABLE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.PASSWORD_MISMATCH;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.PASSWORD_SAME_AS_CURRENT;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.USER_NOT_FOUND;
 
-import app.allstackproject.privideo.common.enumStatus.AgeType;
 import app.allstackproject.privideo.common.enumStatus.GenderType;
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.jwt.JwtProvider;
@@ -21,6 +21,7 @@ import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.entity.User;
 import app.allstackproject.privideo.repository.member.MemberRepository;
+import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.user.UserRepository;
 import jakarta.validation.Valid;
@@ -41,6 +42,7 @@ public class UserService {
     private final OrganizationRepository organizationRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private final OrgRedisRepository orgRedisRepository;
 
     public boolean signup(@Valid PostSignupRequest postSignupRequest) {
         if (userRepository.existsByEmail(postSignupRequest.getEmail())) {
@@ -64,9 +66,14 @@ public class UserService {
 
         String orgCode = postSignupRequest.getOrganizationCode();
         if (orgCode != null && !orgCode.isBlank()) {
-            Organization org = organizationRepository.findByCode(orgCode.trim())
+            Long orgId = orgRedisRepository.getOrgIdByCode(orgCode);
+            if (orgId == null) {
+                throw new ApiException(ORG_CODE_NOT_AVAILABLE);
+            }
+
+            Organization org = organizationRepository.findById(orgId)
                     .orElseThrow(() -> new ApiException(INVALID_ORG_CODE));
-            memberRepository.save(Member.create(user, org, false, PENDING));
+            memberRepository.save(Member.create(user, org, postSignupRequest.getName(), false, PENDING));
         }
 
         return true;
@@ -133,5 +140,14 @@ public class UserService {
                 GenderType.valueOf(request.getChangedGender().toUpperCase()),
                 request.getChangedAge()
         );
+    }
+
+    public boolean deleteUser(Long userId) {
+        memberRepository.inactivateAllByUserId(userId);
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
+        user.updateToInactive();
+
+        return true;
     }
 }

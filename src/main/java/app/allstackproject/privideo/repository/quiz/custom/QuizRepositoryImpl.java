@@ -1,4 +1,4 @@
-package app.allstackproject.privideo.repository.quiz;
+package app.allstackproject.privideo.repository.quiz.custom;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.entity.QMemberQuizResult.memberQuizResult;

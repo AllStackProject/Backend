@@ -5,16 +5,13 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_SCRAPPED;
 
 import app.allstackproject.privideo.common.exception.ApiException;
-import app.allstackproject.privideo.dto.video.ScrapResponse;
-import app.allstackproject.privideo.entity.History;
+import app.allstackproject.privideo.dto.history.HistoryItem;
+import app.allstackproject.privideo.dto.scrap.ScrapResponse;
 import app.allstackproject.privideo.entity.Scrap;
-import app.allstackproject.privideo.repository.HistoryRepository;
-import app.allstackproject.privideo.repository.ScrapRepository;
+import app.allstackproject.privideo.repository.scrap.ScrapRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -26,23 +23,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class ScrapService {
 
     private final ScrapRepository scrapRepository;
-    private final HistoryRepository historyRepository;
     private final MemberRepository memberRepository;
     private final VideoRepository videoRepository;
 
     @Transactional(readOnly = true)
     public ScrapResponse getUserScraps(Long memberId, Long orgId) {
-
-        List<Scrap> scrapList = scrapRepository.findByMemberIdAndVideoOrganizationId(memberId, orgId);
-        List<History> historyList = historyRepository.findByMemberIdAndVideoOrganizationId(memberId, orgId);
-
-        Map<Long, History> historyMapByVideoId = historyList.stream()
-                .collect(Collectors.toMap(
-                        history -> history.getVideo().getId(),
-                        history -> history
-                ));
-
-        return ScrapResponse.of(scrapList, historyMapByVideoId);
+        List<HistoryItem> scrapList = scrapRepository.findByMemberIdAndOrganizationId(memberId, orgId);
+        return ScrapResponse.of(scrapList);
     }
 
     public boolean addVideoScrap(Long memberId, Long orgId, Long videoId) {

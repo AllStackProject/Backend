@@ -8,9 +8,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OrganizationRepository extends JpaRepository<Organization, Long>, OrganizationRepositoryCustom {
-    Optional<Organization> findByCode(String code);
-
     Optional<Organization> findByName(String name);
-
-    Optional<Organization> findByNameAndCode(String name, String code);
 }

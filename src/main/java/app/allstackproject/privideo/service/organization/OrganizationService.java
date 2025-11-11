@@ -1,23 +1,23 @@
 package app.allstackproject.privideo.service.organization;
 
+import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.PENDING;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.REJECTED;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_APPROVED_MEMBER;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_REQUESTED_MEMBER;
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DUPLICATE_ORG_NAME;
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_ORG_CODE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORG_CODE_NOT_AVAILABLE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.USER_NOT_FOUND;
 import static app.allstackproject.privideo.common.util.OrgCodeGenerator.generateCode;
 
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.jwt.JwtProvider;
 import app.allstackproject.privideo.dto.organization.CreateOrgRequest;
-import app.allstackproject.privideo.dto.organization.CreateOrgResult;
 import app.allstackproject.privideo.dto.organization.OrgTokenDto;
 import app.allstackproject.privideo.dto.organization.ReadOrgDto;
+import app.allstackproject.privideo.dto.organization.ReadOrgResult;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.entity.User;
@@ -28,6 +28,7 @@ import app.allstackproject.privideo.repository.user.UserRepository;
 import app.allstackproject.privideo.service.permission.PermissionService;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,23 +50,18 @@ public class OrganizationService {
 
     private final JwtProvider jwtProvider;
 
-    public CreateOrgResult createOrg(Long userId, @Valid CreateOrgRequest createOrgRequest, String imgUrl) {
-        if (organizationRepository.findByName(createOrgRequest.getName()).isPresent()) {
-            throw new ApiException(DUPLICATE_ORG_NAME);
-        }
-
+    public String createOrg(Long userId, @Valid CreateOrgRequest createOrgRequest, String imgUrl) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
-
-        String code = generateCode(user.getId());
         Organization organization = Organization.create(user, createOrgRequest.getName(), imgUrl,
-                createOrgRequest.getDesc(), code);
-        Member member = Member.create(user, organization, true, APPROVED); // TODO: 생성자인 멤버이므로 권한 모두 줘야 함
+                createOrgRequest.getDesc());
 
+        Member member = Member.create(user, organization, user.getName(), true, APPROVED);
         member.adminPermissionSet();
 
         organizationRepository.save(organization);
         memberRepository.save(member);
 
+        String code = generateCode(user.getId());
         try {
             orgRedisRepository.createOrgCode(organization.getId(), code);
             log.info("조직 코드 Redis 저장 완료 - orgId: {}, code: {}", organization.getId(), code);
@@ -80,33 +76,72 @@ public class OrganizationService {
             log.info("Redis 저장 실패 - orgId: {}", organization.getId());
         }
 
-        return new CreateOrgResult(organization.getId(), code);
+        return jwtProvider.createOrgToken(OrgTokenDto.builder()
+                .userId(userId)
+                .memberId(member.getId())
+                .orgId(organization.getId())
+                .orgJoinStatus(member.getJoinStatus().toString())
+                .orgIsAdmin(member.isAdmin())
+                .orgPermission(member.getPermissionCode())
+                .build());
+    }
+
+    @Transactional(readOnly = true)
+    public boolean validateOrgName(Long userId, String orgName) {
+        if (!userRepository.existsById(userId)) {
+            throw new ApiException(USER_NOT_FOUND);
+        }
+
+        if (organizationRepository.findByName(orgName).isPresent()) {
+            return false;
+        }
+
+        return true;
     }
 
     @Transactional(readOnly = true)
     public List<ReadOrgDto> readOrgs(Long userId) {
-        userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
-        return organizationRepository.findAllByUserId(userId);
+        if (!userRepository.existsById(userId)) {
+            throw new ApiException(USER_NOT_FOUND);
+        }
+
+        List<ReadOrgResult> rows = organizationRepository.findAllByUserId(userId);
+        List<Long> orgIds = rows.stream().map(ReadOrgResult::getId).toList();
+
+        Map<Long, String> codeMap = orgRedisRepository.getOrgCodesByIds(orgIds);
+
+        return rows.stream()
+                .map(r -> new ReadOrgDto(
+                        r.getId(),
+                        r.getName(),
+                        r.getImgUrl(),
+                        r.getJoinAt(),
+                        r.getIsSuperAdmin(),
+                        r.getIsAdmin(),
+                        r.getJoinStatus(),
+                        codeMap.get(r.getId())
+                ))
+                .toList();
     }
 
-
-    public boolean joinOrg(Long userId, String orgCode) {
+    public boolean joinOrg(Long userId, String orgCode, String nickname) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(USER_NOT_FOUND));
 
         Long orgId = orgRedisRepository.getOrgIdByCode(orgCode);
 
         Organization organization = null;
-        if (orgId == null) {
-            organization = organizationRepository.findByCode(orgCode)
-                    .orElseThrow(() -> new ApiException(INVALID_ORG_CODE));
-
-            orgId = organization.getId();
-
-            orgRedisRepository.saveOrgCode(orgId, orgCode);
-        } else {
+        if (orgId != null) {
             organization = organizationRepository.findById(orgId)
                     .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
+        } else {
+//            organization = orgRedisRepository.findByCode(orgCode)
+//                    .orElseThrow(() -> new ApiException(INVALID_ORG_CODE));
+//
+//            orgId = organization.getId();
+//
+//            orgRedisRepository.saveOrgCode(orgId, orgCode);
+            throw new ApiException(ORG_CODE_NOT_AVAILABLE);
         }
 
         Optional<Member> existMember = memberRepository.findByUserIdAndOrganizationId(userId, orgId);
@@ -125,8 +160,26 @@ public class OrganizationService {
             }
 
         } else {
-            Member newMember = Member.create(user, organization, false, PENDING);
+            Member newMember = Member.create(user, organization, nickname, false, PENDING);
             memberRepository.save(newMember);
+        }
+
+        return true;
+    }
+
+    @Transactional(readOnly = true)
+    public boolean validateOrgNickname(Long userId, String nickname, String code) {
+        if (!userRepository.existsById(userId)) {
+            throw new ApiException(USER_NOT_FOUND);
+        }
+
+        Long orgId = orgRedisRepository.getOrgIdByCode(code);
+        if (orgId == null) {
+            throw new ApiException(ORG_CODE_NOT_AVAILABLE);
+        }
+
+        if (memberRepository.findByOrganizationIdAndNicknameAndStatus(orgId, nickname, ACTIVE).isPresent()) {
+            return false;
         }
 
         return true;
@@ -154,7 +207,6 @@ public class OrganizationService {
                 .orgIsAdmin(member.isAdmin())
                 .orgPermission(latestPerm)
                 .build());
-
     }
 
     public boolean exitOrg(Long userId, Long orgId) {

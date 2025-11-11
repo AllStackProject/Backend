@@ -44,7 +44,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     public static final String SECURITY_EXCEPTION_KEY = "SECURITY_RESPONSE_STATUS";
 
     private static final Set<String> EXCLUDED_ROOTS = Set.of(
-            "user", "org",
+            "user", "orgs",
             "error", "favicon.ico",
             "public", "assets", "static"
     );
@@ -75,13 +75,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 throw new ApiException(INVALID_TOKEN, ex.getMessage());
             }
 
-            String pathOrgId = extractOrgIdFromPath(req);
+            String uri = req.getRequestURI();
+            String firstPath = firstSegment(req);
             Authentication auth;
 
             switch (tokenType) {
                 case BOOTSTRAP -> {
-                    String firstPath = firstSegment(req);
-                    if (pathOrgId != null && !EXCLUDED_ROOTS.contains(firstPath)) {
+                    // BOOTSTRAP 토큰은 /orgs 경로에만 허용
+//                    if (!"orgs".equals(firstPath)) {
+                    if (!EXCLUDED_ROOTS.contains(firstPath)) {
                         throw new ApiException(FORBIDDEN_ORG_MISMATCH);
                     }
 
@@ -98,51 +100,50 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 }
 
                 case ORG -> {
-                    Long userId = getLong(c, "userId");
-                    Long memberId = getLong(c, "memberId");
-                    Long orgId = getLong(c, "orgId");
-                    String orgJoinStatus = getString(c, "orgJoinStatus");
-                    String orgIsAdmin = getString(c, "orgIsAdmin");
-                    Number n = c.get("orgPermission", Number.class);
-                    Long perm = n != null ? n.longValue() : 0L;
+                    String pathOrgId = extractOrgIdFromPath(uri, firstPath);
+
+                    Long userId = getLongFlexible(c, "userId");
+                    Long memberId = getLongFlexible(c, "memberId");
+                    Long orgId = getLongFlexible(c, "orgId");
+
+                    String orgJoinStatus = getStringFlexible(c, "orgJoinStatus");
+                    boolean orgIsAdmin = getBooleanFlexible(c, "orgIsAdmin");
+
+                    Long perm = getLongFlexible(c, "orgPermission");
 
                     if (pathOrgId != null && !Objects.equals(pathOrgId, String.valueOf(orgId))) {
                         throw new ApiException(FORBIDDEN_ORG_MISMATCH);
                     }
 
                     Long redisPermission = null;
-
                     try {
                         redisPermission = orgRedisRepository.getMemberPermission(orgId, memberId);
-
                         if (redisPermission != null && !redisPermission.equals(perm)) {
-                            log.info("권한 변경 감지 - memberId: {}, 기존: {}, 최신: {}",
-                                    memberId, perm, redisPermission);
-
+                            log.info("권한 변경 감지 - memberId: {}, 기존: {}, 최신: {}", memberId, perm, redisPermission);
                             String newToken = jwtProvider.createOrgToken(OrgTokenDto.builder()
                                     .userId(userId)
                                     .memberId(memberId)
                                     .orgId(orgId)
                                     .orgJoinStatus(orgJoinStatus)
-                                    .orgIsAdmin(Boolean.parseBoolean(orgIsAdmin))
+                                    .orgIsAdmin(orgIsAdmin)
                                     .orgPermission(redisPermission)
-                                    .build()
-                            );
+                                    .build());
                             res.setHeader(ACCESS_TOKEN_HEADER, TOKEN_PREFIX + newToken);
                         }
                     } catch (Exception e) {
-                        log.warn("Redis 조회 실패");
+                        log.warn("Redis 조회 실패", e);
                     }
 
-                    Long finalPerm = (redisPermission != null) ? redisPermission : perm;
+                    long finalPerm = (redisPermission != null) ? redisPermission : perm;
 
-                    List<GrantedAuthority> auths = new ArrayList<>(List.of(new SimpleGrantedAuthority("org:granted"),
-                            new SimpleGrantedAuthority("org:" + orgJoinStatus)));
+                    List<GrantedAuthority> auths = new ArrayList<>(List.of(
+                            new SimpleGrantedAuthority("org:granted"),
+                            new SimpleGrantedAuthority("org:" + orgJoinStatus)
+                    ));
 
-                    if (orgIsAdmin.equals("true")) {
+                    if (orgIsAdmin) {
                         auths.add(new SimpleGrantedAuthority("org:admin"));
                     }
-
                     if (PermissionType.has(finalPerm, PermissionType.VIDEO_QUIZ_MANAGE)) {
                         auths.add(new SimpleGrantedAuthority("perm:video_quiz_manage"));
                     }
@@ -156,8 +157,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         auths.add(new SimpleGrantedAuthority("perm:org_setting"));
                     }
 
-                    var principal = new AuthPrincipal(userId, memberId, orgId, Boolean.getBoolean(orgIsAdmin), perm,
-                            TokenType.ORG);
+                    var principal = new AuthPrincipal(userId, memberId, orgId, orgIsAdmin, finalPerm, TokenType.ORG);
                     auth = new UsernamePasswordAuthenticationToken(principal, null, auths);
                 }
 
@@ -190,54 +190,81 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         return null;
     }
 
-    private String extractOrgIdFromPath(HttpServletRequest req) {
-        String uri = req.getRequestURI();
-        if (uri == null || uri.isEmpty() || "/".equals(uri)) {
+    /**
+     * ORG 토큰용 orgId 추출
+     * - /{orgId}/... 형식: 첫 번째 세그먼트가 숫자면 반환
+     * - /admin/{orgId}/... 형식: 두 번째 세그먼트가 숫자면 반환
+     */
+    private String extractOrgIdFromPath(String uri, String firstPath) {
+        if (!StringUtils.hasText(uri) || "/".equals(uri)) {
             return null;
         }
 
-        String[] raw = uri.split("/");
-        String first = null;
-        for (String s : raw) {
-            if (s == null || s.isEmpty()) {
-                continue;
+        if (firstPath != null && (EXCLUDED_ROOTS.contains(firstPath) || "orgs".equals(firstPath))) {
+            return null;
+        }
+
+        String[] parts = uri.split("/");
+        List<String> segments = new ArrayList<>();
+
+        for (String raw : parts) {
+            if (StringUtils.hasText(raw)) {
+                segments.add(cleanSegment(raw));
             }
-            first = cleanSegment(s);
-            break;
         }
-        if (first == null) {
+
+        if (segments.isEmpty()) {
             return null;
         }
 
-        if (EXCLUDED_ROOTS.contains(first)) {
-            return null;
+        if (isAllDigits(segments.get(0))) {
+            return segments.get(0);
         }
 
-        return isAllDigits(first) ? first : null;
+        if ("admin".equals(segments.get(0)) && segments.size() > 1 && isAllDigits(segments.get(1))) {
+            return segments.get(1);
+        }
+
+        return null;
     }
 
-    private static Long getLong(Claims c, String key) {
-        Number n = c.get(key, Number.class);
-        if (n == null) {
+    private static Long getLongFlexible(Claims c, String key) {
+        Object v = c.get(key);
+        if (v == null) {
             throw new ApiException(INVALID_TOKEN);
         }
-        return n.longValue();
+        if (v instanceof Number n) {
+            return n.longValue();
+        }
+        if (v instanceof String s && !s.isBlank()) {
+            return Long.parseLong(s);
+        }
+        throw new ApiException(INVALID_TOKEN);
     }
 
-    private static Integer getInt(Claims c, String key) {
-        Number n = c.get(key, Number.class);
-        if (n == null) {
+    private static String getStringFlexible(Claims c, String key) {
+        Object v = c.get(key);
+        if (v == null) {
             throw new ApiException(INVALID_TOKEN);
         }
-        return n.intValue();
+        return String.valueOf(v);
     }
 
-    private static String getString(Claims c, String key) {
-        String s = c.get(key, String.class);
-        if (s == null) {
+    private static boolean getBooleanFlexible(Claims c, String key) {
+        Object v = c.get(key);
+        if (v == null) {
             throw new ApiException(INVALID_TOKEN);
         }
-        return s;
+        if (v instanceof Boolean b) {
+            return b;
+        }
+        if (v instanceof String s) {
+            return Boolean.parseBoolean(s);
+        }
+        if (v instanceof Number n) {
+            return n.intValue() != 0;
+        }
+        throw new ApiException(INVALID_TOKEN);
     }
 
     private RuntimeException toSecurityException(HttpServletRequest req, ApiException e) {

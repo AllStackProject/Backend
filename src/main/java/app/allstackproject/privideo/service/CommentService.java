@@ -8,11 +8,11 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_COMMENT_NOT_ALLOWED;
 
 import app.allstackproject.privideo.common.exception.ApiException;
-import app.allstackproject.privideo.dto.CommentResponse;
+import app.allstackproject.privideo.dto.comment.CommentResponse;
 import app.allstackproject.privideo.dto.comment.CommentsResult;
 import app.allstackproject.privideo.dto.comment.CreateCommentRequest;
 import app.allstackproject.privideo.entity.Comment;
-import app.allstackproject.privideo.repository.CommentRepository;
+import app.allstackproject.privideo.repository.comment.CommentRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
 import jakarta.validation.Valid;
@@ -20,15 +20,18 @@ import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class CommentService {
 
     private final CommentRepository commentRepository;
     private final VideoRepository videoRepository;
     private final MemberRepository memberRepository;
 
+    @Transactional(readOnly = true)
     public CommentResponse getUserComments(Long memberId, Long orgId) {
         List<Comment> commentList = commentRepository.findByMemberIdAndVideoOrganizationId(memberId, orgId);
         return CommentResponse.of(commentList);
@@ -47,6 +50,7 @@ public class CommentService {
         return true;
     }
 
+    @Transactional(readOnly = true)
     public CommentsResult readVideoComments(Long memberId, Long orgId, Long videoId) {
         if (!videoRepository.isValidMemberAndOrgAndVideo(memberId, orgId, videoId)) {
             throw new ApiException(INVALID_COMMENT_REQUEST);

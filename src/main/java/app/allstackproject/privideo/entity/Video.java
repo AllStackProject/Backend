@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.entity;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -51,6 +52,12 @@ public class Video extends BaseEntity {
 
     private boolean isQuiz;
 
+    @Column(columnDefinition = "text")
+    private String aiFeedback;
+
+    @Column(columnDefinition = "text")
+    private String aiSummary;
+
     @NotNull
     private LocalDate expiredAt;
 
@@ -62,7 +69,8 @@ public class Video extends BaseEntity {
 
     @Builder(access = AccessLevel.PRIVATE)
     private Video(Organization organization, Member creator, String title, String description, String thumbnailUrl,
-                  Long wholeTime, boolean isComment, boolean isQuiz, LocalDate expiredAt, Long watchCnt, Long quitCnt) {
+                  Long wholeTime, boolean isComment, boolean isQuiz, String aiFeedback, String aiSummary,
+                  LocalDate expiredAt, Long watchCnt, Long quitCnt) {
         this.organization = organization;
         this.creator = creator;
         this.title = title;
@@ -71,6 +79,8 @@ public class Video extends BaseEntity {
         this.wholeTime = wholeTime;
         this.isComment = isComment;
         this.isQuiz = isQuiz;
+        this.aiFeedback = aiFeedback;
+        this.aiSummary = aiSummary;
         this.expiredAt = expiredAt;
         this.watchCnt = watchCnt;
         this.quitCnt = quitCnt;
@@ -78,6 +88,7 @@ public class Video extends BaseEntity {
 
     public static Video create(Organization organization, Member creator, String title, String description,
                                String thumbnailUrl, Long wholeTime, boolean isComment, boolean isQuiz,
+                               String aiFeedback, String aiSummary,
                                LocalDate expiredAt, Long watchCnt, Long quitCnt) {
         if (expiredAt == null) {
             expiredAt = LocalDate.now().plusYears(100);
@@ -98,6 +109,8 @@ public class Video extends BaseEntity {
                 .wholeTime(wholeTime)
                 .isComment(isComment)
                 .isQuiz(isQuiz)
+                .aiFeedback(aiFeedback)
+                .aiSummary(aiSummary)
                 .expiredAt(expiredAt)
                 .watchCnt(watchCnt)
                 .quitCnt(quitCnt)

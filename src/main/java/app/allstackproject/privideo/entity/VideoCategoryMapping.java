@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "Video_Hashtag_Mapping")
+@Table(name = "Video_Category_Mapping")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class VideoHashtagMapping extends BaseEntity {
+public class VideoCategoryMapping extends BaseEntity {
     @Id
     @GeneratedValue
     private Long id;
@@ -26,19 +26,19 @@ public class VideoHashtagMapping extends BaseEntity {
     private Video video;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "hashtag_id")
-    private Hashtag hashtag;
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private VideoHashtagMapping(Video video, Hashtag hashtag) {
+    private VideoCategoryMapping(Video video, Category category) {
         this.video = video;
-        this.hashtag = hashtag;
+        this.category = category;
     }
 
-    public static VideoHashtagMapping create(Video video, Hashtag hashtag) {
-        return VideoHashtagMapping.builder()
+    public static VideoCategoryMapping create(Video video, Category category) {
+        return VideoCategoryMapping.builder()
                 .video(video)
-                .hashtag(hashtag)
+                .category(category)
                 .build();
     }
 }

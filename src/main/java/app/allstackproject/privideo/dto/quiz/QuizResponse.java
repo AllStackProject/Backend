@@ -1,11 +1,9 @@
-package app.allstackproject.privideo.dto;
+package app.allstackproject.privideo.dto.quiz;
 
-import app.allstackproject.privideo.dto.quiz.MemberQuizDto;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

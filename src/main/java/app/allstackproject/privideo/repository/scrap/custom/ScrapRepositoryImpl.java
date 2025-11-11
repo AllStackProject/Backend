@@ -1,16 +1,22 @@
-package app.allstackproject.privideo.repository.scrap;
+package app.allstackproject.privideo.repository.scrap.custom;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
+import static app.allstackproject.privideo.entity.QHistory.history;
 import static app.allstackproject.privideo.entity.QMember.member;
 import static app.allstackproject.privideo.entity.QMemberGroupMapping.memberGroupMapping;
 import static app.allstackproject.privideo.entity.QScrap.scrap;
 import static app.allstackproject.privideo.entity.QVideo.video;
-import static app.allstackproject.privideo.entity.QVideoGroupAuthority.videoGroupAuthority;
+import static app.allstackproject.privideo.entity.QVideoMemberGroupMapping.videoMemberGroupMapping;
 
+import app.allstackproject.privideo.common.enumStatus.BaseStatusType;
+import app.allstackproject.privideo.dto.history.HistoryItem;
+import app.allstackproject.privideo.dto.history.VideoHistory;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -21,19 +27,19 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
     @Override
     public boolean isValidMemberAndOrgAndVideo(Long memberId, Long orgId, Long videoId) {
         BooleanExpression openToAll = JPAExpressions.selectOne()
-                .from(videoGroupAuthority)
-                .where(videoGroupAuthority.video.id.eq(videoId),
-                        videoGroupAuthority.status.eq(ACTIVE))
+                .from(videoMemberGroupMapping)
+                .where(videoMemberGroupMapping.video.id.eq(videoId),
+                        videoMemberGroupMapping.status.eq(ACTIVE))
                 .notExists();
 
         BooleanExpression memberGroupMatch = JPAExpressions.selectOne()
-                .from(videoGroupAuthority)
+                .from(videoMemberGroupMapping)
                 .join(memberGroupMapping)
-                .on(memberGroupMapping.memberGroup.id.eq(videoGroupAuthority.memberGroup.id)
+                .on(memberGroupMapping.memberGroup.id.eq(videoMemberGroupMapping.memberGroup.id)
                         .and(memberGroupMapping.member.id.eq(memberId))
                         .and(memberGroupMapping.status.eq(ACTIVE)))
-                .where(videoGroupAuthority.video.id.eq(videoId),
-                        videoGroupAuthority.status.eq(ACTIVE))
+                .where(videoMemberGroupMapping.video.id.eq(videoId),
+                        videoMemberGroupMapping.status.eq(ACTIVE))
                 .exists();
 
         Integer ok = jpaQueryFactory
@@ -64,5 +70,38 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
                         scrap.video.id.eq(videoId)
                 )
                 .execute();
+    }
+
+    @Override
+    public List<HistoryItem> findByMemberIdAndOrganizationId(Long memberId, Long orgId) {
+        BooleanExpression scrappedExists = JPAExpressions
+                .selectOne()
+                .from(scrap)
+                .where(
+                        scrap.member.id.eq(memberId),
+                        scrap.video.id.eq(history.video.id),
+                        scrap.status.eq(BaseStatusType.ACTIVE)
+                )
+                .exists();
+
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        HistoryItem.class,
+                        video.id,
+                        video.title,
+                        video.thumbnailUrl,
+                        history.watchRate,
+                        history.lastModifiedAt
+                ))
+                .from(history)
+                .join(history.video, video)
+                .where(
+                        history.member.id.eq(memberId),
+                        history.status.eq(BaseStatusType.ACTIVE),
+                        video.organization.id.eq(orgId),
+                        scrappedExists
+                )
+                .orderBy(scrap.lastModifiedAt.desc())
+                .fetch();
     }
 }

@@ -12,20 +12,16 @@ import app.allstackproject.privideo.common.enumStatus.PermissionType;
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.jwt.JwtProvider;
 import app.allstackproject.privideo.common.util.OrgCodeGenerator;
-import app.allstackproject.privideo.common.util.RedisRetryUtil;
 import app.allstackproject.privideo.dto.organization.ChangeJoinStateRequest;
 import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
-import app.allstackproject.privideo.dto.organization.OrgTokenDto;
 import app.allstackproject.privideo.dto.organization.UpdateMemberPermissionRequest;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.user.UserRepository;
-import app.allstackproject.privideo.service.permission.PermissionService;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -98,6 +94,7 @@ public class AdminService {
             throw new ApiException(ORGANIZATION_NOT_FOUND);
         }
 
+        // TODO: 여기서 MEMBER_NOT_FOUND : /admin/orgs/perm
         Member admin = memberRepository.findByIdAndOrganizationId(adminUserId, orgId)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
 

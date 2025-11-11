@@ -1,8 +1,8 @@
-package app.allstackproject.privideo.repository;
+package app.allstackproject.privideo.repository.comment;
 
 import app.allstackproject.privideo.common.enumStatus.BaseStatusType;
 import app.allstackproject.privideo.entity.Comment;
-import app.allstackproject.privideo.repository.comment.CommentRepositoryCustom;
+import app.allstackproject.privideo.repository.comment.custom.CommentRepositoryCustom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
