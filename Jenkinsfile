@@ -42,7 +42,8 @@ spec:
             --context ${WORKSPACE} \
             --dockerfile ${WORKSPACE}/Dockerfile \
             --destination ${IMAGE} \
-            --cleanup
+            --cleanup \
+            --force
           """
         }
       }
