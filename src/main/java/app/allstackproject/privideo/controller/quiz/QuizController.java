@@ -10,6 +10,7 @@ import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.comment.CreateCommentRequest;
 import app.allstackproject.privideo.dto.quiz.SolveQuizRequest;
 import app.allstackproject.privideo.service.QuizService;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,7 +36,7 @@ public class QuizController {
     private final QuizService quizService;
 
     @PostMapping("")
-    @Operation(summary = "퀴즈 제출")
+    @Hidden
     public BaseResponse<SuccessResponse> solveQuiz(@AuthenticationPrincipal(expression = "memberId") Long memberId,
                                                    @PathVariable("orgId") Long orgId,
                                                    @PathVariable("videoId") Long videoId,
