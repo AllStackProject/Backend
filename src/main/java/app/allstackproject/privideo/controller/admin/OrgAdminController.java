@@ -7,6 +7,7 @@ import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.admin.CreateCategoryRequest;
 import app.allstackproject.privideo.dto.admin.CreateMemberGroupRequest;
 import app.allstackproject.privideo.dto.admin.ModifyCategoryRequest;
+import app.allstackproject.privideo.dto.admin.ModifyOrgInfoRequest;
 import app.allstackproject.privideo.dto.admin.ReadAllCategoryResponse;
 import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.service.admin.OrgAdminService;
@@ -19,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +38,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrgAdminController {
 
     private final OrgAdminService orgAdminService;
+
+    @PatchMapping("/orgs/info")
+    @Operation(summary = "조직 이미지 수정")
+    public BaseResponse<SuccessResponse> modifyOrgInfo(@PathVariable("orgId") Long orgId,
+                                                       @Valid @ModelAttribute ModifyOrgInfoRequest modifyOrgInfoRequest) {
+        // TODO: S3에 이미지 업로드
+        String imgUrl = "";
+        return new BaseResponse<>(
+                SuccessResponse.of(orgAdminService.modifyOrgInfo(orgId, imgUrl)));
+    }
 
     @PatchMapping("/orgs/code")
     @Operation(summary = "조직 코드 재발급", description = "조직 코드를 새로 발급합니다.")

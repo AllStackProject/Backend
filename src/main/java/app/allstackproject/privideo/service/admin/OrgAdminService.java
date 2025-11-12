@@ -23,7 +23,6 @@ import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.video.CategoryRepository;
-import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,6 +38,13 @@ public class OrgAdminService {
     private final OrgRedisRepository orgRedisRepository;
     private final MemberGroupRepository memberGroupRepository;
     private final CategoryRepository categoryRepository;
+
+    public boolean modifyOrgInfo(Long orgId, String imgUrl) {
+        Organization organization = organizationRepository.findById(orgId)
+                .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
+        organization.modifyImgUrl(imgUrl);
+        return true;
+    }
 
     public OrgCodeResponse regenerateOrgCode(Long memberId, Long orgId) {
         organizationRepository.findById(orgId)
