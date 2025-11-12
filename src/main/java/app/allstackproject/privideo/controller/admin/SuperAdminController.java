@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("hasAuthority('org:admin')")
 @Tag(name = "Admin-Super", description = "슈퍼 관리자 관련 API")
 @SecurityRequirement(name = ORG_AUTH_KEY)
-public class AdminController {
+public class SuperAdminController {
 
     private final AdminService adminService;
 
