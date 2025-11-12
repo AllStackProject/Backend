@@ -5,6 +5,7 @@ import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.admin.CreateCategoryRequest;
+import app.allstackproject.privideo.dto.admin.ReadAllCategoryResponse;
 import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.service.admin.OrgAdminService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -53,5 +55,12 @@ public class OrgAdminController {
     public BaseResponse<SuccessResponse> deleteMemberGroup(@PathVariable("orgId") Long orgId,
                                                            @PathVariable("groupId") Long groupId) {
         return new BaseResponse<>(SuccessResponse.of(orgAdminService.deleteMemberGroup(orgId, groupId)));
+    }
+
+    @GetMapping("/group/{groupId}/category")
+    @Operation(summary = "카테고리 전체 조회")
+    public BaseResponse<ReadAllCategoryResponse> readAllCategory(@PathVariable("orgId") Long orgId,
+                                                                 @PathVariable("groupId") Long groupId) {
+        return new BaseResponse<>(ReadAllCategoryResponse.of(orgAdminService.readAllCategory(orgId, groupId)));
     }
 }
