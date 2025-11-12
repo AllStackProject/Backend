@@ -7,13 +7,17 @@ import app.allstackproject.privideo.common.response.BaseErrorResponse;
 import app.allstackproject.privideo.common.response.status.ResponseStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import java.nio.file.AccessDeniedException;
 import java.util.List;
+import javax.naming.AuthenticationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -65,6 +69,20 @@ public class BaseExceptionControllerAdvice {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new BaseErrorResponse(HTTP_MESSAGE_NOT_READABLE));
+    }
+
+    @ExceptionHandler({AuthorizationDeniedException.class, AccessDeniedException.class})
+    public ResponseEntity<BaseErrorResponse> handleAccessDenied(Exception e, HttpServletRequest req) {
+        log.warn("[403 Forbidden] {} {} -> {}", req.getMethod(), req.getRequestURI(), e.toString());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(new BaseErrorResponse(FORBIDDEN_NO_PERMISSION));
+    }
+
+    @ExceptionHandler({InsufficientAuthenticationException.class, AuthenticationException.class})
+    public ResponseEntity<BaseErrorResponse> handleUnauthenticated(Exception e, HttpServletRequest req) {
+        log.warn("[401 Unauthorized] {} {} -> {}", req.getMethod(), req.getRequestURI(), e.toString());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new BaseErrorResponse(INVALID_TOKEN));
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
