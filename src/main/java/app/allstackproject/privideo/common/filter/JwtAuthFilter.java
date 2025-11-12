@@ -144,8 +144,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     if (orgIsAdmin) {
                         auths.add(new SimpleGrantedAuthority("org:admin"));
                     }
-                    if (PermissionType.has(finalPerm, PermissionType.VIDEO_QUIZ_MANAGE)) {
-                        auths.add(new SimpleGrantedAuthority("perm:video_quiz_manage"));
+                    if (PermissionType.has(finalPerm, PermissionType.VIDEO_MANAGE)) {
+                        auths.add(new SimpleGrantedAuthority("perm:video_manage"));
                     }
                     if (PermissionType.has(finalPerm, PermissionType.STATS_REPORT)) {
                         auths.add(new SimpleGrantedAuthority("perm:stats_report"));

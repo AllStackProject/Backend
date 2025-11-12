@@ -20,21 +20,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/admin/org/{orgId}")
-@PreAuthorize("hasAuthority('org:admin')")
+@PreAuthorize("hasAuthority('org:admin') and hasAuthority('perm:video_manage')")
 @Tag(name = "Admin-Video", description = "관리자 영상 관리 API")
 @SecurityRequirement(name = ORG_AUTH_KEY)
 public class AdminVideoController {
 
     private final AdminVideoService adminVideoService;
 
-    @PreAuthorize("hasAuthority('perm:video_quiz_manage')")
     @GetMapping("/video")
     @Operation(summary = "조직 내 모든 영상 조회")
     public BaseResponse<ReadAllVideosResponse> readAllVideos(@PathVariable("orgId") Long orgId) {
         return new BaseResponse<>(ReadAllVideosResponse.of(adminVideoService.readAllVideos(orgId)));
     }
 
-    @PreAuthorize("hasAuthority('perm:video_quiz_manage')")
     @DeleteMapping("/video/{videoId}")
     @Operation(summary = "조직 내 특정 영상 삭제")
     public BaseResponse<SuccessResponse> deleteVideo(@PathVariable("orgId") Long orgId,

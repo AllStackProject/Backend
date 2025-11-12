@@ -133,7 +133,7 @@ public class AdminService {
         List<PermissionType> permissionList = new ArrayList<>();
 
         if (Boolean.TRUE.equals(permissionMap.getVideoQuizManage())) {
-            permissionList.add(PermissionType.VIDEO_QUIZ_MANAGE);
+            permissionList.add(PermissionType.VIDEO_MANAGE);
         }
         if (Boolean.TRUE.equals(permissionMap.getStatsReport())) {
             permissionList.add(PermissionType.STATS_REPORT);
