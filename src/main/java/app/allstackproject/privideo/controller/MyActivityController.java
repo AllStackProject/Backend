@@ -13,6 +13,7 @@ import app.allstackproject.privideo.service.CommentService;
 import app.allstackproject.privideo.service.QuizService;
 import app.allstackproject.privideo.service.video.ScrapService;
 import app.allstackproject.privideo.service.video.HistoryService;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -53,7 +54,7 @@ public class MyActivityController {
     }
 
     @GetMapping("/quiz")
-    @Operation(summary = "AI 퀴즈 기록 조회")
+    @Hidden
     public BaseResponse<QuizResponse> getUserQuizses(
             @AuthenticationPrincipal AuthPrincipal me,
             @PathVariable long orgId) {

@@ -8,7 +8,6 @@ import app.allstackproject.privideo.dto.organization.ChangeJoinStateRequest;
 import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.dto.organization.UpdateMemberPermissionRequest;
 import app.allstackproject.privideo.service.admin.AdminService;
-import app.allstackproject.privideo.service.organization.OrganizationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,14 +24,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/admin/{orgId}")
+@RequestMapping("/admin/org/{orgId}")
 @PreAuthorize("hasAuthority('org:admin')")
-@Tag(name = "Admin", description = "관리자 관련 API")
+@Tag(name = "Admin-Super", description = "슈퍼 관리자 관련 API")
 @SecurityRequirement(name = ORG_AUTH_KEY)
-public class AdminController {
+public class SuperAdminController {
 
     private final AdminService adminService;
-    private final OrganizationService organizationService;
 
     @PatchMapping("/orgs/join")
     @Operation(summary = "조직 가입 요청 처리", description = "조직 가입 요청을 승인 또는 거절합니다.")
