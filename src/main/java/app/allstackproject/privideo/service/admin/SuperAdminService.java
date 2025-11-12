@@ -6,7 +6,6 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.FORBIDDEN_NO_PERMISSION;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.USER_NOT_FOUND;
 
 import app.allstackproject.privideo.common.enumStatus.JoinStatusType;
 import app.allstackproject.privideo.common.enumStatus.PermissionType;
@@ -20,7 +19,6 @@ import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
-import app.allstackproject.privideo.repository.user.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -34,14 +32,11 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class AdminService {
+public class SuperAdminService {
 
     private final MemberRepository memberRepository;
     private final OrganizationRepository organizationRepository;
     private final OrgRedisRepository orgRedisRepository;
-    private final UserRepository userRepository;
-
-    private final JwtProvider jwtProvider;
 
     public boolean changeJoinState(Long adminUserId, Long orgId, ChangeJoinStateRequest changeJoinStateRequest) {
         if (!organizationRepository.existsById(orgId)) {
@@ -146,27 +141,5 @@ public class AdminService {
         }
 
         return permissionList.toArray(new PermissionType[0]);
-    }
-
-    @Transactional
-    public OrgCodeResponse regenerateOrgCode(Long userId, Long orgId) {
-        userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(USER_NOT_FOUND));
-
-        organizationRepository.findById(orgId)
-                .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
-
-        Member member = memberRepository.findByUserIdAndOrganizationIdAndStatus(userId, orgId, ACTIVE)
-                .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
-
-        if (member.getJoinStatus() != APPROVED) {
-            throw new ApiException(MEMBER_NOT_FOUND);
-        }
-
-        String newCode = OrgCodeGenerator.generateCode(orgId);
-
-        orgRedisRepository.regenerateCode(orgId, newCode);
-
-        return new OrgCodeResponse(newCode);
     }
 }

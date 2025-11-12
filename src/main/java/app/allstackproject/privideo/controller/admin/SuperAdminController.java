@@ -5,9 +5,8 @@ import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.organization.ChangeJoinStateRequest;
-import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.dto.organization.UpdateMemberPermissionRequest;
-import app.allstackproject.privideo.service.admin.AdminService;
+import app.allstackproject.privideo.service.admin.SuperAdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @SecurityRequirement(name = ORG_AUTH_KEY)
 public class SuperAdminController {
 
-    private final AdminService adminService;
+    private final SuperAdminService superAdminService;
 
     @PatchMapping("/orgs/join")
     @Operation(summary = "조직 가입 요청 처리", description = "조직 가입 요청을 승인 또는 거절합니다.")
@@ -38,7 +37,7 @@ public class SuperAdminController {
             @AuthenticationPrincipal(expression = "userId") Long userId,
             @Valid @RequestBody ChangeJoinStateRequest changeJoinStateRequest,
             @PathVariable Long orgId) {
-        boolean isSuccess = adminService.changeJoinState(userId, orgId, changeJoinStateRequest);
+        boolean isSuccess = superAdminService.changeJoinState(userId, orgId, changeJoinStateRequest);
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
     }
 
@@ -49,20 +48,9 @@ public class SuperAdminController {
             @PathVariable Long orgId,
             @Valid @RequestBody UpdateMemberPermissionRequest request) {
 
-        boolean isSuccess = adminService.updateMemberPermission(
+        boolean isSuccess = superAdminService.updateMemberPermission(
                 adminUserId, orgId, request.getMemberId(), request.getPermissions());
 
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
-    }
-
-
-    @PatchMapping("/orgs/code")
-    @Operation(summary = "조직 코드 재발급", description = "조직 코드를 새로 발급합니다.")
-    public BaseResponse<OrgCodeResponse> regenerateOrgToken(
-            @AuthenticationPrincipal(expression = "userId") Long adminUserId,
-            @PathVariable("orgId") Long orgId) {
-
-        OrgCodeResponse newOrgCode = adminService.regenerateOrgCode(adminUserId, orgId);
-        return new BaseResponse<>(newOrgCode);
     }
 }
