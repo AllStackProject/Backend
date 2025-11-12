@@ -3,16 +3,21 @@ package app.allstackproject.privideo.controller.admin;
 import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_KEY;
 
 import app.allstackproject.privideo.common.response.BaseResponse;
+import app.allstackproject.privideo.common.response.SuccessResponse;
+import app.allstackproject.privideo.dto.admin.CreateCategoryRequest;
 import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.service.admin.OrgAdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,5 +37,13 @@ public class OrgAdminController {
             @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId) {
         OrgCodeResponse newOrgCode = orgAdminService.regenerateOrgCode(memberId, orgId);
         return new BaseResponse<>(newOrgCode);
+    }
+
+    @PostMapping("/group")
+    @Operation(summary = "멤버 그룹 추가")
+    public BaseResponse<SuccessResponse> createMemberGroup(@PathVariable("orgId") Long orgId,
+                                                           @Valid @RequestBody CreateCategoryRequest createCategoryRequest) {
+        return new BaseResponse<>(SuccessResponse.of(
+                orgAdminService.createMemberGroup(orgId, createCategoryRequest.getName())));
     }
 }

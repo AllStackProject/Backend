@@ -35,7 +35,7 @@ public class MemberGroup extends BaseEntity {
         this.name = name;
     }
 
-    public MemberGroup create(Organization organization, String name) {
+    public static MemberGroup create(Organization organization, String name) {
         return MemberGroup.builder()
                 .organization(organization)
                 .name(name)

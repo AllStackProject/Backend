@@ -41,7 +41,7 @@ public class SuperAdminController {
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
     }
 
-    @PutMapping("/orgs/perm")
+    @PutMapping("/member/perm")
     @Operation(summary = "멤버 권한 변경", description = "조직 멤버의 권한을 변경합니다.")
     public BaseResponse<SuccessResponse> updateMemberPermission(
             @AuthenticationPrincipal(expression = "userId") Long adminUserId,
