@@ -7,9 +7,15 @@ import static app.allstackproject.privideo.entity.QMemberGroupMapping.memberGrou
 import static app.allstackproject.privideo.entity.QVideo.video;
 import static app.allstackproject.privideo.entity.QVideoMemberGroupMapping.videoMemberGroupMapping;
 
+import app.allstackproject.privideo.common.enumStatus.VideoOpenScopeType;
+import app.allstackproject.privideo.dto.admin.ReadAllVideoDto;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -37,6 +43,36 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .fetchFirst();
 
         return result != null;
+    }
+
+    @Override
+    public List<ReadAllVideoDto> findByOrgId(Long orgId) {
+        StringExpression openScope = new CaseBuilder()
+                .when(JPAExpressions
+                        .selectOne()
+                        .from(videoMemberGroupMapping)
+                        .where(
+                                videoMemberGroupMapping.video.id.eq(video.id),
+                                videoMemberGroupMapping.status.eq(ACTIVE)
+                        )
+                        .exists())
+                .then(VideoOpenScopeType.GROUP.name())
+                .otherwise(VideoOpenScopeType.PUBLIC.name());
+
+        return jpaQueryFactory
+                .select(Projections.constructor(ReadAllVideoDto.class,
+                        video.id,
+                        video.title,
+                        video.thumbnailUrl,
+                        video.createdAt,
+                        video.expiredAt,
+                        openScope,
+                        video.watchCnt
+                ))
+                .from(video)
+                .where(video.organization.id.eq(orgId)
+                        .and(video.status.eq(ACTIVE)))
+                .fetch();
     }
 
     /**
