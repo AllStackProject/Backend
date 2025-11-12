@@ -25,7 +25,6 @@ public class OrgAdminService {
     private final OrganizationRepository organizationRepository;
     private final OrgRedisRepository orgRedisRepository;
 
-    @Transactional
     public OrgCodeResponse regenerateOrgCode(Long memberId, Long orgId) {
         organizationRepository.findById(orgId)
                 .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));

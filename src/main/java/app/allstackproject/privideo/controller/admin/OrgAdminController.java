@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/admin/org/{orgId}")
 @PreAuthorize("hasAuthority('org:admin') and hasAuthority('perm:org_setting')")
-@Tag(name = "Admin-Video", description = "관리자 조직 설정 API")
-public class AdminOrgController {
+@Tag(name = "Admin-Org", description = "관리자 조직 설정 API")
+public class OrgAdminController {
 
     private final OrgAdminService orgAdminService;
 

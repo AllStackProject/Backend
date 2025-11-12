@@ -5,7 +5,7 @@ import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.admin.ReadAllVideosResponse;
-import app.allstackproject.privideo.service.admin.AdminVideoService;
+import app.allstackproject.privideo.service.admin.VideoAdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,20 +23,20 @@ import org.springframework.web.bind.annotation.RestController;
 @PreAuthorize("hasAuthority('org:admin') and hasAuthority('perm:video_manage')")
 @Tag(name = "Admin-Video", description = "관리자 영상 관리 API")
 @SecurityRequirement(name = ORG_AUTH_KEY)
-public class AdminVideoController {
+public class VideoAdminController {
 
-    private final AdminVideoService adminVideoService;
+    private final VideoAdminService videoAdminService;
 
     @GetMapping("/video")
     @Operation(summary = "조직 내 모든 영상 조회")
     public BaseResponse<ReadAllVideosResponse> readAllVideos(@PathVariable("orgId") Long orgId) {
-        return new BaseResponse<>(ReadAllVideosResponse.of(adminVideoService.readAllVideos(orgId)));
+        return new BaseResponse<>(ReadAllVideosResponse.of(videoAdminService.readAllVideos(orgId)));
     }
 
     @DeleteMapping("/video/{videoId}")
     @Operation(summary = "조직 내 특정 영상 삭제")
     public BaseResponse<SuccessResponse> deleteVideo(@PathVariable("orgId") Long orgId,
                                                      @PathVariable("videoId") Long videoId) {
-        return new BaseResponse<>(SuccessResponse.of(adminVideoService.deleteVideo(orgId, videoId)));
+        return new BaseResponse<>(SuccessResponse.of(videoAdminService.deleteVideo(orgId, videoId)));
     }
 }

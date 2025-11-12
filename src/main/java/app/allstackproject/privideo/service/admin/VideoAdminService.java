@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class AdminVideoService {
+public class VideoAdminService {
 
     private final VideoRepository videoRepository;
     private final OrganizationRepository organizationRepository;
