@@ -106,20 +106,13 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(USER_NOT_FOUND));
 
-        if (isPasswordChangeRequested(request)) {
-            validateAndUpdatePassword(user, request);
-        }
+        validateAndUpdatePassword(user, request);
         updateUserFields(user, request);
 
         return true;
     }
 
-    private boolean isPasswordChangeRequested(UpdateUserInfoRequest request) {
-        return request.getNewPassword() != null && !request.getNewPassword().isBlank();
-    }
-
     private void validateAndUpdatePassword(User user, UpdateUserInfoRequest request) {
-
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
             throw new ApiException(PASSWORD_MISMATCH);
         }
@@ -132,10 +125,6 @@ public class UserService {
     }
 
     private void updateUserFields(User user, UpdateUserInfoRequest request) {
-
-        if (isPasswordChangeRequested(request)) {
-            validateAndUpdatePassword(user, request);
-        }
         user.updateInfo(
                 request.getChangedPhoneNum(),
                 GenderType.valueOf(request.getChangedGender().toUpperCase()),
