@@ -10,4 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface VideoRepository extends JpaRepository<Video, Long>, VideoRepositoryCustom {
     Optional<Video> findByIdAndStatus(Long id, BaseStatusType status);
+
+    boolean existsByIdAndOrganizationId(Long id, Long orgId);
 }
