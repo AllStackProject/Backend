@@ -1,6 +1,5 @@
 package app.allstackproject.privideo.dto.organization;
 
-import app.allstackproject.privideo.common.enumStatus.PermissionType;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,7 +20,7 @@ public class UpdateMemberPermissionRequest {
     @NoArgsConstructor
     public static class PermissionMap {
         @NotNull
-        private Boolean videoQuizManage;
+        private Boolean videoManage;
 
         @NotNull
         private Boolean statsReport;

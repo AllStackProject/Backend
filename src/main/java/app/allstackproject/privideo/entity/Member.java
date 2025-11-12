@@ -89,7 +89,7 @@ public class Member extends BaseEntity {
         }
 
         this.permissionCode = PermissionType.combine(
-                PermissionType.VIDEO_QUIZ_MANAGE,
+                PermissionType.VIDEO_MANAGE,
                 PermissionType.STATS_REPORT,
                 PermissionType.NOTICE,
                 PermissionType.ORG_SETTING

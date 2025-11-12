@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum PermissionType {
-    VIDEO_QUIZ_MANAGE(1L << 0),
+    VIDEO_MANAGE(1L << 0),
     STATS_REPORT(1L << 1),
     NOTICE(1L << 2),
     ORG_SETTING(1L << 3);

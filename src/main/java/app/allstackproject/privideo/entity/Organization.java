@@ -61,4 +61,7 @@ public class Organization extends BaseEntity {
                 .build();
     }
 
+    public void modifyImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
+    }
 }

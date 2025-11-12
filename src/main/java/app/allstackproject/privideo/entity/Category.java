@@ -21,7 +21,6 @@ public class Category extends BaseEntity {
     private Long id;
 
     @NotBlank
-    @Column(unique = true)
     private String title;
 
     private Long memberGroupId;
@@ -37,5 +36,9 @@ public class Category extends BaseEntity {
                 .title(title)
                 .memberGroupId(memberGroupId)
                 .build();
+    }
+
+    public void modifyTitle(String newTitle) {
+        this.title = newTitle;
     }
 }
