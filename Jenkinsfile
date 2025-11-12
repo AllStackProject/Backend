@@ -50,7 +50,7 @@ spec:
     }
     
     stage('Update Kustomize for ArgoCD') {
-  withCredentials([usernamePassword(credentialsId: 'git-credential', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+  withCredentials([usernamePassword(credentialsId: 'git-clone', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
     script {
       // ✅ Git 설정
       sh '''
