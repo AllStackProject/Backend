@@ -38,4 +38,8 @@ public class Category extends BaseEntity {
                 .memberGroupId(memberGroupId)
                 .build();
     }
+
+    public void modifyTitle(String newTitle) {
+        this.title = newTitle;
+    }
 }

@@ -3,6 +3,8 @@ package app.allstackproject.privideo.service.admin;
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.CATEGORY_ALREADY_EXIST;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.CATEGORY_NOT_FOUND;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DUPLICATE_CATEGORY_NAME;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_GROUP_ALREADY_EXIST;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_GROUP_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
@@ -21,6 +23,7 @@ import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.video.CategoryRepository;
+import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -92,6 +95,21 @@ public class OrgAdminService {
         }
 
         categoryRepository.save(Category.create(title, groupId));
+        return true;
+    }
+
+    public boolean modifyCategory(Long orgId, Long groupId, Long categoryId, String newTitle) {
+        memberGroupRepository.existsByIdAndOrganizationId(groupId, orgId)
+                .orElseThrow(() -> new ApiException(MEMBER_GROUP_NOT_FOUND));
+
+        if (categoryRepository.existsByMemberGroupIdAndTitle(groupId, newTitle)) {
+            throw new ApiException(DUPLICATE_CATEGORY_NAME);
+        }
+
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ApiException(CATEGORY_NOT_FOUND));
+        category.modifyTitle(newTitle);
+
         return true;
     }
 }

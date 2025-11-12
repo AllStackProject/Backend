@@ -6,6 +6,7 @@ import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.admin.CreateCategoryRequest;
 import app.allstackproject.privideo.dto.admin.CreateMemberGroupRequest;
+import app.allstackproject.privideo.dto.admin.ModifyCategoryRequest;
 import app.allstackproject.privideo.dto.admin.ReadAllCategoryResponse;
 import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.service.admin.OrgAdminService;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -72,5 +74,15 @@ public class OrgAdminController {
                                                         @Valid @RequestBody CreateCategoryRequest createCategoryRequest) {
         return new BaseResponse<>(SuccessResponse.of(
                 orgAdminService.createCategory(orgId, groupId, createCategoryRequest.getTitle())));
+    }
+
+    @PutMapping("/group/{groupId}/category/{categoryId}")
+    @Operation(summary = "카테고리 수정")
+    public BaseResponse<SuccessResponse> modifyCategory(@PathVariable("orgId") Long orgId,
+                                                        @PathVariable("groupId") Long groupId,
+                                                        @PathVariable("categoryId") Long categoryId,
+                                                        @Valid @RequestBody ModifyCategoryRequest modifyCategoryRequest) {
+        return new BaseResponse<>(SuccessResponse.of(
+                orgAdminService.modifyCategory(orgId, groupId, categoryId, modifyCategoryRequest.getTitle())));
     }
 }
