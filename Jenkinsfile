@@ -49,37 +49,34 @@ spec:
       }
     }
     
-   stage('Update Kustomize for ArgoCD') {
-      steps {
-        script {
-          // ✅ Kustomize 파일 경로
-            def KUSTOMIZE_FILE = "kustomization.yaml"
+    stage('Update Kustomize for ArgoCD') {
+  withCredentials([usernamePassword(credentialsId: 'git-credential', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+    script {
+      // ✅ Git 설정
+      sh '''
+        git config --global user.email "jenkins@ci.com"
+        git config --global user.name "Jenkins CI"
+      '''
 
-          // ✅ Git 설정
-          sh """
-            git config --global user.email "jenkins@ci.com"
-            git config --global user.name "Jenkins CI"
-          """
-
-      // ✅ Git 클론 (Deployment repo)
-      sh """
+      // ✅ Deployment repo clone
+      sh '''
         rm -rf DeploymentRepo
         git clone https://$GIT_USER:$GIT_PASS@github.com/AllStackProject/Deployment.git DeploymentRepo
-      """
+      '''
 
-      // ✅ Kustomization 파일 수정
+      // ✅ kustomization.yaml 수정
       sh """
         cd DeploymentRepo/overlays/dev
         sed -i 's|newTag:.*|newTag: "${BUILD_NUMBER}"|' kustomization.yaml
       """
 
       // ✅ 변경사항 커밋 및 푸시
-      sh """
+      sh '''
         cd DeploymentRepo
         git add overlays/dev/kustomization.yaml
-        git commit -m "update image tag to ${BUILD_NUMBER}"
+        git commit -m "chore: update image tag to ${BUILD_NUMBER}"
         git push origin main
-      """
+      '''
     }
   }
 }
