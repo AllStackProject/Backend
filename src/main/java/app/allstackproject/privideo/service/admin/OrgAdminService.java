@@ -78,8 +78,9 @@ public class OrgAdminService {
 
     @Transactional(readOnly = true)
     public List<ReadAllCategoryDto> readAllCategory(Long orgId, Long groupId) {
-        memberGroupRepository.existsByIdAndOrganizationId(groupId, orgId)
-                .orElseThrow(() -> new ApiException(MEMBER_GROUP_NOT_FOUND));
+        if (!memberGroupRepository.existsByIdAndOrganizationId(groupId, orgId)) {
+            throw new ApiException(MEMBER_GROUP_NOT_FOUND);
+        }
 
         return categoryRepository.findByMemberGroupId(groupId).stream()
                 .map(c -> new ReadAllCategoryDto(c.getId(), c.getTitle()))
@@ -87,8 +88,9 @@ public class OrgAdminService {
     }
 
     public boolean createCategory(Long orgId, Long groupId, String title) {
-        memberGroupRepository.existsByIdAndOrganizationId(groupId, orgId)
-                .orElseThrow(() -> new ApiException(MEMBER_GROUP_NOT_FOUND));
+        if (!memberGroupRepository.existsByIdAndOrganizationId(groupId, orgId)) {
+            throw new ApiException(MEMBER_GROUP_NOT_FOUND);
+        }
 
         if (categoryRepository.existsByMemberGroupIdAndTitle(groupId, title)) {
             throw new ApiException(CATEGORY_ALREADY_EXIST);
@@ -99,8 +101,9 @@ public class OrgAdminService {
     }
 
     public boolean modifyCategory(Long orgId, Long groupId, Long categoryId, String newTitle) {
-        memberGroupRepository.existsByIdAndOrganizationId(groupId, orgId)
-                .orElseThrow(() -> new ApiException(MEMBER_GROUP_NOT_FOUND));
+        if (!memberGroupRepository.existsByIdAndOrganizationId(groupId, orgId)) {
+            throw new ApiException(MEMBER_GROUP_NOT_FOUND);
+        }
 
         if (categoryRepository.existsByMemberGroupIdAndTitle(groupId, newTitle)) {
             throw new ApiException(DUPLICATE_CATEGORY_NAME);
@@ -114,13 +117,14 @@ public class OrgAdminService {
     }
 
     public boolean deleteCategory(Long orgId, Long groupId, Long categoryId) {
-        memberGroupRepository.existsByIdAndOrganizationId(groupId, orgId)
-                .orElseThrow(() -> new ApiException(MEMBER_GROUP_NOT_FOUND));
+        if (!memberGroupRepository.existsByIdAndOrganizationId(groupId, orgId)) {
+            throw new ApiException(MEMBER_GROUP_NOT_FOUND);
+        }
 
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ApiException(CATEGORY_NOT_FOUND));
         categoryRepository.delete(category);
-        
+
         return true;
     }
 }

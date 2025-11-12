@@ -12,5 +12,5 @@ public interface MemberGroupRepository extends JpaRepository<MemberGroup, Long>,
 
     Optional<MemberGroup> findByIdAndOrganizationId(Long id, Long orgId);
 
-    Optional<MemberGroup> existsByIdAndOrganizationId(Long id, Long orgId);
+    boolean existsByIdAndOrganizationId(Long id, Long orgId);
 }

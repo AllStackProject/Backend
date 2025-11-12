@@ -86,7 +86,7 @@ public class OrgAdminController {
                 orgAdminService.modifyCategory(orgId, groupId, categoryId, modifyCategoryRequest.getTitle())));
     }
 
-    @PutMapping("/group/{groupId}/category/{categoryId}")
+    @DeleteMapping("/group/{groupId}/category/{categoryId}")
     @Operation(summary = "카테고리 삭제")
     public BaseResponse<SuccessResponse> deleteCategory(@PathVariable("orgId") Long orgId,
                                                         @PathVariable("groupId") Long groupId,
