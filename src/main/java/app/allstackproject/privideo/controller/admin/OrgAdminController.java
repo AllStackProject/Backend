@@ -1,9 +1,12 @@
 package app.allstackproject.privideo.controller.admin;
 
+import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_KEY;
+
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.service.admin.OrgAdminService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,8 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/admin/org/{orgId}")
-@PreAuthorize("hasAuthority('org:admin') and hasAuthority('perm:org_setting')")
+@PreAuthorize("hasAuthority('org:granted') and hasAuthority('perm:org_setting')")
 @Tag(name = "Admin-Org", description = "관리자 조직 설정 API")
+@SecurityRequirement(name = ORG_AUTH_KEY)
 public class OrgAdminController {
 
     private final OrgAdminService orgAdminService;

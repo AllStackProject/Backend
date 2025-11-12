@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/admin/org/{orgId}")
-@PreAuthorize("hasAuthority('org:admin') and hasAuthority('perm:video_manage')")
+@PreAuthorize("hasAuthority('org:granted') and hasAuthority('perm:video_manage')")
 @Tag(name = "Admin-Video", description = "관리자 영상 관리 API")
 @SecurityRequirement(name = ORG_AUTH_KEY)
 public class VideoAdminController {

@@ -1,7 +1,6 @@
 package app.allstackproject.privideo.service.admin;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
-import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.CREATOR_CANNOT_CHANGE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.FORBIDDEN_NO_PERMISSION;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
@@ -10,10 +9,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import app.allstackproject.privideo.common.enumStatus.JoinStatusType;
 import app.allstackproject.privideo.common.enumStatus.PermissionType;
 import app.allstackproject.privideo.common.exception.ApiException;
-import app.allstackproject.privideo.common.jwt.JwtProvider;
-import app.allstackproject.privideo.common.util.OrgCodeGenerator;
 import app.allstackproject.privideo.dto.organization.ChangeJoinStateRequest;
-import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.dto.organization.UpdateMemberPermissionRequest;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.repository.member.MemberRepository;
@@ -127,7 +123,7 @@ public class SuperAdminService {
 
         List<PermissionType> permissionList = new ArrayList<>();
 
-        if (Boolean.TRUE.equals(permissionMap.getVideoQuizManage())) {
+        if (Boolean.TRUE.equals(permissionMap.getVideoManage())) {
             permissionList.add(PermissionType.VIDEO_MANAGE);
         }
         if (Boolean.TRUE.equals(permissionMap.getStatsReport())) {
