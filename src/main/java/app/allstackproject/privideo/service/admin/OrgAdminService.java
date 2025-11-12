@@ -112,4 +112,15 @@ public class OrgAdminService {
 
         return true;
     }
+
+    public boolean deleteCategory(Long orgId, Long groupId, Long categoryId) {
+        memberGroupRepository.existsByIdAndOrganizationId(groupId, orgId)
+                .orElseThrow(() -> new ApiException(MEMBER_GROUP_NOT_FOUND));
+
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ApiException(CATEGORY_NOT_FOUND));
+        categoryRepository.delete(category);
+        
+        return true;
+    }
 }
