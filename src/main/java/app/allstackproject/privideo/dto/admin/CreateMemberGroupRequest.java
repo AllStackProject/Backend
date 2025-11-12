@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateCategoryRequest {
+public class CreateMemberGroupRequest {
     @NotBlank
-    private String title;
+    private String name;
 }

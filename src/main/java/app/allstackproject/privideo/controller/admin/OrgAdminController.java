@@ -5,6 +5,7 @@ import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.admin.CreateCategoryRequest;
+import app.allstackproject.privideo.dto.admin.CreateMemberGroupRequest;
 import app.allstackproject.privideo.dto.admin.ReadAllCategoryResponse;
 import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.service.admin.OrgAdminService;
@@ -45,9 +46,9 @@ public class OrgAdminController {
     @PostMapping("/group")
     @Operation(summary = "멤버 그룹 추가")
     public BaseResponse<SuccessResponse> createMemberGroup(@PathVariable("orgId") Long orgId,
-                                                           @Valid @RequestBody CreateCategoryRequest createCategoryRequest) {
+                                                           @Valid @RequestBody CreateMemberGroupRequest createMemberGroupRequest) {
         return new BaseResponse<>(SuccessResponse.of(
-                orgAdminService.createMemberGroup(orgId, createCategoryRequest.getName())));
+                orgAdminService.createMemberGroup(orgId, createMemberGroupRequest.getName())));
     }
 
     @DeleteMapping("/group/{groupId}")
@@ -62,5 +63,14 @@ public class OrgAdminController {
     public BaseResponse<ReadAllCategoryResponse> readAllCategory(@PathVariable("orgId") Long orgId,
                                                                  @PathVariable("groupId") Long groupId) {
         return new BaseResponse<>(ReadAllCategoryResponse.of(orgAdminService.readAllCategory(orgId, groupId)));
+    }
+
+    @PostMapping("/group/{groupId}/category")
+    @Operation(summary = "카테고리 추가")
+    public BaseResponse<SuccessResponse> createCategory(@PathVariable("orgId") Long orgId,
+                                                        @PathVariable("groupId") Long groupId,
+                                                        @Valid @RequestBody CreateCategoryRequest createCategoryRequest) {
+        return new BaseResponse<>(SuccessResponse.of(
+                orgAdminService.createCategory(orgId, groupId, createCategoryRequest.getTitle())));
     }
 }

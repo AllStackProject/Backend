@@ -2,6 +2,7 @@ package app.allstackproject.privideo.service.admin;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.CATEGORY_ALREADY_EXIST;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_GROUP_ALREADY_EXIST;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_GROUP_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
@@ -11,6 +12,7 @@ import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.util.OrgCodeGenerator;
 import app.allstackproject.privideo.dto.admin.ReadAllCategoryDto;
 import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
+import app.allstackproject.privideo.entity.Category;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.MemberGroup;
 import app.allstackproject.privideo.entity.Organization;
@@ -19,7 +21,6 @@ import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.video.CategoryRepository;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -80,5 +81,17 @@ public class OrgAdminService {
         return categoryRepository.findByMemberGroupId(groupId).stream()
                 .map(c -> new ReadAllCategoryDto(c.getId(), c.getTitle()))
                 .toList();
+    }
+
+    public boolean createCategory(Long orgId, Long groupId, String title) {
+        memberGroupRepository.existsByIdAndOrganizationId(groupId, orgId)
+                .orElseThrow(() -> new ApiException(MEMBER_GROUP_NOT_FOUND));
+
+        if (categoryRepository.existsByMemberGroupIdAndTitle(groupId, title)) {
+            throw new ApiException(CATEGORY_ALREADY_EXIST);
+        }
+
+        categoryRepository.save(Category.create(title, groupId));
+        return true;
     }
 }

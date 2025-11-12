@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CategoryRepository extends JpaRepository<Category, Long>, CategoryRepositoryCustom {
     List<Category> findByMemberGroupId(Long groupId);
+
+    boolean existsByMemberGroupIdAndTitle(Long memberGroupId, String title);
 }
