@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,5 +46,12 @@ public class OrgAdminController {
                                                            @Valid @RequestBody CreateCategoryRequest createCategoryRequest) {
         return new BaseResponse<>(SuccessResponse.of(
                 orgAdminService.createMemberGroup(orgId, createCategoryRequest.getName())));
+    }
+
+    @DeleteMapping("/group/{groupId}")
+    @Operation(summary = "멤버 그룹 삭제")
+    public BaseResponse<SuccessResponse> deleteMemberGroup(@PathVariable("orgId") Long orgId,
+                                                           @PathVariable("groupId") Long groupId) {
+        return new BaseResponse<>(SuccessResponse.of(orgAdminService.deleteMemberGroup(orgId, groupId)));
     }
 }

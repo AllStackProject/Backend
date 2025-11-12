@@ -110,7 +110,8 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     /**
      * 12000: MemberGroup 오류
      */
-    MEMBER_GROUP_ALREADY_EXIST(12001, HttpStatus.BAD_REQUEST, "이미 존재하는 멤버 그룹명입니다.");
+    MEMBER_GROUP_ALREADY_EXIST(12001, HttpStatus.BAD_REQUEST, "이미 존재하는 멤버 그룹입니다."),
+    MEMBER_GROUP_NOT_FOUND(12002, HttpStatus.NOT_FOUND, "존재하지 않는 멤버 그룹입니다.");
 
     private final int code;
     private final HttpStatus httpStatus;

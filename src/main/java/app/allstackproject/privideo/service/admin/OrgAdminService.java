@@ -3,6 +3,7 @@ package app.allstackproject.privideo.service.admin;
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_GROUP_ALREADY_EXIST;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_GROUP_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
 
@@ -56,6 +57,13 @@ public class OrgAdminService {
         Organization organization = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
         memberGroupRepository.save(MemberGroup.create(organization, name));
+        return true;
+    }
+
+    public boolean deleteMemberGroup(Long orgId, Long groupId) {
+        MemberGroup memberGroup = memberGroupRepository.findByIdAndOrganizationId(groupId, orgId)
+                .orElseThrow(() -> new ApiException(MEMBER_GROUP_NOT_FOUND));
+        memberGroupRepository.delete(memberGroup);
         return true;
     }
 }
