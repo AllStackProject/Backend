@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.repository.member;
 
+import app.allstackproject.privideo.dto.admin.MemberGroupItem;
 import app.allstackproject.privideo.entity.MemberGroup;
 import app.allstackproject.privideo.repository.member.custom.MemberGroupRepositoryCustom;
 import java.util.List;
@@ -16,4 +17,6 @@ public interface MemberGroupRepository extends JpaRepository<MemberGroup, Long>,
     boolean existsByIdAndOrganizationId(Long id, Long orgId);
 
     long countByIdInAndOrganizationId(List<Long> ids, Long orgId);
+
+    List<MemberGroupItem> findAllByOrganizationId(Long orgId);
 }

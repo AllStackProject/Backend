@@ -89,7 +89,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
 
     @Override
     public List<ReadAllJoinRequestItem> findByOrganizationIdAndJoinStatus(Long orgId, JoinStatusType joinStatus) {
-        List<ReadAllJoinRequestItem> members = jpaQueryFactory
+        return jpaQueryFactory
                 .select(Projections.constructor(ReadAllJoinRequestItem.class,
                         member.id,
                         user.name,
@@ -100,41 +100,9 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
                 .join(member.user, user)
                 .where(
                         member.organization.id.eq(orgId),
-                        member.status.eq(ACTIVE)
+                        member.status.eq(ACTIVE),
+                        member.joinStatus.eq(joinStatus)
                 )
                 .fetch();
-
-        if (!members.isEmpty()) {
-            List<Long> memberIds = members.stream()
-                    .map(ReadAllJoinRequestItem::getId)
-                    .collect(Collectors.toList());
-
-            Map<Long, List<MemberGroupItem>> memberGroupMap = jpaQueryFactory
-                    .select(
-                            memberGroupMapping.member.id,
-                            memberGroupMapping.memberGroup.id,
-                            memberGroupMapping.memberGroup.name
-                    )
-                    .from(memberGroupMapping)
-                    .where(memberGroupMapping.member.id.in(memberIds))
-                    .fetch()
-                    .stream()
-                    .collect(Collectors.groupingBy(
-                            tuple -> tuple.get(memberGroupMapping.member.id),
-                            Collectors.mapping(
-                                    tuple -> new MemberGroupItem(
-                                            tuple.get(memberGroupMapping.memberGroup.id),
-                                            tuple.get(memberGroupMapping.memberGroup.name)
-                                    ),
-                                    Collectors.toList()
-                            )
-                    ));
-
-            members.forEach(dto ->
-                    dto.setMemberGroups(memberGroupMap.getOrDefault(dto.getId(), Collections.emptyList()))
-            );
-        }
-
-        return members;
     }
 }

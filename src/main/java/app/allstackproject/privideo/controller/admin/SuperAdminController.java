@@ -66,7 +66,7 @@ public class SuperAdminController {
     @GetMapping("/member/join")
     @Operation(summary = "조직 가입 요청 목록 조회")
     public BaseResponse<ReadAllJoinRequestResponse> readAllJoinRequest(@PathVariable Long orgId) {
-        return new BaseResponse<>(ReadAllJoinRequestResponse.of(superAdminService.readAllJoinRequest(orgId)));
+        return new BaseResponse<>(superAdminService.readAllJoinRequest(orgId));
     }
 
     @PatchMapping("/member/{memberId}/join")

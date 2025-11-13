@@ -1,6 +1,7 @@
 package app.allstackproject.privideo.service.admin;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
+import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.PENDING;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.CREATOR_CANNOT_CHANGE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.FORBIDDEN_NO_PERMISSION;
@@ -12,7 +13,9 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import app.allstackproject.privideo.common.enumStatus.JoinStatusType;
 import app.allstackproject.privideo.common.enumStatus.PermissionType;
 import app.allstackproject.privideo.common.exception.ApiException;
+import app.allstackproject.privideo.dto.admin.MemberGroupItem;
 import app.allstackproject.privideo.dto.admin.ReadAllJoinRequestItem;
+import app.allstackproject.privideo.dto.admin.ReadAllJoinRequestResponse;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberItem;
 import app.allstackproject.privideo.dto.organization.ChangeJoinStateRequest;
 import app.allstackproject.privideo.dto.organization.UpdateMemberPermissionRequest;
@@ -112,6 +115,10 @@ public class SuperAdminService {
 
         targetMember.changeJoinStatus(targetStatus);
 
+        if (targetStatus != APPROVED) {
+            return true;
+        }
+
         long validGroupCount = memberGroupRepository.countByIdInAndOrganizationId(memberGroupIds, orgId);
 
         if (validGroupCount != memberGroupIds.size()) {
@@ -139,8 +146,12 @@ public class SuperAdminService {
     }
 
     @Transactional(readOnly = true)
-    public List<ReadAllJoinRequestItem> readAllJoinRequest(Long orgId) {
-        return memberRepository.findByOrganizationIdAndJoinStatus(orgId, PENDING);
+    public ReadAllJoinRequestResponse readAllJoinRequest(Long orgId) {
+        List<ReadAllJoinRequestItem> allJoinRequestItems = memberRepository.findByOrganizationIdAndJoinStatus(orgId,
+                PENDING);
+        List<MemberGroupItem> memberGroupItems = memberGroupRepository.findAllByOrganizationId(orgId);
+
+        return ReadAllJoinRequestResponse.of(allJoinRequestItems, memberGroupItems);
     }
 
     public boolean withdrawMember(Long orgId, Long memberId) {

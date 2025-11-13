@@ -9,11 +9,16 @@ import lombok.NoArgsConstructor;
 public class ReadAllJoinRequestResponse {
     private List<ReadAllJoinRequestItem> joinRequests;
 
-    private ReadAllJoinRequestResponse(List<ReadAllJoinRequestItem> joinRequests) {
+    private List<MemberGroupItem> allMemberGroups;
+
+    private ReadAllJoinRequestResponse(List<ReadAllJoinRequestItem> joinRequests,
+                                       List<MemberGroupItem> allMemberGroups) {
         this.joinRequests = joinRequests;
+        this.allMemberGroups = allMemberGroups;
     }
 
-    public static ReadAllJoinRequestResponse of(List<ReadAllJoinRequestItem> joinRequests) {
-        return new ReadAllJoinRequestResponse(joinRequests);
+    public static ReadAllJoinRequestResponse of(List<ReadAllJoinRequestItem> joinRequests,
+                                                List<MemberGroupItem> allMemberGroups) {
+        return new ReadAllJoinRequestResponse(joinRequests, allMemberGroups);
     }
 }
