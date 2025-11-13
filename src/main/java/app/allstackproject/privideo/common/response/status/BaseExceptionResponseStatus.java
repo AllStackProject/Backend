@@ -67,13 +67,10 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
      * 7000: Organization 오류
      */
     INVALID_ORG_CREATE(7001, HttpStatus.BAD_REQUEST, "조직 생성 요청에서 유효하지 않은 값이 존재합니다."),
-    DUPLICATE_ORG_NAME(7002, HttpStatus.BAD_REQUEST, "조직 이름은 중복이 불가능합니다."),
-    INVALID_ORG_JOIN(7003, HttpStatus.BAD_REQUEST, "조직 가입 요청에서 유효하지 않은 값이 존재합니다."),
-    ORGANIZATION_NOT_FOUND(7004, HttpStatus.NOT_FOUND, "존재하지 않는 조직입니다."),
-    INVALID_ORG_SELECT(7005, HttpStatus.BAD_REQUEST, "조직 선택 요청에서 유효하지 않은 값이 존재합니다."),
-    INVALID_ORG_EXIT(7006, HttpStatus.BAD_REQUEST, "조직 탈퇴 요청에서 유효하지 않은 값이 존재합니다."),
-    ORGANIZATION_CODE_IN_USE(7007, HttpStatus.CONFLICT, "조직 코드가 이미 사용중입니다."),
-    ORG_CODE_NOT_AVAILABLE(7008, HttpStatus.NOT_FOUND, "조직 코드를 찾을 수 없습니다. 잠시 후 다시 시도해주세요."),
+    INVALID_ORG_JOIN(7002, HttpStatus.BAD_REQUEST, "조직 가입 요청에서 유효하지 않은 값이 존재합니다."),
+    ORGANIZATION_NOT_FOUND(7003, HttpStatus.NOT_FOUND, "존재하지 않는 조직입니다."),
+    ORGANIZATION_CODE_IN_USE(7004, HttpStatus.CONFLICT, "조직 코드가 이미 사용중입니다."),
+    ORG_CODE_NOT_AVAILABLE(7005, HttpStatus.NOT_FOUND, "조직 코드를 찾을 수 없습니다. 잠시 후 다시 시도해주세요."),
 
     /**
      * 8000: Video 오류
@@ -95,10 +92,6 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     /**
      * 10000: Quiz 오류
      */
-    INVALID_SOLVE_REQUEST(10001, HttpStatus.BAD_REQUEST, "퀴즈 풀이 요청에서 유효하지 않은 값이 존재합니다."),
-    INVALID_QUIZ_REQUEST(10002, HttpStatus.BAD_REQUEST, "퀴즈 요청에서 올바르지 않은 값이 존재합니다."),
-    ALREADY_SOLVED_QUIZ(10003, HttpStatus.BAD_REQUEST, "이미 제출 이력이 있는 퀴즈가 포함되어있습니다."),
-    QUIZ_NOT_FOUND(10004, HttpStatus.NOT_FOUND, "퀴즈를 찾을 수 없습니다."),
 
     /***
      * 11000: MultipartFile 오류
