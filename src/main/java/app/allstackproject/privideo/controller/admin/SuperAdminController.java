@@ -5,6 +5,7 @@ import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.admin.ModifyMemberGroupRequest;
+import app.allstackproject.privideo.dto.admin.ReadAllJoinRequestResponse;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberResponse;
 import app.allstackproject.privideo.dto.organization.ChangeJoinStateRequest;
 import app.allstackproject.privideo.dto.organization.UpdateMemberPermissionRequest;
@@ -59,6 +60,12 @@ public class SuperAdminController {
                 modifyMemberGroupRequest.getMemberGroupIds());
 
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
+    }
+
+    @GetMapping("/member/join")
+    @Operation(summary = "조직 가입 요청 목록 조회")
+    public BaseResponse<ReadAllJoinRequestResponse> readAllJoinRequest(@PathVariable Long orgId) {
+        return new BaseResponse<>(ReadAllJoinRequestResponse.of(superAdminService.readAllJoinRequest(orgId)));
     }
 
     @PatchMapping("/member/{memberId}/join")

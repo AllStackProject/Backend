@@ -1,6 +1,7 @@
 package app.allstackproject.privideo.service.admin;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
+import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.PENDING;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.CREATOR_CANNOT_CHANGE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.FORBIDDEN_NO_PERMISSION;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_MEMBER_GROUP;
@@ -11,6 +12,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import app.allstackproject.privideo.common.enumStatus.JoinStatusType;
 import app.allstackproject.privideo.common.enumStatus.PermissionType;
 import app.allstackproject.privideo.common.exception.ApiException;
+import app.allstackproject.privideo.dto.admin.ReadAllJoinRequestItem;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberDto;
 import app.allstackproject.privideo.dto.organization.ChangeJoinStateRequest;
 import app.allstackproject.privideo.dto.organization.UpdateMemberPermissionRequest;
@@ -46,7 +48,7 @@ public class SuperAdminService {
 
     @Transactional(readOnly = true)
     public List<ReadAllMemberDto> readAllMember(Long orgId) {
-        return memberRepository.findByOrganizationIdAndStatus(orgId, ACTIVE);
+        return memberRepository.findByOrganizationId(orgId);
     }
 
     public boolean updateMemberPermission(Long memberId, Long orgId, UpdateMemberPermissionRequest permissionMap) {
@@ -130,6 +132,11 @@ public class SuperAdminService {
         );
 
         return true;
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReadAllJoinRequestItem> readAllJoinRequest(Long orgId) {
+        return memberRepository.findByOrganizationIdAndJoinStatus(orgId, PENDING);
     }
 
     private PermissionType[] convertToPermissionTypes(
