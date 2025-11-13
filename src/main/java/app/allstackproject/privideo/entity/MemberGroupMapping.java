@@ -30,21 +30,16 @@ public class MemberGroupMapping extends BaseEntity {
     @JoinColumn(name = "member_group_id")
     private MemberGroup memberGroup;
 
-    @NotBlank
-    private boolean isAdmin;
-
     @Builder(access = AccessLevel.PRIVATE)
-    private MemberGroupMapping(Member member, MemberGroup memberGroup, boolean isAdmin) {
+    private MemberGroupMapping(Member member, MemberGroup memberGroup) {
         this.member = member;
         this.memberGroup = memberGroup;
-        this.isAdmin = isAdmin;
     }
 
-    public static MemberGroupMapping create(Member member, MemberGroup memberGroup, boolean isAdmin) {
+    public static MemberGroupMapping create(Member member, MemberGroup memberGroup) {
         return MemberGroupMapping.builder()
                 .member(member)
                 .memberGroup(memberGroup)
-                .isAdmin(isAdmin)
                 .build();
     }
 }

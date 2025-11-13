@@ -80,8 +80,8 @@ public class OrgAdminService {
     public boolean deleteMemberGroup(Long orgId, Long groupId) {
         MemberGroup memberGroup = memberGroupRepository.findByIdAndOrganizationId(groupId, orgId)
                 .orElseThrow(() -> new ApiException(MEMBER_GROUP_NOT_FOUND));
-        memberGroupRepository.delete(memberGroup);
         memberGroupMappingRepository.deleteByMemberGroupId(groupId);
+        memberGroupRepository.delete(memberGroup);
         return true;
     }
 

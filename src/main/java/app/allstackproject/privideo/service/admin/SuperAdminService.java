@@ -92,7 +92,7 @@ public class SuperAdminService {
             List<MemberGroup> memberGroups = memberGroupRepository.findAllById(memberGroupIds);
 
             List<MemberGroupMapping> newMappings = memberGroups.stream()
-                    .map(memberGroup -> MemberGroupMapping.create(member, memberGroup, false))
+                    .map(memberGroup -> MemberGroupMapping.create(member, memberGroup))
                     .collect(Collectors.toList());
 
             memberGroupMappingRepository.saveAll(newMappings);
