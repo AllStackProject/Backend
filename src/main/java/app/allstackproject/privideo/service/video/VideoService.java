@@ -1,5 +1,9 @@
 package app.allstackproject.privideo.service.video;
 
+import static app.allstackproject.privideo.common.enumStatus.AiResultType.FEEDBACK;
+import static app.allstackproject.privideo.common.enumStatus.AiResultType.NONE;
+import static app.allstackproject.privideo.common.enumStatus.AiResultType.QUIZ;
+import static app.allstackproject.privideo.common.enumStatus.AiResultType.SUMMARY;
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.HISTORY_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
@@ -10,6 +14,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_IN_ORGANIZATION;
 import static app.allstackproject.privideo.service.video.LogService.SEGMENT_SECONDS;
 
+import app.allstackproject.privideo.common.enumStatus.AiResultType;
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.dto.video.JoinVideoSessionResult;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionInfo;
@@ -28,6 +33,7 @@ import app.allstackproject.privideo.repository.video.VideoRepository;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -50,11 +56,8 @@ public class VideoService {
     private final QuizRepository quizRepository;
 
     public JoinVideoSessionResult joinVideoSession(Long memberId, Long orgId, Long videoId) {
-        Member member = memberRepository.findByIdAndStatus(memberId, ACTIVE)
-                .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
-        if (!member.getOrganization().getId().equals(orgId)) {
-            throw new ApiException(MEMBER_NOT_IN_ORGANIZATION);
-        }
+        Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
+                .orElseThrow(() -> new ApiException(MEMBER_NOT_IN_ORGANIZATION));
 
         Video video = videoRepository.findByIdAndStatus(videoId, ACTIVE)
                 .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
@@ -77,8 +80,22 @@ public class VideoService {
         video.watch();
 
         VideoInfo videoInfo = VideoInfo.from(video);
-        List<QuizInfo> quizInfos = quizRepository.findByVideoId(videoId);
         List<String> categories = categoryRepository.findAllByVideoId(videoId);
+
+        AiResultType aiType = NONE;
+        List<QuizInfo> quizInfos = new ArrayList<>();
+        String aiFeedback = "", aiSummary = "";
+
+        if (video.getAiFeedback() != null) {
+            aiType = FEEDBACK;
+        } else if (video.getAiSummary() != null) {
+            aiType = SUMMARY;
+        } else {
+            quizInfos = quizRepository.findByVideoId(videoId);
+            if (!quizInfos.isEmpty()) {
+                aiType = QUIZ;
+            }
+        }
 
         boolean isScrapped = false;
         if (scrapRepository.existsByMemberIdAndVideoIdAndStatus(memberId, videoId, ACTIVE)) {
@@ -95,7 +112,7 @@ public class VideoService {
             if (history.get().isComplete()) {
                 isFirstWatch = false;
                 return JoinVideoSessionResult.completed(sessionId, videoInfo, segViewCnts, video.isComment(),
-                        isScrapped, categories, quizInfos);
+                        isScrapped, categories, aiType, quizInfos, aiFeedback, aiSummary);
             }
             logService.incOrgViewBucket(orgId, Instant.now());
         } else {
@@ -109,7 +126,7 @@ public class VideoService {
         }
 
         return JoinVideoSessionResult.create(sessionId, videoInfo, segViewCnts, video.isComment(), isScrapped,
-                categories, quizInfos);
+                categories, aiType, quizInfos, aiFeedback, aiSummary);
     }
 
     public boolean leaveVideoSession(LeaveVideoSessionInfo leaveVideoSessionInfo) {
