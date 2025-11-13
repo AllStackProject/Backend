@@ -15,9 +15,9 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "Notification")
+@Table(name = "Notice")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Notification extends BaseEntity {
+public class Notice extends BaseEntity {
     @Id
     @GeneratedValue
     private Long id;
@@ -36,15 +36,15 @@ public class Notification extends BaseEntity {
     private Long watchCnt;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Notification(Member creator, String title, String content, Long watchCnt) {
+    private Notice(Member creator, String title, String content, Long watchCnt) {
         this.creator = creator;
         this.title = title;
         this.content = content;
         this.watchCnt = watchCnt;
     }
 
-    public static Notification create(Member creator, String title, String content, Long watchCnt) {
-        return Notification.builder()
+    public static Notice create(Member creator, String title, String content, Long watchCnt) {
+        return Notice.builder()
                 .creator(creator)
                 .title(title)
                 .content(content)
