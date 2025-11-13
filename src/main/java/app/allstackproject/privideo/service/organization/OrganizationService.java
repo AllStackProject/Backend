@@ -7,6 +7,7 @@ import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.REJE
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_APPROVED_MEMBER;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_REQUESTED_MEMBER;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_IN_ORGANIZATION;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORG_CODE_NOT_AVAILABLE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.USER_NOT_FOUND;
@@ -216,11 +217,8 @@ public class OrganizationService {
     }
 
     public boolean exitOrg(Long userId, Long orgId) {
-        userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
-        organizationRepository.findById(orgId)
-                .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
         Member member = memberRepository.findByUserIdAndOrganizationIdAndStatus(userId, orgId, ACTIVE)
-                .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new ApiException(MEMBER_NOT_IN_ORGANIZATION));
 
         try {
             orgRedisRepository.deleteMemberPermission(orgId, member.getId());

@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 
 @Getter
-public class ReadAllVideoDto {
+public class ReadAllVideoItem {
     private Long id;
 
     private String title;
@@ -21,8 +21,8 @@ public class ReadAllVideoDto {
 
     private Long viewCnt;
 
-    public ReadAllVideoDto(Long id, String title, String thumbnailUrl, LocalDateTime createdAt, LocalDate expiredAt,
-                           String openScope, Long viewCnt) {
+    public ReadAllVideoItem(Long id, String title, String thumbnailUrl, LocalDateTime createdAt, LocalDate expiredAt,
+                            String openScope, Long viewCnt) {
         this.id = id;
         this.title = title;
         this.thumbnailUrl = thumbnailUrl;

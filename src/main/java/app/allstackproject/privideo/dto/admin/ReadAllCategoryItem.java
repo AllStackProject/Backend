@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ReadAllCategoryDto {
+public class ReadAllCategoryItem {
     private Long id;
 
     private String title;

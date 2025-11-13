@@ -12,12 +12,13 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.util.OrgCodeGenerator;
-import app.allstackproject.privideo.dto.admin.ReadAllCategoryDto;
+import app.allstackproject.privideo.dto.admin.ReadAllCategoryItem;
 import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.entity.Category;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.MemberGroup;
 import app.allstackproject.privideo.entity.Organization;
+import app.allstackproject.privideo.repository.member.MemberGroupMappingRepository;
 import app.allstackproject.privideo.repository.member.MemberGroupRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
@@ -38,6 +39,7 @@ public class OrgAdminService {
     private final OrgRedisRepository orgRedisRepository;
     private final MemberGroupRepository memberGroupRepository;
     private final CategoryRepository categoryRepository;
+    private final MemberGroupMappingRepository memberGroupMappingRepository;
 
     public boolean modifyOrgInfo(Long orgId, String imgUrl) {
         Organization organization = organizationRepository.findById(orgId)
@@ -78,18 +80,19 @@ public class OrgAdminService {
     public boolean deleteMemberGroup(Long orgId, Long groupId) {
         MemberGroup memberGroup = memberGroupRepository.findByIdAndOrganizationId(groupId, orgId)
                 .orElseThrow(() -> new ApiException(MEMBER_GROUP_NOT_FOUND));
+        memberGroupMappingRepository.deleteByMemberGroupId(groupId);
         memberGroupRepository.delete(memberGroup);
         return true;
     }
 
     @Transactional(readOnly = true)
-    public List<ReadAllCategoryDto> readAllCategory(Long orgId, Long groupId) {
+    public List<ReadAllCategoryItem> readAllCategory(Long orgId, Long groupId) {
         if (!memberGroupRepository.existsByIdAndOrganizationId(groupId, orgId)) {
             throw new ApiException(MEMBER_GROUP_NOT_FOUND);
         }
 
         return categoryRepository.findByMemberGroupId(groupId).stream()
-                .map(c -> new ReadAllCategoryDto(c.getId(), c.getTitle()))
+                .map(c -> new ReadAllCategoryItem(c.getId(), c.getTitle()))
                 .toList();
     }
 
@@ -130,6 +133,7 @@ public class OrgAdminService {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ApiException(CATEGORY_NOT_FOUND));
         categoryRepository.delete(category);
+        // TODO: CategoryVideoMapping도 삭제
 
         return true;
     }

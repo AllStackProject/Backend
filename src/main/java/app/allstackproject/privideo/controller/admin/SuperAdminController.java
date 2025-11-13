@@ -4,6 +4,9 @@ import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_
 
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
+import app.allstackproject.privideo.dto.admin.ModifyMemberGroupRequest;
+import app.allstackproject.privideo.dto.admin.ReadAllJoinRequestResponse;
+import app.allstackproject.privideo.dto.admin.ReadAllMemberResponse;
 import app.allstackproject.privideo.dto.organization.ChangeJoinStateRequest;
 import app.allstackproject.privideo.dto.organization.UpdateMemberPermissionRequest;
 import app.allstackproject.privideo.service.admin.SuperAdminService;
@@ -14,6 +17,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -31,26 +36,51 @@ public class SuperAdminController {
 
     private final SuperAdminService superAdminService;
 
-    @PatchMapping("/orgs/join")
-    @Operation(summary = "조직 가입 요청 처리", description = "조직 가입 요청을 승인 또는 거절합니다.")
-    public BaseResponse<SuccessResponse> changeJoinState(
-            @AuthenticationPrincipal(expression = "userId") Long userId,
-            @Valid @RequestBody ChangeJoinStateRequest changeJoinStateRequest,
-            @PathVariable Long orgId) {
-        boolean isSuccess = superAdminService.changeJoinState(userId, orgId, changeJoinStateRequest);
+    @GetMapping("/members")
+    @Operation(summary = "조직 내 전체 멤버 조회")
+    public BaseResponse<ReadAllMemberResponse> readAllMember(@PathVariable Long orgId) {
+        return new BaseResponse<>(ReadAllMemberResponse.of(superAdminService.readAllMember(orgId)));
+    }
+
+    @PutMapping("/member/{memberId}/perm")
+    @Operation(summary = "조직 멤버의 권한 수정")
+    public BaseResponse<SuccessResponse> updateMemberPermission(@PathVariable Long orgId, @PathVariable Long memberId,
+                                                                @Valid @RequestBody UpdateMemberPermissionRequest request) {
+
+        boolean isSuccess = superAdminService.updateMemberPermission(memberId, orgId, request);
+
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
     }
 
-    @PutMapping("/member/perm")
-    @Operation(summary = "멤버 권한 변경", description = "조직 멤버의 권한을 변경합니다.")
-    public BaseResponse<SuccessResponse> updateMemberPermission(
-            @AuthenticationPrincipal(expression = "userId") Long adminUserId,
-            @PathVariable Long orgId,
-            @Valid @RequestBody UpdateMemberPermissionRequest request) {
+    @PutMapping("/member/{memberId}/group")
+    @Operation(summary = "조직 멤버의 멤버 그룹 수정")
+    public BaseResponse<SuccessResponse> modifyMemberGroup(@PathVariable Long orgId, @PathVariable Long memberId,
+                                                           @Valid @RequestBody ModifyMemberGroupRequest modifyMemberGroupRequest) {
 
-        boolean isSuccess = superAdminService.updateMemberPermission(
-                adminUserId, orgId, request.getMemberId(), request.getPermissions());
+        boolean isSuccess = superAdminService.modifyMemberGroup(memberId, orgId,
+                modifyMemberGroupRequest.getMemberGroupIds());
 
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
+    }
+
+    @GetMapping("/member/join")
+    @Operation(summary = "조직 가입 요청 목록 조회")
+    public BaseResponse<ReadAllJoinRequestResponse> readAllJoinRequest(@PathVariable Long orgId) {
+        return new BaseResponse<>(superAdminService.readAllJoinRequest(orgId));
+    }
+
+    @PatchMapping("/member/{memberId}/join")
+    @Operation(summary = "조직 가입 요청 처리", description = "조직 가입 요청을 승인 또는 거절합니다.")
+    public BaseResponse<SuccessResponse> changeJoinState(
+            @Valid @RequestBody ChangeJoinStateRequest changeJoinStateRequest, @PathVariable Long orgId,
+            @PathVariable Long memberId) {
+        boolean isSuccess = superAdminService.changeJoinState(orgId, memberId, changeJoinStateRequest);
+        return new BaseResponse<>(SuccessResponse.of(isSuccess));
+    }
+
+    @DeleteMapping("/member/{memberId}")
+    @Operation(summary = "조직 멤버 탈퇴시키기")
+    public BaseResponse<SuccessResponse> withdrawMember(@PathVariable Long orgId, @PathVariable Long memberId) {
+        return new BaseResponse<>(SuccessResponse.of(superAdminService.withdrawMember(orgId, memberId)));
     }
 }
