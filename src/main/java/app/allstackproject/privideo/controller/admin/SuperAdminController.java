@@ -61,7 +61,7 @@ public class SuperAdminController {
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
     }
 
-    @PatchMapping("/orgs/join")
+    @PatchMapping("/member/{memberId}/join")
     @Operation(summary = "조직 가입 요청 처리", description = "조직 가입 요청을 승인 또는 거절합니다.")
     public BaseResponse<SuccessResponse> changeJoinState(
             @AuthenticationPrincipal(expression = "userId") Long userId,
