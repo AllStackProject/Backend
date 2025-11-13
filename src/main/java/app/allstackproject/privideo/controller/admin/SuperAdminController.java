@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -71,8 +72,15 @@ public class SuperAdminController {
     @PatchMapping("/member/{memberId}/join")
     @Operation(summary = "조직 가입 요청 처리", description = "조직 가입 요청을 승인 또는 거절합니다.")
     public BaseResponse<SuccessResponse> changeJoinState(
-            @Valid @RequestBody ChangeJoinStateRequest changeJoinStateRequest, @PathVariable Long orgId) {
-        boolean isSuccess = superAdminService.changeJoinState(orgId, changeJoinStateRequest);
+            @Valid @RequestBody ChangeJoinStateRequest changeJoinStateRequest, @PathVariable Long orgId,
+            @PathVariable Long memberId) {
+        boolean isSuccess = superAdminService.changeJoinState(orgId, memberId, changeJoinStateRequest);
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
+    }
+
+    @DeleteMapping("/member/{memberId}")
+    @Operation(summary = "조직 멤버 탈퇴시키기")
+    public BaseResponse<SuccessResponse> withdrawMember(@PathVariable Long orgId, @PathVariable Long memberId) {
+        return new BaseResponse<>(SuccessResponse.of(superAdminService.withdrawMember(orgId, memberId)));
     }
 }

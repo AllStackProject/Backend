@@ -103,12 +103,11 @@ public class SuperAdminService {
         return true;
     }
 
-    public boolean changeJoinState(Long orgId, ChangeJoinStateRequest changeJoinStateRequest) {
-        Long targetMemberId = changeJoinStateRequest.getMemberId();
+    public boolean changeJoinState(Long orgId, Long memberId, ChangeJoinStateRequest changeJoinStateRequest) {
         JoinStatusType targetStatus = JoinStatusType.valueOf(changeJoinStateRequest.getStatus());
         List<Long> memberGroupIds = changeJoinStateRequest.getMemberGroupIds();
 
-        Member targetMember = memberRepository.findByIdAndOrganizationIdAndStatus(targetMemberId, orgId, ACTIVE)
+        Member targetMember = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_IN_ORGANIZATION));
 
         targetMember.changeJoinStatus(targetStatus);
@@ -130,7 +129,7 @@ public class SuperAdminService {
                 new TransactionSynchronization() {
                     @Override
                     public void afterCommit() {
-                        joinRedisSysnc(orgId, targetMemberId, targetStatus,
+                        joinRedisSysnc(orgId, memberId, targetStatus,
                                 targetMember.getPermissionCode());
                     }
                 }
@@ -142,6 +141,21 @@ public class SuperAdminService {
     @Transactional(readOnly = true)
     public List<ReadAllJoinRequestItem> readAllJoinRequest(Long orgId) {
         return memberRepository.findByOrganizationIdAndJoinStatus(orgId, PENDING);
+    }
+
+    public boolean withdrawMember(Long orgId, Long memberId) {
+        Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
+                .orElseThrow(() -> new ApiException(MEMBER_NOT_IN_ORGANIZATION));
+
+        try {
+            orgRedisRepository.deleteMemberPermission(orgId, memberId);
+            log.info("조직 탈퇴 - Redis 권한 삭제 완료, memberId: {}", member.getId());
+        } catch (Exception e) {
+            log.error("Redis 권한 삭제 실패");
+        }
+
+        member.updateToInactive();
+        return true;
     }
 
     private PermissionType[] convertToPermissionTypes(
