@@ -71,10 +71,8 @@ public class SuperAdminController {
     @PatchMapping("/member/{memberId}/join")
     @Operation(summary = "조직 가입 요청 처리", description = "조직 가입 요청을 승인 또는 거절합니다.")
     public BaseResponse<SuccessResponse> changeJoinState(
-            @AuthenticationPrincipal(expression = "userId") Long userId,
-            @Valid @RequestBody ChangeJoinStateRequest changeJoinStateRequest,
-            @PathVariable Long orgId) {
-        boolean isSuccess = superAdminService.changeJoinState(userId, orgId, changeJoinStateRequest);
+            @Valid @RequestBody ChangeJoinStateRequest changeJoinStateRequest, @PathVariable Long orgId) {
+        boolean isSuccess = superAdminService.changeJoinState(orgId, changeJoinStateRequest);
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
     }
 }

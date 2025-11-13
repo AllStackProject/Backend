@@ -103,23 +103,28 @@ public class SuperAdminService {
         return true;
     }
 
-    public boolean changeJoinState(Long adminUserId, Long orgId, ChangeJoinStateRequest changeJoinStateRequest) {
-        if (!organizationRepository.existsById(orgId)) {
-            throw new ApiException(ORGANIZATION_NOT_FOUND);
-        }
-        Member admin = memberRepository.findByUserIdAndOrganizationIdAndStatus(adminUserId, orgId, ACTIVE)
-                .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
-        if (!admin.isAdmin()) {
-            throw new ApiException(FORBIDDEN_NO_PERMISSION);
-        }
-
+    public boolean changeJoinState(Long orgId, ChangeJoinStateRequest changeJoinStateRequest) {
         Long targetMemberId = changeJoinStateRequest.getMemberId();
         JoinStatusType targetStatus = JoinStatusType.valueOf(changeJoinStateRequest.getStatus());
+        List<Long> memberGroupIds = changeJoinStateRequest.getMemberGroupIds();
 
         Member targetMember = memberRepository.findByIdAndOrganizationIdAndStatus(targetMemberId, orgId, ACTIVE)
-                .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
+                .orElseThrow(() -> new ApiException(MEMBER_NOT_IN_ORGANIZATION));
 
         targetMember.changeJoinStatus(targetStatus);
+
+        long validGroupCount = memberGroupRepository.countByIdInAndOrganizationId(memberGroupIds, orgId);
+
+        if (validGroupCount != memberGroupIds.size()) {
+            throw new ApiException(INVALID_MEMBER_GROUP);
+        }
+
+        List<MemberGroup> memberGroups = memberGroupRepository.findAllById(memberGroupIds);
+        List<MemberGroupMapping> newMappings = memberGroups.stream()
+                .map(memberGroup -> MemberGroupMapping.create(targetMember, memberGroup))
+                .collect(Collectors.toList());
+
+        memberGroupMappingRepository.saveAll(newMappings);
 
         TransactionSynchronizationManager.registerSynchronization(
                 new TransactionSynchronization() {
