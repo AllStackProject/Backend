@@ -31,7 +31,7 @@ public class Video extends BaseEntity {
     private Organization organization;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "creator_id")
+    @JoinColumn(name = "member_id")
     private Member creator;
 
     @NotBlank
