@@ -56,7 +56,7 @@ public class CommentService {
             throw new ApiException(INVALID_COMMENT_REQUEST);
         }
 
-        if (!videoRepository.findById(videoId).get().isComment()) {
+        if (!videoRepository.findById(videoId).get().getIsComment()) {
             throw new ApiException(VIDEO_COMMENT_NOT_ALLOWED);
         }
 
@@ -69,7 +69,7 @@ public class CommentService {
         if (!videoRepository.isValidMemberAndOrgAndVideo(memberId, orgId, videoId)) {
             throw new ApiException(INVALID_COMMENT_REQUEST);
         }
-        if (!videoRepository.findById(videoId).get().isComment()) {
+        if (!videoRepository.findById(videoId).get().getIsComment()) {
             throw new ApiException(VIDEO_COMMENT_NOT_ALLOWED);
         }
 

@@ -86,14 +86,16 @@ public class VideoService {
         List<QuizInfo> quizInfos = new ArrayList<>();
         String aiFeedback = "", aiSummary = "";
 
-        if (video.getAiFeedback() != null) {
-            aiType = FEEDBACK;
-        } else if (video.getAiSummary() != null) {
-            aiType = SUMMARY;
-        } else {
-            quizInfos = quizRepository.findByVideoId(videoId);
-            if (!quizInfos.isEmpty()) {
-                aiType = QUIZ;
+        if (video.getIsAiFunction()) {
+            if (video.getAiFeedback() != null) {
+                aiType = FEEDBACK;
+            } else if (video.getAiSummary() != null) {
+                aiType = SUMMARY;
+            } else {
+                quizInfos = quizRepository.findByVideoId(videoId);
+                if (!quizInfos.isEmpty()) {
+                    aiType = QUIZ;
+                }
             }
         }
 
@@ -111,7 +113,7 @@ public class VideoService {
         if (history.isPresent()) {
             if (history.get().isComplete()) {
                 isFirstWatch = false;
-                return JoinVideoSessionResult.completed(sessionId, videoInfo, segViewCnts, video.isComment(),
+                return JoinVideoSessionResult.completed(sessionId, videoInfo, segViewCnts, video.getIsComment(),
                         isScrapped, categories, aiType, quizInfos, aiFeedback, aiSummary);
             }
             logService.incOrgViewBucket(orgId, Instant.now());
@@ -125,7 +127,7 @@ public class VideoService {
             // TODO: Redis에 해당 멤버 + 재시청 여부 + 영상 아이디에 대해 세션 키 저장
         }
 
-        return JoinVideoSessionResult.create(sessionId, videoInfo, segViewCnts, video.isComment(), isScrapped,
+        return JoinVideoSessionResult.create(sessionId, videoInfo, segViewCnts, video.getIsComment(), isScrapped,
                 categories, aiType, quizInfos, aiFeedback, aiSummary);
     }
 
