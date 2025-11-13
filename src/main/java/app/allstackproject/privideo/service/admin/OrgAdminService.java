@@ -130,6 +130,7 @@ public class OrgAdminService {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ApiException(CATEGORY_NOT_FOUND));
         categoryRepository.delete(category);
+        // TODO: CategoryVideoMapping도 삭제
 
         return true;
     }
