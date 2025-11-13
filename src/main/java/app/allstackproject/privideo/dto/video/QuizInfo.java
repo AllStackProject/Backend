@@ -12,7 +12,5 @@ public class QuizInfo {
 
     private final Boolean answer;
 
-    private final Boolean memberAnswer;
-    
     private final String description;
 }

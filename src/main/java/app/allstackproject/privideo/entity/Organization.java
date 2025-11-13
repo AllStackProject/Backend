@@ -25,7 +25,7 @@ public class Organization extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "creator_id")
+    @JoinColumn(name = "member_id")
     private User creator;
 
     @NotBlank

@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.dto.video;
 
+import app.allstackproject.privideo.common.enumStatus.AiResultType;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AccessLevel;
@@ -22,14 +23,18 @@ public class JoinVideoSessionResult {
 
     private final List<String> categories;
 
-    private final List<QuizInfo> quizzes;
+    private final AiResultType aiType;
 
-    private final LocalDateTime createdAt;
+    private final List<QuizInfo> aiQuizzes;
+
+    private final String aiFeedback;
+
+    private final String aiSummary;
 
     @Builder(access = AccessLevel.PRIVATE)
     private JoinVideoSessionResult(String sessionId, Boolean watchCompleted, VideoInfo video, List<Long> segViewCnts,
                                    Boolean isComment, Boolean isScrapped, List<String> categories,
-                                   List<QuizInfo> quizzes, LocalDateTime createdAt) {
+                                   AiResultType aiType, List<QuizInfo> aiQuizzes, String aiFeedback, String aiSummary) {
         this.sessionId = sessionId;
         this.watchCompleted = watchCompleted;
         this.video = video;
@@ -37,13 +42,16 @@ public class JoinVideoSessionResult {
         this.isComment = isComment;
         this.isScrapped = isScrapped;
         this.categories = categories == null ? List.of() : List.copyOf(categories);
-        this.quizzes = quizzes == null ? List.of() : List.copyOf(quizzes);
-        this.createdAt = createdAt;
+        this.aiType = aiType;
+        this.aiQuizzes = aiQuizzes == null ? List.of() : List.copyOf(aiQuizzes);
+        this.aiFeedback = aiFeedback;
+        this.aiSummary = aiSummary;
     }
 
     public static JoinVideoSessionResult completed(String sessionId, VideoInfo video, List<Long> segViewCnts,
                                                    Boolean isComment, Boolean isScrapped, List<String> categories,
-                                                   List<QuizInfo> quizzes) {
+                                                   AiResultType aiType, List<QuizInfo> aiQuizzes, String aiFeedback,
+                                                   String aiSummary) {
         return JoinVideoSessionResult.builder()
                 .sessionId(sessionId)
                 .watchCompleted(true)
@@ -52,14 +60,17 @@ public class JoinVideoSessionResult {
                 .isComment(isComment)
                 .isScrapped(isScrapped)
                 .categories(categories)
-                .quizzes(quizzes)
-                .createdAt(video.getCreatedAt())
+                .aiType(aiType)
+                .aiQuizzes(aiQuizzes)
+                .aiFeedback(aiFeedback)
+                .aiSummary(aiSummary)
                 .build();
     }
 
     public static JoinVideoSessionResult create(String sessionId, VideoInfo video, List<Long> segViewCnts,
                                                 Boolean isComment, Boolean isScrapped, List<String> categories,
-                                                List<QuizInfo> quizzes) {
+                                                AiResultType aiType, List<QuizInfo> aiQuizzes, String aiFeedback,
+                                                String aiSummary) {
         return JoinVideoSessionResult.builder()
                 .sessionId(sessionId)
                 .watchCompleted(false)
@@ -68,8 +79,10 @@ public class JoinVideoSessionResult {
                 .isComment(isComment)
                 .isScrapped(isScrapped)
                 .categories(categories)
-                .quizzes(quizzes)
-                .createdAt(video.getCreatedAt())
+                .aiType(aiType)
+                .aiQuizzes(aiQuizzes)
+                .aiFeedback(aiFeedback)
+                .aiSummary(aiSummary)
                 .build();
     }
 }

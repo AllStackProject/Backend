@@ -6,14 +6,11 @@ import app.allstackproject.privideo.common.enumStatus.AuthPrincipal;
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.comment.CommentResponse;
-import app.allstackproject.privideo.dto.quiz.QuizResponse;
 import app.allstackproject.privideo.dto.scrap.ScrapResponse;
 import app.allstackproject.privideo.dto.history.HistoryResponse;
 import app.allstackproject.privideo.service.CommentService;
-import app.allstackproject.privideo.service.QuizService;
 import app.allstackproject.privideo.service.video.ScrapService;
 import app.allstackproject.privideo.service.video.HistoryService;
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,7 +34,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class MyActivityController {
 
     private final HistoryService historyService;
-    private final QuizService quizService;
     private final ScrapService scrapService;
     private final CommentService commentService;
 
@@ -51,18 +47,6 @@ public class MyActivityController {
 
         HistoryResponse histories = historyService.getUserVideos(memberId, orgId);
         return new BaseResponse<>(histories);
-    }
-
-    @GetMapping("/quiz")
-    @Hidden
-    public BaseResponse<QuizResponse> getUserQuizses(
-            @AuthenticationPrincipal AuthPrincipal me,
-            @PathVariable long orgId) {
-
-        Long memberId = me.memberId();
-
-        QuizResponse quizzes = quizService.getUserQuizzes(memberId, orgId);
-        return new BaseResponse<>(quizzes);
     }
 
     @GetMapping("/scrap")

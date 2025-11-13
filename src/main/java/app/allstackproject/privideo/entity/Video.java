@@ -1,6 +1,5 @@
 package app.allstackproject.privideo.entity;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -31,7 +30,7 @@ public class Video extends BaseEntity {
     private Organization organization;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "creator_id")
+    @JoinColumn(name = "member_id")
     private Member creator;
 
     @NotBlank
@@ -48,9 +47,11 @@ public class Video extends BaseEntity {
     @NotNull
     private Long wholeTime;
 
-    private boolean isComment;
+    @NotNull
+    private Boolean isComment;
 
-    private boolean isQuiz;
+    @NotNull
+    private Boolean isAiFunction;
 
     @Column(columnDefinition = "text")
     private String aiFeedback;
@@ -69,7 +70,7 @@ public class Video extends BaseEntity {
 
     @Builder(access = AccessLevel.PRIVATE)
     private Video(Organization organization, Member creator, String title, String description, String thumbnailUrl,
-                  Long wholeTime, boolean isComment, boolean isQuiz, String aiFeedback, String aiSummary,
+                  Long wholeTime, boolean isComment, boolean isAiFunction, String aiFeedback, String aiSummary,
                   LocalDate expiredAt, Long watchCnt, Long quitCnt) {
         this.organization = organization;
         this.creator = creator;
@@ -78,7 +79,7 @@ public class Video extends BaseEntity {
         this.thumbnailUrl = thumbnailUrl;
         this.wholeTime = wholeTime;
         this.isComment = isComment;
-        this.isQuiz = isQuiz;
+        this.isAiFunction = isAiFunction;
         this.aiFeedback = aiFeedback;
         this.aiSummary = aiSummary;
         this.expiredAt = expiredAt;
@@ -87,7 +88,7 @@ public class Video extends BaseEntity {
     }
 
     public static Video create(Organization organization, Member creator, String title, String description,
-                               String thumbnailUrl, Long wholeTime, boolean isComment, boolean isQuiz,
+                               String thumbnailUrl, Long wholeTime, boolean isComment, boolean isAiFunction,
                                String aiFeedback, String aiSummary,
                                LocalDate expiredAt, Long watchCnt, Long quitCnt) {
         if (expiredAt == null) {
@@ -108,7 +109,7 @@ public class Video extends BaseEntity {
                 .thumbnailUrl(thumbnailUrl)
                 .wholeTime(wholeTime)
                 .isComment(isComment)
-                .isQuiz(isQuiz)
+                .isAiFunction(isAiFunction)
                 .aiFeedback(aiFeedback)
                 .aiSummary(aiSummary)
                 .expiredAt(expiredAt)
