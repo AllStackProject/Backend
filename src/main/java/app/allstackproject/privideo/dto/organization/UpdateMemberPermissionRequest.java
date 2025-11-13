@@ -10,26 +10,14 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UpdateMemberPermissionRequest {
     @NotNull
-    private Long memberId;
+    private Boolean videoManage;
 
     @NotNull
-    private PermissionMap permissions;
+    private Boolean statsReport;
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    public static class PermissionMap {
-        @NotNull
-        private Boolean videoManage;
+    @NotNull
+    private Boolean notice;
 
-        @NotNull
-        private Boolean statsReport;
-
-        @NotNull
-        private Boolean notice;
-
-        @NotNull
-        private Boolean orgSetting;
-
-    }
+    @NotNull
+    private Boolean orgSetting;
 }

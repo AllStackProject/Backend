@@ -33,6 +33,32 @@ public class SuperAdminController {
 
     private final SuperAdminService superAdminService;
 
+    @GetMapping("/members")
+    @Operation(summary = "조직 내 전체 멤버 조회")
+    public BaseResponse<ReadAllMemberResponse> readAllMember(@PathVariable Long orgId) {
+        return new BaseResponse<>(ReadAllMemberResponse.of(superAdminService.readAllMember(orgId)));
+    }
+
+    @PutMapping("/member/{memberId}/perm")
+    @Operation(summary = "조직 멤버의 권한 수정")
+    public BaseResponse<SuccessResponse> updateMemberPermission(@PathVariable Long orgId, @PathVariable Long memberId,
+                                                                @Valid @RequestBody UpdateMemberPermissionRequest request) {
+
+        boolean isSuccess = superAdminService.updateMemberPermission(memberId, orgId, request);
+
+        return new BaseResponse<>(SuccessResponse.of(isSuccess));
+    }
+
+    @PutMapping("/member/{memberId}/group")
+    @Operation(summary = "조직 멤버의 멤버 그룹 수정")
+    public BaseResponse<SuccessResponse> modifyMemberGroup(@PathVariable Long orgId, @PathVariable Long memberId,
+                                                           @Valid @RequestBody UpdateMemberPermissionRequest request) {
+
+        boolean isSuccess = superAdminService.updateMemberPermission(memberId, orgId, request);
+
+        return new BaseResponse<>(SuccessResponse.of(isSuccess));
+    }
+
     @PatchMapping("/orgs/join")
     @Operation(summary = "조직 가입 요청 처리", description = "조직 가입 요청을 승인 또는 거절합니다.")
     public BaseResponse<SuccessResponse> changeJoinState(
@@ -41,24 +67,5 @@ public class SuperAdminController {
             @PathVariable Long orgId) {
         boolean isSuccess = superAdminService.changeJoinState(userId, orgId, changeJoinStateRequest);
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
-    }
-
-    @PutMapping("/member/perm")
-    @Operation(summary = "멤버 권한 변경", description = "조직 멤버의 권한을 변경합니다.")
-    public BaseResponse<SuccessResponse> updateMemberPermission(
-            @AuthenticationPrincipal(expression = "userId") Long adminUserId,
-            @PathVariable Long orgId,
-            @Valid @RequestBody UpdateMemberPermissionRequest request) {
-
-        boolean isSuccess = superAdminService.updateMemberPermission(
-                adminUserId, orgId, request.getMemberId(), request.getPermissions());
-
-        return new BaseResponse<>(SuccessResponse.of(isSuccess));
-    }
-
-    @GetMapping("/members")
-    @Operation(summary = "조직 내 전체 멤버 조회")
-    public BaseResponse<ReadAllMemberResponse> readAllMember(@PathVariable Long orgId) {
-        return new BaseResponse<>(ReadAllMemberResponse.of(superAdminService.readAllMember(orgId)));
     }
 }

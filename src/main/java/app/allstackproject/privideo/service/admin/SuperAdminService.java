@@ -81,38 +81,24 @@ public class SuperAdminService {
 
     }
 
-    public boolean updateMemberPermission(Long adminUserId, Long orgId, Long targetMemberId,
-                                          UpdateMemberPermissionRequest.PermissionMap permissionMap) {
-        if (!organizationRepository.existsById(orgId)) {
-            throw new ApiException(ORGANIZATION_NOT_FOUND);
-        }
-
-        // TODO: 여기서 MEMBER_NOT_FOUND : /admin/orgs/perm
-        Member admin = memberRepository.findByIdAndOrganizationIdAndStatus(adminUserId, orgId, ACTIVE)
+    public boolean updateMemberPermission(Long memberId, Long orgId, UpdateMemberPermissionRequest permissionMap) {
+        Member member = memberRepository.findByUserIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
 
-        if (!admin.isAdmin()) {
-            throw new ApiException(FORBIDDEN_NO_PERMISSION);
-        }
-
-        Member targetMember = memberRepository.findByUserIdAndOrganizationIdAndStatus(targetMemberId, orgId, ACTIVE)
-                .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
-
-        if (targetMember.isAdmin() && targetMember.getOrganization().getCreator().getId()
-                .equals(targetMember.getUser().getId())) {
+        if (member.isAdmin()) {
             throw new ApiException(CREATOR_CANNOT_CHANGE);
         }
 
         PermissionType[] newPermissions = convertToPermissionTypes(permissionMap);
-        targetMember.replaceWith(newPermissions);
+        member.replaceWith(newPermissions);
 
-        long newPermissionCode = targetMember.getPermissionCode();
+        long newPermissionCode = member.getPermissionCode();
 
         TransactionSynchronizationManager.registerSynchronization(
                 new TransactionSynchronization() {
                     @Override
                     public void afterCommit() {
-                        orgRedisRepository.saveMemberPermission(orgId, targetMemberId, newPermissionCode);
+                        orgRedisRepository.saveMemberPermission(orgId, memberId, newPermissionCode);
                     }
                 }
         );
@@ -125,7 +111,7 @@ public class SuperAdminService {
     }
 
     private PermissionType[] convertToPermissionTypes(
-            UpdateMemberPermissionRequest.PermissionMap permissionMap) {
+            UpdateMemberPermissionRequest permissionMap) {
 
         List<PermissionType> permissionList = new ArrayList<>();
 
