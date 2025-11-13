@@ -4,7 +4,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_IN_ORGANIZATION;
 
 import app.allstackproject.privideo.common.exception.ApiException;
-import app.allstackproject.privideo.dto.admin.ReadAllVideoDto;
+import app.allstackproject.privideo.dto.admin.ReadAllVideoItem;
 import app.allstackproject.privideo.entity.Video;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
@@ -22,7 +22,7 @@ public class VideoAdminService {
     private final OrganizationRepository organizationRepository;
 
     @Transactional(readOnly = true)
-    public List<ReadAllVideoDto> readAllVideos(Long orgId) {
+    public List<ReadAllVideoItem> readAllVideos(Long orgId) {
         return videoRepository.findByOrgId(orgId);
     }
 

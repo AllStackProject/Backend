@@ -7,13 +7,13 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class ReadAllVideosResponse {
-    private List<ReadAllVideoDto> vidoes;
+    private List<ReadAllVideoItem> vidoes;
 
-    private ReadAllVideosResponse(List<ReadAllVideoDto> vidoes) {
+    private ReadAllVideosResponse(List<ReadAllVideoItem> vidoes) {
         this.vidoes = vidoes;
     }
 
-    public static ReadAllVideosResponse of(List<ReadAllVideoDto> vidoes) {
+    public static ReadAllVideosResponse of(List<ReadAllVideoItem> vidoes) {
         return new ReadAllVideosResponse(vidoes);
     }
 }

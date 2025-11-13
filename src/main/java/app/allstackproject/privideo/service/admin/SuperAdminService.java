@@ -13,7 +13,7 @@ import app.allstackproject.privideo.common.enumStatus.JoinStatusType;
 import app.allstackproject.privideo.common.enumStatus.PermissionType;
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.dto.admin.ReadAllJoinRequestItem;
-import app.allstackproject.privideo.dto.admin.ReadAllMemberDto;
+import app.allstackproject.privideo.dto.admin.ReadAllMemberItem;
 import app.allstackproject.privideo.dto.organization.ChangeJoinStateRequest;
 import app.allstackproject.privideo.dto.organization.UpdateMemberPermissionRequest;
 import app.allstackproject.privideo.entity.Member;
@@ -47,7 +47,7 @@ public class SuperAdminService {
     private final OrgRedisRepository orgRedisRepository;
 
     @Transactional(readOnly = true)
-    public List<ReadAllMemberDto> readAllMember(Long orgId) {
+    public List<ReadAllMemberItem> readAllMember(Long orgId) {
         return memberRepository.findByOrganizationId(orgId);
     }
 

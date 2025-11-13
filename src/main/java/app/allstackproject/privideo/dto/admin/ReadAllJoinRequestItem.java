@@ -14,7 +14,7 @@ public class ReadAllJoinRequestItem {
 
     private LocalDateTime requestedAt;
 
-    private List<MemberGroupDto> memberGroups;
+    private List<MemberGroupItem> memberGroups;
 
     public ReadAllJoinRequestItem(Long id, String userName, String nickname, LocalDateTime requestedAt) {
         this.id = id;
@@ -23,7 +23,7 @@ public class ReadAllJoinRequestItem {
         this.requestedAt = requestedAt;
     }
 
-    public void setMemberGroups(List<MemberGroupDto> memberGroups) {
+    public void setMemberGroups(List<MemberGroupItem> memberGroups) {
         this.memberGroups = List.copyOf(memberGroups);
     }
 }

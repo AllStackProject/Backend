@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class MemberGroupDto {
+public class MemberGroupItem {
     private Long id;
 
     private String name;

@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ReadAllMemberDto {
+public class ReadAllMemberItem {
     private Long id;
 
     private String userName;
@@ -17,9 +17,9 @@ public class ReadAllMemberDto {
 
     private Boolean isAdmin;
 
-    private List<MemberGroupDto> memberGroups;
+    private List<MemberGroupItem> memberGroups;
 
-    public ReadAllMemberDto(Long id, String userName, String nickname, Boolean isSuperAdmin, Boolean isAdmin) {
+    public ReadAllMemberItem(Long id, String userName, String nickname, Boolean isSuperAdmin, Boolean isAdmin) {
         this.id = id;
         this.userName = userName;
         this.nickname = nickname;
@@ -27,7 +27,7 @@ public class ReadAllMemberDto {
         this.isAdmin = isAdmin;
     }
 
-    public void setMemberGroups(List<MemberGroupDto> memberGroups) {
+    public void setMemberGroups(List<MemberGroupItem> memberGroups) {
         this.memberGroups = List.copyOf(memberGroups);
     }
 }

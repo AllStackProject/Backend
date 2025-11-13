@@ -7,13 +7,13 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class ReadAllMemberResponse {
-    private List<ReadAllMemberDto> members;
+    private List<ReadAllMemberItem> members;
 
-    private ReadAllMemberResponse(List<ReadAllMemberDto> members) {
+    private ReadAllMemberResponse(List<ReadAllMemberItem> members) {
         this.members = members;
     }
 
-    public static ReadAllMemberResponse of(List<ReadAllMemberDto> members) {
+    public static ReadAllMemberResponse of(List<ReadAllMemberItem> members) {
         return new ReadAllMemberResponse(members);
     }
 }

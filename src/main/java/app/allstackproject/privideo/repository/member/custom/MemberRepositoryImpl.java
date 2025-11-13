@@ -8,9 +8,9 @@ import static app.allstackproject.privideo.entity.QMemberGroupMapping.memberGrou
 import static app.allstackproject.privideo.entity.QUser.user;
 
 import app.allstackproject.privideo.common.enumStatus.JoinStatusType;
-import app.allstackproject.privideo.dto.admin.MemberGroupDto;
+import app.allstackproject.privideo.dto.admin.MemberGroupItem;
 import app.allstackproject.privideo.dto.admin.ReadAllJoinRequestItem;
-import app.allstackproject.privideo.dto.admin.ReadAllMemberDto;
+import app.allstackproject.privideo.dto.admin.ReadAllMemberItem;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.Collections;
@@ -36,9 +36,9 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
     }
 
     @Override
-    public List<ReadAllMemberDto> findByOrganizationId(Long orgId) {
-        List<ReadAllMemberDto> members = jpaQueryFactory
-                .select(Projections.constructor(ReadAllMemberDto.class,
+    public List<ReadAllMemberItem> findByOrganizationId(Long orgId) {
+        List<ReadAllMemberItem> members = jpaQueryFactory
+                .select(Projections.constructor(ReadAllMemberItem.class,
                         member.id,
                         user.name,
                         member.nickname,
@@ -55,10 +55,10 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
 
         if (!members.isEmpty()) {
             List<Long> memberIds = members.stream()
-                    .map(ReadAllMemberDto::getId)
+                    .map(ReadAllMemberItem::getId)
                     .collect(Collectors.toList());
 
-            Map<Long, List<MemberGroupDto>> memberGroupMap = jpaQueryFactory
+            Map<Long, List<MemberGroupItem>> memberGroupMap = jpaQueryFactory
                     .select(
                             memberGroupMapping.member.id,
                             memberGroupMapping.memberGroup.id,
@@ -71,7 +71,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
                     .collect(Collectors.groupingBy(
                             tuple -> tuple.get(memberGroupMapping.member.id),
                             Collectors.mapping(
-                                    tuple -> new MemberGroupDto(
+                                    tuple -> new MemberGroupItem(
                                             tuple.get(memberGroupMapping.memberGroup.id),
                                             tuple.get(memberGroupMapping.memberGroup.name)
                                     ),
@@ -109,7 +109,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
                     .map(ReadAllJoinRequestItem::getId)
                     .collect(Collectors.toList());
 
-            Map<Long, List<MemberGroupDto>> memberGroupMap = jpaQueryFactory
+            Map<Long, List<MemberGroupItem>> memberGroupMap = jpaQueryFactory
                     .select(
                             memberGroupMapping.member.id,
                             memberGroupMapping.memberGroup.id,
@@ -122,7 +122,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
                     .collect(Collectors.groupingBy(
                             tuple -> tuple.get(memberGroupMapping.member.id),
                             Collectors.mapping(
-                                    tuple -> new MemberGroupDto(
+                                    tuple -> new MemberGroupItem(
                                             tuple.get(memberGroupMapping.memberGroup.id),
                                             tuple.get(memberGroupMapping.memberGroup.name)
                                     ),

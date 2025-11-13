@@ -12,7 +12,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.util.OrgCodeGenerator;
-import app.allstackproject.privideo.dto.admin.ReadAllCategoryDto;
+import app.allstackproject.privideo.dto.admin.ReadAllCategoryItem;
 import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.entity.Category;
 import app.allstackproject.privideo.entity.Member;
@@ -86,13 +86,13 @@ public class OrgAdminService {
     }
 
     @Transactional(readOnly = true)
-    public List<ReadAllCategoryDto> readAllCategory(Long orgId, Long groupId) {
+    public List<ReadAllCategoryItem> readAllCategory(Long orgId, Long groupId) {
         if (!memberGroupRepository.existsByIdAndOrganizationId(groupId, orgId)) {
             throw new ApiException(MEMBER_GROUP_NOT_FOUND);
         }
 
         return categoryRepository.findByMemberGroupId(groupId).stream()
-                .map(c -> new ReadAllCategoryDto(c.getId(), c.getTitle()))
+                .map(c -> new ReadAllCategoryItem(c.getId(), c.getTitle()))
                 .toList();
     }
 
