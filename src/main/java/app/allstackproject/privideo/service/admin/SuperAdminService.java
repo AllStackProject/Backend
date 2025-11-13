@@ -9,6 +9,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import app.allstackproject.privideo.common.enumStatus.JoinStatusType;
 import app.allstackproject.privideo.common.enumStatus.PermissionType;
 import app.allstackproject.privideo.common.exception.ApiException;
+import app.allstackproject.privideo.dto.admin.ReadAllMemberDto;
 import app.allstackproject.privideo.dto.organization.ChangeJoinStateRequest;
 import app.allstackproject.privideo.dto.organization.UpdateMemberPermissionRequest;
 import app.allstackproject.privideo.entity.Member;
@@ -116,6 +117,11 @@ public class SuperAdminService {
                 }
         );
         return true;
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReadAllMemberDto> readAllMember(Long orgId) {
+        return memberRepository.findByOrganizationIdAndStatus(orgId, ACTIVE);
     }
 
     private PermissionType[] convertToPermissionTypes(

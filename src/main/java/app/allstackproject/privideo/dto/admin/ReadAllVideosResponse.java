@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 public class ReadAllVideosResponse {
     private List<ReadAllVideoDto> vidoes;
 
-    public ReadAllVideosResponse(List<ReadAllVideoDto> vidoes) {
+    private ReadAllVideosResponse(List<ReadAllVideoDto> vidoes) {
         this.vidoes = vidoes;
     }
 
