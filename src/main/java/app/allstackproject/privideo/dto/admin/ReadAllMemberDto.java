@@ -17,7 +17,7 @@ public class ReadAllMemberDto {
 
     private Boolean isAdmin;
 
-    private List<String> memberGroups;
+    private List<MemberGroupDto> memberGroups;
 
     public ReadAllMemberDto(Long id, String userName, String nickname, Boolean isSuperAdmin, Boolean isAdmin) {
         this.id = id;
@@ -26,8 +26,8 @@ public class ReadAllMemberDto {
         this.isSuperAdmin = isSuperAdmin;
         this.isAdmin = isAdmin;
     }
-    
-    public void setMemberGroups(List<String> memberGroups) {
+
+    public void setMemberGroups(List<MemberGroupDto> memberGroups) {
         this.memberGroups = List.copyOf(memberGroups);
     }
 }

@@ -4,6 +4,7 @@ import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_
 
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
+import app.allstackproject.privideo.dto.admin.ModifyMemberGroupRequest;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberResponse;
 import app.allstackproject.privideo.dto.organization.ChangeJoinStateRequest;
 import app.allstackproject.privideo.dto.organization.UpdateMemberPermissionRequest;
@@ -52,9 +53,10 @@ public class SuperAdminController {
     @PutMapping("/member/{memberId}/group")
     @Operation(summary = "조직 멤버의 멤버 그룹 수정")
     public BaseResponse<SuccessResponse> modifyMemberGroup(@PathVariable Long orgId, @PathVariable Long memberId,
-                                                           @Valid @RequestBody UpdateMemberPermissionRequest request) {
+                                                           @Valid @RequestBody ModifyMemberGroupRequest modifyMemberGroupRequest) {
 
-        boolean isSuccess = superAdminService.updateMemberPermission(memberId, orgId, request);
+        boolean isSuccess = superAdminService.modifyMemberGroup(memberId, orgId,
+                modifyMemberGroupRequest.getMemberGroupIds());
 
         return new BaseResponse<>(SuccessResponse.of(isSuccess));
     }

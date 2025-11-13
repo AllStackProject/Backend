@@ -40,7 +40,7 @@ public class MemberGroupMapping extends BaseEntity {
         this.isAdmin = isAdmin;
     }
 
-    public MemberGroupMapping create(Member member, MemberGroup memberGroup, boolean isAdmin) {
+    public static MemberGroupMapping create(Member member, MemberGroup memberGroup, boolean isAdmin) {
         return MemberGroupMapping.builder()
                 .member(member)
                 .memberGroup(memberGroup)

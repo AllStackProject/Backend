@@ -18,6 +18,7 @@ import app.allstackproject.privideo.entity.Category;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.MemberGroup;
 import app.allstackproject.privideo.entity.Organization;
+import app.allstackproject.privideo.repository.member.MemberGroupMappingRepository;
 import app.allstackproject.privideo.repository.member.MemberGroupRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
@@ -38,6 +39,7 @@ public class OrgAdminService {
     private final OrgRedisRepository orgRedisRepository;
     private final MemberGroupRepository memberGroupRepository;
     private final CategoryRepository categoryRepository;
+    private final MemberGroupMappingRepository memberGroupMappingRepository;
 
     public boolean modifyOrgInfo(Long orgId, String imgUrl) {
         Organization organization = organizationRepository.findById(orgId)
@@ -79,6 +81,7 @@ public class OrgAdminService {
         MemberGroup memberGroup = memberGroupRepository.findByIdAndOrganizationId(groupId, orgId)
                 .orElseThrow(() -> new ApiException(MEMBER_GROUP_NOT_FOUND));
         memberGroupRepository.delete(memberGroup);
+        memberGroupMappingRepository.deleteByMemberGroupId(groupId);
         return true;
     }
 

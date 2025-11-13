@@ -8,6 +8,7 @@ import static app.allstackproject.privideo.entity.QMemberGroupMapping.memberGrou
 import static app.allstackproject.privideo.entity.QUser.user;
 
 import app.allstackproject.privideo.common.enumStatus.BaseStatusType;
+import app.allstackproject.privideo.dto.admin.MemberGroupDto;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberDto;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -56,9 +57,10 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
                     .map(ReadAllMemberDto::getId)
                     .collect(Collectors.toList());
 
-            Map<Long, List<String>> memberGroupMap = jpaQueryFactory
+            Map<Long, List<MemberGroupDto>> memberGroupMap = jpaQueryFactory
                     .select(
                             memberGroupMapping.member.id,
+                            memberGroupMapping.memberGroup.id,
                             memberGroupMapping.memberGroup.name
                     )
                     .from(memberGroupMapping)
@@ -68,7 +70,10 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
                     .collect(Collectors.groupingBy(
                             tuple -> tuple.get(memberGroupMapping.member.id),
                             Collectors.mapping(
-                                    tuple -> tuple.get(memberGroupMapping.memberGroup.name),
+                                    tuple -> new MemberGroupDto(
+                                            tuple.get(memberGroupMapping.memberGroup.id),
+                                            tuple.get(memberGroupMapping.memberGroup.name)
+                                    ),
                                     Collectors.toList()
                             )
                     ));
