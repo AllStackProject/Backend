@@ -31,13 +31,10 @@ public class JoinVideoSessionResult {
 
     private final String aiSummary;
 
-    private final LocalDateTime createdAt;
-
     @Builder(access = AccessLevel.PRIVATE)
     private JoinVideoSessionResult(String sessionId, Boolean watchCompleted, VideoInfo video, List<Long> segViewCnts,
                                    Boolean isComment, Boolean isScrapped, List<String> categories,
-                                   AiResultType aiType, List<QuizInfo> aiQuizzes, String aiFeedback, String aiSummary,
-                                   LocalDateTime createdAt) {
+                                   AiResultType aiType, List<QuizInfo> aiQuizzes, String aiFeedback, String aiSummary) {
         this.sessionId = sessionId;
         this.watchCompleted = watchCompleted;
         this.video = video;
@@ -49,7 +46,6 @@ public class JoinVideoSessionResult {
         this.aiQuizzes = aiQuizzes == null ? List.of() : List.copyOf(aiQuizzes);
         this.aiFeedback = aiFeedback;
         this.aiSummary = aiSummary;
-        this.createdAt = createdAt;
     }
 
     public static JoinVideoSessionResult completed(String sessionId, VideoInfo video, List<Long> segViewCnts,
@@ -68,7 +64,6 @@ public class JoinVideoSessionResult {
                 .aiQuizzes(aiQuizzes)
                 .aiFeedback(aiFeedback)
                 .aiSummary(aiSummary)
-                .createdAt(video.getCreatedAt())
                 .build();
     }
 
@@ -88,7 +83,6 @@ public class JoinVideoSessionResult {
                 .aiQuizzes(aiQuizzes)
                 .aiFeedback(aiFeedback)
                 .aiSummary(aiSummary)
-                .createdAt(video.getCreatedAt())
                 .build();
     }
 }

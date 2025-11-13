@@ -29,12 +29,10 @@ public class JoinVideoSessionResponse {
 
     private final String aiSummary;
 
-    private final LocalDateTime createdAt;
-
     private JoinVideoSessionResponse(String sessionId, Boolean watchCompleted, VideoInfo video, List<Long> segViewCnts,
                                      Boolean isComment, Boolean isScrapped, List<String> categories,
-                                     AiResultType aiType, List<QuizInfo> aiQuizzes, String aiFeedback, String aiSummary,
-                                     LocalDateTime createdAt) {
+                                     AiResultType aiType, List<QuizInfo> aiQuizzes, String aiFeedback,
+                                     String aiSummary) {
         this.sessionId = sessionId;
         this.watchCompleted = watchCompleted;
         this.video = video;
@@ -46,13 +44,11 @@ public class JoinVideoSessionResponse {
         this.aiQuizzes = aiQuizzes == null ? List.of() : List.copyOf(aiQuizzes);
         this.aiFeedback = aiFeedback;
         this.aiSummary = aiSummary;
-        this.createdAt = createdAt;
     }
 
     public static JoinVideoSessionResponse from(JoinVideoSessionResult result) {
         return new JoinVideoSessionResponse(result.getSessionId(), result.getWatchCompleted(), result.getVideo(),
                 result.getSegViewCnts(), result.getIsComment(), result.getIsScrapped(), result.getCategories(),
-                result.getAiType(), result.getAiQuizzes(), result.getAiFeedback(), result.getAiSummary(),
-                result.getCreatedAt());
+                result.getAiType(), result.getAiQuizzes(), result.getAiFeedback(), result.getAiSummary());
     }
 }
