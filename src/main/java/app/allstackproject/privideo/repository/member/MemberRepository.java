@@ -21,4 +21,6 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
 
     Optional<Member> findByOrganizationIdAndNicknameAndStatus(Long orgId, String nickname,
                                                               BaseStatusType baseStatusType);
+
+    boolean existsByIdAndOrganizationIdAndStatus(Long id, Long orgId, BaseStatusType status);
 }

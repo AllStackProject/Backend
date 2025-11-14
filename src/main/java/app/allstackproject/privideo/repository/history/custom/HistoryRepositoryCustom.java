@@ -1,8 +1,11 @@
 package app.allstackproject.privideo.repository.history.custom;
 
+import app.allstackproject.privideo.dto.admin.MemberWatchLogItem;
 import app.allstackproject.privideo.dto.history.VideoHistory;
 import java.util.List;
 
 public interface HistoryRepositoryCustom {
-    List<VideoHistory> findByMemberIdAndOrganizationId(Long memberId, Long orgId);
+    List<VideoHistory> findByMemberId(Long memberId);
+
+    List<MemberWatchLogItem> findStatByMemberId(Long memberId);
 }
