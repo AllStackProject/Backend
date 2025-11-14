@@ -55,7 +55,7 @@ public class SuperAdminService {
     }
 
     public boolean updateMemberPermission(Long memberId, Long orgId, UpdateMemberPermissionRequest permissionMap) {
-        Member member = memberRepository.findByUserIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
+        Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_IN_ORGANIZATION));
 
         if (member.isAdmin()) {
@@ -79,7 +79,7 @@ public class SuperAdminService {
     }
 
     public boolean modifyMemberGroup(Long memberId, Long orgId, List<Long> memberGroupIds) {
-        Member member = memberRepository.findByUserIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
+        Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_IN_ORGANIZATION));
 
         if (!memberGroupIds.isEmpty()) {
