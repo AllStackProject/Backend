@@ -49,6 +49,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
                 .join(member.user, user)
                 .where(
                         member.organization.id.eq(orgId),
+                        member.joinStatus.eq(APPROVED),
                         member.status.eq(ACTIVE)
                 )
                 .fetch();
