@@ -3,6 +3,7 @@ package app.allstackproject.privideo.controller.admin;
 import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_KEY;
 
 import app.allstackproject.privideo.common.response.BaseResponse;
+import app.allstackproject.privideo.dto.admin.ReadAllMemberWatchLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadMemberWatchLogResponse;
 import app.allstackproject.privideo.service.admin.StatsAdminService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,6 +25,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class StatsAdminController {
 
     private final StatsAdminService statsAdminService;
+
+    @GetMapping("/view/members")
+    @Operation(summary = "멤버별 영상 시청 기록 목록 조회")
+    public BaseResponse<ReadAllMemberWatchLogResponse> readAllMemberWatchLog(@PathVariable Long orgId) {
+        return new BaseResponse<>(ReadAllMemberWatchLogResponse.of(statsAdminService.readAllMemberWatchLog(orgId)));
+    }
 
     @GetMapping("/view/member/{memberId}")
     @Operation(summary = "멤버별 영상 시청 기록 조회")

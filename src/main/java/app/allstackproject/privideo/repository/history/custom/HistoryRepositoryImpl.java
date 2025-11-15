@@ -2,9 +2,11 @@ package app.allstackproject.privideo.repository.history.custom;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.entity.QHistory.history;
+import static app.allstackproject.privideo.entity.QMember.member;
 import static app.allstackproject.privideo.entity.QScrap.scrap;
 import static app.allstackproject.privideo.entity.QVideo.video;
 
+import app.allstackproject.privideo.dto.admin.MemberAvgWatchRateDto;
 import app.allstackproject.privideo.dto.admin.MemberWatchLogItem;
 import app.allstackproject.privideo.dto.history.VideoHistory;
 import com.querydsl.core.types.Projections;
@@ -75,6 +77,21 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                         history.member.id.eq(memberId)
                 )
                 .orderBy(watchedAt.asc())
+                .fetch();
+    }
+
+    @Override
+    public List<MemberAvgWatchRateDto> findAvgWatchRateByOrgId(Long orgId) {
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        MemberAvgWatchRateDto.class,
+                        history.member.id,
+                        history.watchRate.avg().longValue()
+                ))
+                .from(history)
+                .join(history.member, member)
+                .where(member.organization.id.eq(orgId))
+                .groupBy(history.member.id)
                 .fetch();
     }
 }
