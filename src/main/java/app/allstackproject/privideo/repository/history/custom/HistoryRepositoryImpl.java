@@ -3,6 +3,8 @@ package app.allstackproject.privideo.repository.history.custom;
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.entity.QHistory.history;
 import static app.allstackproject.privideo.entity.QMember.member;
+import static app.allstackproject.privideo.entity.QMemberGroup.memberGroup;
+import static app.allstackproject.privideo.entity.QMemberGroupMapping.memberGroupMapping;
 import static app.allstackproject.privideo.entity.QScrap.scrap;
 import static app.allstackproject.privideo.entity.QVideo.video;
 import static app.allstackproject.privideo.entity.QVideoMemberGroupMapping.videoMemberGroupMapping;
@@ -11,7 +13,9 @@ import app.allstackproject.privideo.common.enumStatus.VideoOpenScopeType;
 import app.allstackproject.privideo.dto.admin.AllVideoWatchLogItem;
 import app.allstackproject.privideo.dto.admin.MemberAvgWatchRateDto;
 import app.allstackproject.privideo.dto.admin.MemberWatchLogItem;
+import app.allstackproject.privideo.dto.admin.VideoWatchLogItem;
 import app.allstackproject.privideo.dto.history.VideoHistory;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
@@ -22,6 +26,8 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -75,6 +81,7 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                         video.title,
                         history.watchRate,
                         watchedAt
+                        // history.lastModifiedAt // 최근 시청일 반환한다면
                 ))
                 .from(history)
                 .join(history.video, video)
@@ -141,5 +148,56 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .where(video.organization.id.eq(orgId))
                 .groupBy(video.id)
                 .fetch();
+    }
+
+    @Override
+    public List<VideoWatchLogItem> findVideoWatchLogByVideoId(Long videoId) {
+        List<Tuple> historyData = jpaQueryFactory
+                .select(
+                        member.nickname,
+                        history.watchRate,
+                        history.startedAt
+                )
+                .from(history)
+                .join(history.member, member)
+                .where(history.video.id.eq(videoId))
+                .orderBy(history.startedAt.desc())
+                .fetch();
+
+        if (historyData.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> memberIds = historyData.stream()
+                .map(t -> t.get(history.member.id))
+                .distinct()
+                .collect(Collectors.toList());
+
+        Map<Long, List<String>> groupsMap = jpaQueryFactory
+                .select(memberGroupMapping.member.id, memberGroup.name)
+                .from(memberGroupMapping)
+                .join(memberGroupMapping.memberGroup, memberGroup)
+                .where(
+                        memberGroupMapping.member.id.in(memberIds),
+                        memberGroupMapping.status.eq(ACTIVE)
+                )
+                .fetch()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        t -> t.get(memberGroupMapping.member.id),
+                        Collectors.mapping(
+                                t -> t.get(memberGroup.name),
+                                Collectors.toList()
+                        )
+                ));
+
+        return historyData.stream()
+                .map(t -> new VideoWatchLogItem(
+                        t.get(member.nickname),
+                        groupsMap.getOrDefault(t.get(history.member.id), List.of()),
+                        t.get(history.watchRate),
+                        t.get(history.lastModifiedAt)
+                ))
+                .collect(Collectors.toList());
     }
 }
