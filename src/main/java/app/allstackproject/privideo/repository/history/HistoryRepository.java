@@ -1,6 +1,5 @@
 package app.allstackproject.privideo.repository.history;
 
-import app.allstackproject.privideo.common.enumStatus.BaseStatusType;
 import app.allstackproject.privideo.entity.History;
 import app.allstackproject.privideo.repository.history.custom.HistoryRepositoryCustom;
 import java.util.Optional;

@@ -4,6 +4,7 @@ import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_
 
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberWatchLogResponse;
+import app.allstackproject.privideo.dto.admin.ReadAllVideoWatchLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadMemberWatchLogResponse;
 import app.allstackproject.privideo.service.admin.StatsAdminService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,4 +39,11 @@ public class StatsAdminController {
                                                                        @PathVariable Long memberId) {
         return new BaseResponse<>(ReadMemberWatchLogResponse.of(statsAdminService.readMemberWatchLog(orgId, memberId)));
     }
+
+    @GetMapping("/view/videos")
+    @Operation(summary = "영상별 시청 기록 목록 조회")
+    public BaseResponse<ReadAllVideoWatchLogResponse> readAllVideoWatchLog(@PathVariable Long orgId) {
+        return new BaseResponse<>(ReadAllVideoWatchLogResponse.of(statsAdminService.readAllVideoWatchLog(orgId)));
+    }
+
 }

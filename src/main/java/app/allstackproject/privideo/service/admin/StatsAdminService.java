@@ -7,6 +7,7 @@ import static java.util.stream.Collectors.toMap;
 
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.dto.admin.AllMemberWatchLogItem;
+import app.allstackproject.privideo.dto.admin.AllVideoWatchLogItem;
 import app.allstackproject.privideo.dto.admin.MemberAvgWatchRateDto;
 import app.allstackproject.privideo.dto.admin.MemberGroupItem;
 import app.allstackproject.privideo.dto.admin.MemberWatchLogItem;
@@ -62,6 +63,10 @@ public class StatsAdminService {
             throw new ApiException(MEMBER_NOT_IN_ORGANIZATION);
         }
 
-        return historyRepository.findStatByMemberId(memberId);
+        return historyRepository.findWatchLogByMemberId(memberId);
+    }
+
+    public List<AllVideoWatchLogItem> readAllVideoWatchLog(Long orgId) {
+        return historyRepository.findAllVideoWatchLogByOrgId(orgId);
     }
 }
