@@ -6,6 +6,7 @@ import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberWatchLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoWatchLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadDayWatchCompleteCntResponse;
+import app.allstackproject.privideo.dto.admin.ReadHourWatchCompleteCntResponse;
 import app.allstackproject.privideo.dto.admin.ReadMemberWatchLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadVideoWatchLogResponse;
 import app.allstackproject.privideo.service.admin.StatsAdminService;
@@ -67,5 +68,17 @@ public class StatsAdminController {
             ) @PathVariable String standardMonth) {
         return new BaseResponse<>(
                 ReadDayWatchCompleteCntResponse.of(statsAdminService.readDayWatchCompleteCnt(orgId, standardMonth)));
+    }
+
+    @GetMapping("/report/{standardMonth}/hour")
+    @Operation(summary = "시간대별 조회수 조회")
+    public BaseResponse<ReadHourWatchCompleteCntResponse> readHourWatchCompleteCnt(
+            @AuthenticationPrincipal(expression = "orgId") Long orgId,
+            @Parameter(
+                    description = "기준 월 (yyyy-MM 형식)",
+                    example = "2025-11"
+            ) @PathVariable String standardMonth) {
+        return new BaseResponse<>(
+                ReadHourWatchCompleteCntResponse.of(statsAdminService.readHourWatchCompleteCnt(orgId, standardMonth)));
     }
 }

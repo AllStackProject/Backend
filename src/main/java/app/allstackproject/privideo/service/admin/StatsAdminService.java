@@ -121,6 +121,42 @@ public class StatsAdminService {
                 .collect(Collectors.toList());
     }
 
+    public List<Long> readHourWatchCompleteCnt(Long orgId, String standardMonth) {
+        YearMonth yearMonth = YearMonth.parse(standardMonth);
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+
+        Query query = Query.query(Criteria.where("orgId").is(orgId)
+                .and("date").gte(startDate.atStartOfDay())
+                .lt(endDate.plusDays(1).atStartOfDay()));
+
+        List<OrgViewLog> logs = mongoTemplate.find(query, OrgViewLog.class);
+
+        Map<String, Long> bucketSumMap = logs.stream()
+                .map(OrgViewLog::getBuckets)
+                .filter(buckets -> buckets != null)
+                .flatMap(buckets -> buckets.entrySet().stream())
+                .collect(Collectors.groupingBy(
+                        Map.Entry::getKey,
+                        Collectors.summingLong(e -> e.getValue().longValue())
+                ));
+
+        List<String> bucketOrder = List.of(
+                "06-09",
+                "09-12",
+                "12-15",
+                "15-18",
+                "18-21",
+                "21-24",
+                "00-03",
+                "03-06"
+        );
+
+        return bucketOrder.stream()
+                .map(bucket -> bucketSumMap.getOrDefault(bucket, 0L))
+                .collect(Collectors.toList());
+    }
+
     private Long calculateTotalViews(OrgViewLog log) {
         return log.getBuckets().values().stream()
                 .mapToLong(Integer::longValue)
