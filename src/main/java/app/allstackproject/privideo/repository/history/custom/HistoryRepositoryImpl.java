@@ -135,6 +135,7 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                         video.title,
                         member.nickname,
                         video.expiredAt,
+                        video.createdAt,
                         openScope,
                         completeRate,
                         history.member.id.countDistinct()
