@@ -140,7 +140,13 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .join(video.creator, member)
                 .leftJoin(history).on(history.video.id.eq(video.id))
                 .where(video.organization.id.eq(orgId))
-                .groupBy(video.id)
+                .groupBy(
+                        video.id,
+                        video.title,
+                        member.nickname,
+                        video.expiredAt,
+                        openScope
+                )
                 .fetch();
     }
 
