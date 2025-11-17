@@ -158,6 +158,10 @@ public class StatsAdminService {
     }
 
     private Long calculateTotalViews(OrgViewLog log) {
+        if (log.getBuckets() == null) {
+            return 0L;
+        }
+        
         return log.getBuckets().values().stream()
                 .mapToLong(Integer::longValue)
                 .sum();
