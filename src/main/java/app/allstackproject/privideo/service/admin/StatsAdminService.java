@@ -17,6 +17,7 @@ import app.allstackproject.privideo.dto.admin.MemberWatchLogItem;
 import app.allstackproject.privideo.dto.admin.MemberWatchReport;
 import app.allstackproject.privideo.dto.admin.MonthlyWatchItem;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberItem;
+import app.allstackproject.privideo.dto.admin.ReadAllVideoIntervalLogItem;
 import app.allstackproject.privideo.dto.admin.VideoWatchLogItem;
 import app.allstackproject.privideo.entity.OrgViewLog;
 import app.allstackproject.privideo.repository.history.HistoryRepository;
@@ -212,5 +213,9 @@ public class StatsAdminService {
         return log.getBuckets().values().stream()
                 .mapToLong(Integer::longValue)
                 .sum();
+    }
+
+    public List<ReadAllVideoIntervalLogItem> readAllVideoIntervalLog(Long orgId) {
+        return videoRepository.findAllVideoIntervalLogByOrgId(orgId);
     }
 }

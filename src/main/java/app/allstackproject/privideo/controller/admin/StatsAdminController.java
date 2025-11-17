@@ -4,6 +4,7 @@ import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_
 
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberWatchLogResponse;
+import app.allstackproject.privideo.dto.admin.ReadAllVideoIntervalLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoWatchLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadDayWatchCompleteCntResponse;
 import app.allstackproject.privideo.dto.admin.ReadGroupWatchCompleteLogResponse;
@@ -104,5 +105,12 @@ public class StatsAdminController {
         return new BaseResponse<>(
                 ReadGroupWatchCompleteLogResponse.of(
                         statsAdminService.readGroupWatchCompleteLog(orgId, standardMonth)));
+    }
+
+    @GetMapping("/report/interval")
+    @Operation(summary = "영상 시청 구간 분석 목록 조회")
+    public BaseResponse<ReadAllVideoIntervalLogResponse> readAllVideoIntervalLog(@PathVariable Long orgId) {
+        return new BaseResponse<>(
+                ReadAllVideoIntervalLogResponse.of(statsAdminService.readAllVideoIntervalLog(orgId)));
     }
 }

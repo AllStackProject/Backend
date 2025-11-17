@@ -2,16 +2,19 @@ package app.allstackproject.privideo.repository.video.custom;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
+import static app.allstackproject.privideo.entity.QHistory.history;
 import static app.allstackproject.privideo.entity.QMember.member;
 import static app.allstackproject.privideo.entity.QMemberGroupMapping.memberGroupMapping;
 import static app.allstackproject.privideo.entity.QVideo.video;
 import static app.allstackproject.privideo.entity.QVideoMemberGroupMapping.videoMemberGroupMapping;
 
 import app.allstackproject.privideo.common.enumStatus.VideoOpenScopeType;
+import app.allstackproject.privideo.dto.admin.ReadAllVideoIntervalLogItem;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoItem;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -72,6 +75,35 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .from(video)
                 .where(video.organization.id.eq(orgId)
                         .and(video.status.eq(ACTIVE)))
+                .fetch();
+    }
+
+    @Override
+    public List<ReadAllVideoIntervalLogItem> findAllVideoIntervalLogByOrgId(Long orgId) {
+        NumberExpression<Long> quitRate = new CaseBuilder()
+                .when(video.watchCnt.eq(0L)).then(0L)
+                .otherwise(video.quitCnt.multiply(100).divide(video.watchCnt));
+
+        return jpaQueryFactory
+                .select(Projections.constructor(ReadAllVideoIntervalLogItem.class,
+                        video.id,
+                        video.title,
+                        member.nickname,
+                        history.member.id.countDistinct(),
+                        quitRate
+                ))
+                .from(video)
+                .join(video.creator, member)
+                .leftJoin(history).on(history.video.id.eq(video.id))
+                .where(video.organization.id.eq(orgId))
+                .groupBy(
+                        video.id,
+                        video.title,
+                        member.nickname,
+                        video.watchCnt,
+                        video.quitCnt
+                )
+                .orderBy(video.createdAt.desc())
                 .fetch();
     }
 
