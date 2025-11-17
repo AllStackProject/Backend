@@ -2,6 +2,7 @@ package app.allstackproject.privideo.entity;
 
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -36,5 +37,5 @@ public class OrgViewLog {
     ));
 
     @NotNull
-    private LocalDateTime updatedAt;
+    private String updatedAt;
 }
