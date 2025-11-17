@@ -113,15 +113,7 @@ public class StatsAdminService {
         return MemberWatchReport.builder()
                 .totalWatchedVideoCnt(totalCount)
                 .mostWatchedCategories(topCategories)
-                .monthlyWatchedCnts(
-                        monthlyStats.stream()
-                                .map(dto -> new MonthlyWatchItem(
-                                        dto.getYear(),
-                                        dto.getMonth(),
-                                        dto.getWatchedVideoCnt()
-                                ))
-                                .collect(Collectors.toList())
-                )
+                .monthlyWatchedCnts(monthlyStats)
                 .build();
     }
 

@@ -25,7 +25,7 @@ public class ReadQuitLogResponse {
 
         List<QuitLogItem> distinct = logs.stream()
                 .collect(Collectors.toMap(
-                        item -> item.getTitle() + item.getCreatedAt(),
+                        item -> item.getTitle() + "|" + item.getCreatedAt().toString(),
                         item -> item,
                         (a, b) -> a
                 ))

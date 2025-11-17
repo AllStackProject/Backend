@@ -18,10 +18,11 @@ public class ReadGroupWatchCompleteLogResponse {
     public static ReadGroupWatchCompleteLogResponse of(List<GroupWatchCompleteRate> groupWatchCompleteRates) {
         Long avg = 0L;
         if (!groupWatchCompleteRates.isEmpty()) {
-            for (GroupWatchCompleteRate item : groupWatchCompleteRates) {
-                avg += item.getAvgGroupCompleteRate();
-            }
-            avg /= groupWatchCompleteRates.size();
+            avg = (long) groupWatchCompleteRates.stream()
+                    .filter(item -> item.getAvgGroupCompleteRate() != null)
+                    .mapToLong(GroupWatchCompleteRate::getAvgGroupCompleteRate)
+                    .average()
+                    .orElse(0.0);
         }
 
         return new ReadGroupWatchCompleteLogResponse(avg, groupWatchCompleteRates);
