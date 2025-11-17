@@ -36,12 +36,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .where(
                         video.id.eq(videoId),
                         video.organization.id.eq(orgId),
-                        video.status.eq(ACTIVE),
-
                         member.organization.id.eq(orgId),
                         member.status.eq(ACTIVE),
                         member.joinStatus.eq(APPROVED),
-
                         isVideoAccessibleByMember(videoId, memberId)
                 )
                 .fetchFirst();
@@ -55,10 +52,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .when(JPAExpressions
                         .selectOne()
                         .from(videoMemberGroupMapping)
-                        .where(
-                                videoMemberGroupMapping.video.id.eq(video.id),
-                                videoMemberGroupMapping.status.eq(ACTIVE)
-                        )
+                        .where(videoMemberGroupMapping.video.id.eq(video.id))
                         .exists())
                 .then(VideoOpenScopeType.GROUP.name())
                 .otherwise(VideoOpenScopeType.PUBLIC.name());
@@ -74,8 +68,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                         video.watchCnt
                 ))
                 .from(video)
-                .where(video.organization.id.eq(orgId)
-                        .and(video.status.eq(ACTIVE)))
+                .where(video.organization.id.eq(orgId))
                 .fetch();
     }
 
@@ -96,7 +89,11 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .from(video)
                 .join(video.creator, member)
                 .leftJoin(history).on(history.video.id.eq(video.id))
-                .where(video.organization.id.eq(orgId))
+                .where(
+                        video.organization.id.eq(orgId),
+                        member.joinStatus.eq(APPROVED),
+                        member.status.eq(ACTIVE)
+                )
                 .groupBy(
                         video.id,
                         video.title,
@@ -131,8 +128,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .leftJoin(history).on(history.video.id.eq(video.id))
                 .where(
                         video.organization.id.eq(orgId),
-                        video.status.eq(ACTIVE),
-                        video.watchCnt.gt(0L)
+                        video.watchCnt.gt(0L),
+                        history.member.joinStatus.eq(APPROVED),
+                        history.member.status.eq(ACTIVE)
                 )
                 .groupBy(
                         video.id,
@@ -170,8 +168,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .leftJoin(history).on(history.video.id.eq(video.id))
                 .where(
                         video.organization.id.eq(orgId),
-                        video.status.eq(ACTIVE),
-                        video.watchCnt.gt(0L)
+                        video.watchCnt.gt(0L),
+                        history.member.joinStatus.eq(APPROVED),
+                        history.member.status.eq(ACTIVE)
                 )
                 .groupBy(
                         video.id,
@@ -195,10 +194,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         BooleanExpression noGroupRestriction = JPAExpressions
                 .selectOne()
                 .from(videoMemberGroupMapping)
-                .where(
-                        videoMemberGroupMapping.video.id.eq(videoId),
-                        videoMemberGroupMapping.status.eq(ACTIVE)
-                )
+                .where(videoMemberGroupMapping.video.id.eq(videoId))
                 .notExists();
 
         BooleanExpression memberInAllowedGroup = JPAExpressions
@@ -206,16 +202,13 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .from(memberGroupMapping)
                 .where(
                         memberGroupMapping.member.id.eq(memberId),
-                        memberGroupMapping.status.eq(ACTIVE),
                         memberGroupMapping.member.joinStatus.eq(APPROVED),
+                        memberGroupMapping.member.status.eq(ACTIVE),
                         memberGroupMapping.memberGroup.id.in(
                                 JPAExpressions
                                         .select(videoMemberGroupMapping.memberGroup.id)
                                         .from(videoMemberGroupMapping)
-                                        .where(
-                                                videoMemberGroupMapping.video.id.eq(videoId),
-                                                videoMemberGroupMapping.status.eq(ACTIVE)
-                                        )
+                                        .where(videoMemberGroupMapping.video.id.eq(videoId))
                         )
                 )
                 .exists();

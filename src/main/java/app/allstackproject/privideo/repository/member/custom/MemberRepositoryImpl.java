@@ -29,9 +29,11 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
         return jpaQueryFactory
                 .update(member)
                 .set(member.status, INACTIVE)
-                .where(member.user.id.eq(userId)
-                        .and(member.status.eq(ACTIVE))
-                        .and(member.joinStatus.eq(APPROVED)))
+                .where(
+                        member.user.id.eq(userId),
+                        member.status.eq(ACTIVE),
+                        member.joinStatus.eq(APPROVED)
+                )
                 .execute();
     }
 

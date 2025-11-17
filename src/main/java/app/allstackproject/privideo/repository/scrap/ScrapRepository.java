@@ -1,6 +1,5 @@
 package app.allstackproject.privideo.repository.scrap;
 
-import app.allstackproject.privideo.common.enumStatus.BaseStatusType;
 import app.allstackproject.privideo.entity.Scrap;
 import app.allstackproject.privideo.repository.scrap.custom.ScrapRepositoryCustom;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ScrapRepository extends JpaRepository<Scrap, Long>, ScrapRepositoryCustom {
-    boolean existsByMemberIdAndVideoIdAndStatus(Long memberId, Long videoId, BaseStatusType status);
+    boolean existsByMemberIdAndVideoId(Long memberId, Long videoId);
 }

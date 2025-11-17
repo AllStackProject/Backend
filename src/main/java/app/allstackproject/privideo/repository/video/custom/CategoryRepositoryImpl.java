@@ -19,9 +19,11 @@ public class CategoryRepositoryImpl implements CategoryRepositoryCustom {
                 .select(category.title)
                 .from(videoCategoryMapping)
                 .join(videoCategoryMapping.category, category)
-                .where(videoCategoryMapping.video.id.eq(videoId)
-                        .and(videoCategoryMapping.status.eq(ACTIVE))
-                        .and(category.status.eq(ACTIVE)))
+                .where(
+                        videoCategoryMapping.video.id.eq(videoId),
+                        videoCategoryMapping.status.eq(ACTIVE),
+                        category.status.eq(ACTIVE)
+                )
                 .orderBy(category.title.asc())
                 .fetch();
     }

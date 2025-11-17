@@ -1,6 +1,7 @@
 package app.allstackproject.privideo.repository.history.custom;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
+import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.entity.QCategory.category;
 import static app.allstackproject.privideo.entity.QHistory.history;
 import static app.allstackproject.privideo.entity.QMember.member;
@@ -45,8 +46,7 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .from(scrap)
                 .where(
                         scrap.member.id.eq(memberId),
-                        scrap.video.id.eq(history.video.id),
-                        scrap.video.status.eq(ACTIVE)
+                        scrap.video.id.eq(history.video.id)
                 )
                 .exists();
 
@@ -64,7 +64,8 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .from(history)
                 .join(history.video, video)
                 .where(
-                        history.member.id.eq(memberId)
+                        history.member.id.eq(memberId),
+                        history.member.joinStatus.eq(APPROVED)
                 )
                 .orderBy(history.lastWatchedAt.desc())
                 .fetch();
@@ -83,7 +84,8 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .from(history)
                 .join(history.video, video)
                 .where(
-                        history.member.id.eq(memberId)
+                        history.member.id.eq(memberId),
+                        history.member.joinStatus.eq(APPROVED)
                 )
                 .orderBy(history.lastWatchedAt.asc())
                 .fetch();
@@ -99,7 +101,11 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 ))
                 .from(history)
                 .join(history.member, member)
-                .where(member.organization.id.eq(orgId))
+                .where(
+                        member.organization.id.eq(orgId),
+                        history.member.joinStatus.eq(APPROVED),
+                        history.member.status.eq(ACTIVE)
+                )
                 .groupBy(history.member.id)
                 .fetch();
     }
@@ -143,7 +149,11 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .from(video)
                 .join(video.creator, member)
                 .leftJoin(history).on(history.video.id.eq(video.id))
-                .where(video.organization.id.eq(orgId))
+                .where(
+                        video.organization.id.eq(orgId),
+                        history.member.joinStatus.eq(APPROVED),
+                        history.member.status.eq(ACTIVE)
+                )
                 .groupBy(
                         video.id,
                         video.title,
@@ -165,7 +175,11 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 )
                 .from(history)
                 .join(history.member, member)
-                .where(history.video.id.eq(videoId))
+                .where(
+                        history.video.id.eq(videoId),
+                        history.member.joinStatus.eq(APPROVED),
+                        history.member.status.eq(ACTIVE)
+                )
                 .orderBy(history.lastWatchedAt.desc())
                 .fetch();
 
@@ -221,7 +235,9 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .where(
                         history.member.id.eq(memberId),
                         history.isComplete.isTrue(),
-                        history.completedAt.between(startDate, endDate)
+                        history.completedAt.between(startDate, endDate),
+                        history.member.joinStatus.eq(APPROVED),
+                        history.member.status.eq(ACTIVE)
                 )
                 .groupBy(category.id, category.title)
                 .orderBy(category.id.count().desc())
@@ -246,7 +262,9 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .where(
                         history.member.id.eq(memberId),
                         history.isComplete.isTrue(),
-                        history.completedAt.between(startDate, endDate)
+                        history.completedAt.between(startDate, endDate),
+                        history.member.joinStatus.eq(APPROVED),
+                        history.member.status.eq(ACTIVE)
                 )
                 .groupBy(yearExpr, monthExpr)
                 .orderBy(yearExpr.asc(), monthExpr.asc())
@@ -289,7 +307,11 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                         history.startedAt.goe(startDate),
                         history.startedAt.lt(endDate)
                 )
-                .where(memberGroup.organization.id.eq(orgId))
+                .where(
+                        memberGroup.organization.id.eq(orgId),
+                        history.member.joinStatus.eq(APPROVED),
+                        history.member.status.eq(ACTIVE)
+                )
                 .groupBy(memberGroup.id, memberGroup.name)
                 .orderBy(memberGroup.name.asc())
                 .fetch();
