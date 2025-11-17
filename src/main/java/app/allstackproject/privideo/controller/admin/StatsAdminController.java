@@ -5,6 +5,7 @@ import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberWatchLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoWatchLogResponse;
+import app.allstackproject.privideo.dto.admin.ReadDayWatchCompleteCntResponse;
 import app.allstackproject.privideo.dto.admin.ReadMemberWatchLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadVideoWatchLogResponse;
 import app.allstackproject.privideo.service.admin.StatsAdminService;
@@ -13,6 +14,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,5 +54,13 @@ public class StatsAdminController {
     public BaseResponse<ReadVideoWatchLogResponse> readVideoWatchLog(@PathVariable Long orgId,
                                                                      @PathVariable Long videoId) {
         return new BaseResponse<>(ReadVideoWatchLogResponse.of(statsAdminService.readVideoWatchLog(orgId, videoId)));
+    }
+
+    @GetMapping("/report/{standardMonth}/day")
+    @Operation(summary = "요일별 조회수 조회")
+    public BaseResponse<ReadDayWatchCompleteCntResponse> readDayWatchCompleteCnt(
+            @AuthenticationPrincipal(expression = "orgId") Long orgId, @PathVariable String standardMonth) {
+        return new BaseResponse<>(
+                ReadDayWatchCompleteCntResponse.of(statsAdminService.readDayWatchCompleteCnt(orgId, standardMonth)));
     }
 }

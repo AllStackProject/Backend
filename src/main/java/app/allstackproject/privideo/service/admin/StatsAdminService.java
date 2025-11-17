@@ -14,12 +14,20 @@ import app.allstackproject.privideo.dto.admin.MemberGroupItem;
 import app.allstackproject.privideo.dto.admin.MemberWatchLogItem;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberItem;
 import app.allstackproject.privideo.dto.admin.VideoWatchLogItem;
+import app.allstackproject.privideo.entity.OrgViewLog;
 import app.allstackproject.privideo.repository.history.HistoryRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +39,7 @@ public class StatsAdminService {
     private final MemberRepository memberRepository;
     private final HistoryRepository historyRepository;
     private final VideoRepository videoRepository;
+    private final MongoTemplate mongoTemplate;
 
     public List<AllMemberWatchLogItem> readAllMemberWatchLog(Long orgId) {
         List<ReadAllMemberItem> members = memberRepository.findByOrganizationId(orgId);
@@ -80,5 +89,32 @@ public class StatsAdminService {
         }
 
         return historyRepository.findVideoWatchLogByVideoId(videoId);
+    }
+
+    public List<Long> readDayWatchCompleteCnt(Long orgId, String standardMonth) {
+        YearMonth yearMonth = YearMonth.parse(standardMonth);
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+
+        Query query = Query.query(Criteria.where("orgId").is(orgId)
+                .and("date").gte(startDate.atStartOfDay()).lt(endDate.plusDays(1).atStartOfDay()));
+
+        List<OrgViewLog> logs = mongoTemplate.find(query, OrgViewLog.class);
+
+        Map<LocalDate, Long> dateCountMap = logs.stream()
+                .collect(Collectors.groupingBy(
+                        log -> log.getDate().toLocalDate(),
+                        Collectors.summingLong(this::calculateTotalViews)
+                ));
+
+        return startDate.datesUntil(endDate.plusDays(1))
+                .map(date -> dateCountMap.getOrDefault(date, 0L))
+                .collect(Collectors.toList());
+    }
+
+    private Long calculateTotalViews(OrgViewLog log) {
+        return log.getBuckets().values().stream()
+                .mapToLong(Integer::longValue)
+                .sum();
     }
 }
