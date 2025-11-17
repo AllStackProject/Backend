@@ -10,6 +10,7 @@ import app.allstackproject.privideo.dto.admin.ReadMemberWatchLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadVideoWatchLogResponse;
 import app.allstackproject.privideo.service.admin.StatsAdminService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +60,11 @@ public class StatsAdminController {
     @GetMapping("/report/{standardMonth}/day")
     @Operation(summary = "요일별 조회수 조회")
     public BaseResponse<ReadDayWatchCompleteCntResponse> readDayWatchCompleteCnt(
-            @AuthenticationPrincipal(expression = "orgId") Long orgId, @PathVariable String standardMonth) {
+            @AuthenticationPrincipal(expression = "orgId") Long orgId,
+            @Parameter(
+                    description = "기준 월 (yyyy-MM 형식)",
+                    example = "2025-11"
+            ) @PathVariable String standardMonth) {
         return new BaseResponse<>(
                 ReadDayWatchCompleteCntResponse.of(statsAdminService.readDayWatchCompleteCnt(orgId, standardMonth)));
     }
