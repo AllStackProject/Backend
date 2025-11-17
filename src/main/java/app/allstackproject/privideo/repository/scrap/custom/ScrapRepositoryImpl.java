@@ -26,20 +26,17 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
     public boolean isValidMemberAndOrgAndVideo(Long memberId, Long orgId, Long videoId) {
         BooleanExpression openToAll = JPAExpressions.selectOne()
                 .from(videoMemberGroupMapping)
-                .where(videoMemberGroupMapping.video.id.eq(videoId),
-                        videoMemberGroupMapping.memberGroup.status.eq(ACTIVE),
-                        videoMemberGroupMapping.status.eq(ACTIVE))
+                .where(videoMemberGroupMapping.video.id.eq(videoId))
                 .notExists();
 
         BooleanExpression memberGroupMatch = JPAExpressions.selectOne()
                 .from(videoMemberGroupMapping)
                 .join(memberGroupMapping)
-                .on(memberGroupMapping.memberGroup.id.eq(videoMemberGroupMapping.memberGroup.id)
-                        .and(memberGroupMapping.member.id.eq(memberId))
-                        .and(memberGroupMapping.status.eq(ACTIVE)))
-                .where(videoMemberGroupMapping.video.id.eq(videoId),
-                        videoMemberGroupMapping.memberGroup.status.eq(ACTIVE),
-                        videoMemberGroupMapping.status.eq(ACTIVE))
+                .on(
+                        memberGroupMapping.memberGroup.id.eq(videoMemberGroupMapping.memberGroup.id),
+                        memberGroupMapping.member.id.eq(memberId)
+                )
+                .where(videoMemberGroupMapping.video.id.eq(videoId))
                 .exists();
 
         Integer ok = jpaQueryFactory
@@ -53,7 +50,6 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
                 .where(
                         video.id.eq(videoId),
                         video.organization.id.eq(orgId),
-                        video.status.eq(ACTIVE),
                         openToAll.or(memberGroupMatch)
                 )
                 .fetchFirst();

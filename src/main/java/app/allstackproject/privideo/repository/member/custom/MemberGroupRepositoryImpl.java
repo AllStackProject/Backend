@@ -1,6 +1,5 @@
 package app.allstackproject.privideo.repository.member.custom;
 
-import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.entity.QMemberGroupMapping.memberGroupMapping;
 import static app.allstackproject.privideo.entity.QVideoMemberGroupMapping.videoMemberGroupMapping;
 
@@ -17,9 +16,7 @@ public class MemberGroupRepositoryImpl implements MemberGroupRepositoryCustom {
         Long authorityCount = jpaQueryFactory
                 .select(videoMemberGroupMapping.count())
                 .from(videoMemberGroupMapping)
-                .where(videoMemberGroupMapping.video.id.eq(videoId)
-                        .and(videoMemberGroupMapping.memberGroup.status.eq(ACTIVE))
-                        .and(videoMemberGroupMapping.video.status.eq(ACTIVE)))
+                .where(videoMemberGroupMapping.video.id.eq(videoId))
                 .fetchOne();
 
         if (authorityCount == null || authorityCount == 0) {
@@ -31,9 +28,7 @@ public class MemberGroupRepositoryImpl implements MemberGroupRepositoryCustom {
                 .from(videoMemberGroupMapping)
                 .join(memberGroupMapping)
                 .on(videoMemberGroupMapping.memberGroup.id.eq(memberGroupMapping.memberGroup.id))
-                .where(videoMemberGroupMapping.video.id.eq(videoId)
-                        .and(videoMemberGroupMapping.memberGroup.status.eq(ACTIVE))
-                        .and(videoMemberGroupMapping.video.status.eq(ACTIVE)))
+                .where(videoMemberGroupMapping.video.id.eq(videoId))
                 .fetchOne();
 
         return accessibleCount != null && accessibleCount > 0;

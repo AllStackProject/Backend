@@ -4,10 +4,15 @@ import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_
 
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberWatchLogResponse;
+import app.allstackproject.privideo.dto.admin.ReadAllVideoIntervalLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoWatchLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadDayWatchCompleteCntResponse;
+import app.allstackproject.privideo.dto.admin.ReadGroupWatchCompleteLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadHourWatchCompleteCntResponse;
 import app.allstackproject.privideo.dto.admin.ReadMemberWatchLogResponse;
+import app.allstackproject.privideo.dto.admin.ReadMemberWatchReportResponse;
+import app.allstackproject.privideo.dto.admin.ReadQuitLogResponse;
+import app.allstackproject.privideo.dto.admin.ReadVideoIntervalLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadVideoWatchLogResponse;
 import app.allstackproject.privideo.service.admin.StatsAdminService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,6 +50,14 @@ public class StatsAdminController {
         return new BaseResponse<>(ReadMemberWatchLogResponse.of(statsAdminService.readMemberWatchLog(orgId, memberId)));
     }
 
+    @GetMapping("/view/report/member/{memberId}")
+    @Operation(summary = "멤버별 영상 리포트 조회")
+    public BaseResponse<ReadMemberWatchReportResponse> readMemberWatchReport(@PathVariable Long orgId,
+                                                                             @PathVariable Long memberId) {
+        return new BaseResponse<>(
+                ReadMemberWatchReportResponse.of(statsAdminService.readMemberWatchReport(orgId, memberId)));
+    }
+
     @GetMapping("/view/videos")
     @Operation(summary = "영상별 시청 기록 목록 조회")
     public BaseResponse<ReadAllVideoWatchLogResponse> readAllVideoWatchLog(@PathVariable Long orgId) {
@@ -58,7 +71,7 @@ public class StatsAdminController {
         return new BaseResponse<>(ReadVideoWatchLogResponse.of(statsAdminService.readVideoWatchLog(orgId, videoId)));
     }
 
-    @GetMapping("/report/{standardMonth}/day")
+    @GetMapping("/report/day/{standardMonth}")
     @Operation(summary = "요일별 조회수 조회")
     public BaseResponse<ReadDayWatchCompleteCntResponse> readDayWatchCompleteCnt(
             @AuthenticationPrincipal(expression = "orgId") Long orgId,
@@ -70,7 +83,7 @@ public class StatsAdminController {
                 ReadDayWatchCompleteCntResponse.of(statsAdminService.readDayWatchCompleteCnt(orgId, standardMonth)));
     }
 
-    @GetMapping("/report/{standardMonth}/hour")
+    @GetMapping("/report/hour/{standardMonth}")
     @Operation(summary = "시간대별 조회수 조회")
     public BaseResponse<ReadHourWatchCompleteCntResponse> readHourWatchCompleteCnt(
             @AuthenticationPrincipal(expression = "orgId") Long orgId,
@@ -80,5 +93,38 @@ public class StatsAdminController {
             ) @PathVariable String standardMonth) {
         return new BaseResponse<>(
                 ReadHourWatchCompleteCntResponse.of(statsAdminService.readHourWatchCompleteCnt(orgId, standardMonth)));
+    }
+
+    @GetMapping("/report/watchRate/{standardMonth}")
+    @Operation(summary = "그룹별 시청 완료율 조회")
+    public BaseResponse<ReadGroupWatchCompleteLogResponse> readGroupWatchCompleteLog(
+            @AuthenticationPrincipal(expression = "orgId") Long orgId,
+            @Parameter(
+                    description = "기준 월 (yyyy-MM 형식)",
+                    example = "2025-11"
+            ) @PathVariable String standardMonth) {
+        return new BaseResponse<>(
+                ReadGroupWatchCompleteLogResponse.of(
+                        statsAdminService.readGroupWatchCompleteLog(orgId, standardMonth)));
+    }
+
+    @GetMapping("/report/interval")
+    @Operation(summary = "영상 시청 구간 분석 목록 조회")
+    public BaseResponse<ReadAllVideoIntervalLogResponse> readAllVideoIntervalLog(@PathVariable Long orgId) {
+        return new BaseResponse<>(
+                ReadAllVideoIntervalLogResponse.of(statsAdminService.readAllVideoIntervalLog(orgId)));
+    }
+
+    @GetMapping("/report/interval/{videoId}")
+    @Operation(summary = "영상 시청 구간 분석 조회", description = "세그먼트 인덱스는 영상의 뒷 구간부터 시작합니다.")
+    public BaseResponse<ReadVideoIntervalLogResponse> readVideoIntervalLog(@PathVariable Long videoId) {
+        return new BaseResponse<>(
+                ReadVideoIntervalLogResponse.of(statsAdminService.readVideoIntervalLog(videoId)));
+    }
+
+    @GetMapping("/report/quit")
+    @Operation(summary = "중도 이탈 분석 조회")
+    public BaseResponse<ReadQuitLogResponse> readQuitLog(@PathVariable Long orgId) {
+        return new BaseResponse<>(ReadQuitLogResponse.of(statsAdminService.readQuitLog(orgId)));
     }
 }

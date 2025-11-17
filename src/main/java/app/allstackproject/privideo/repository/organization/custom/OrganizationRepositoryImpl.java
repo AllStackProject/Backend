@@ -24,14 +24,16 @@ public class OrganizationRepositoryImpl implements OrganizationRepositoryCustom 
                         organization.imgUrl,
                         member.createdAt,
                         member.isAdmin,
-                        member.permissionCode.gt(0L), // member가 권한을 갖고 있는지 여부
+                        member.permissionCode.gt(0L),
                         member.joinStatus
                 ))
                 .from(member)
                 .join(member.organization, organization)
-                .where(member.user.id.eq(userId)
-                        .and(member.status.eq(ACTIVE))
-                        .and(organization.status.eq(ACTIVE)))
+                .where(
+                        member.user.id.eq(userId),
+                        member.status.eq(ACTIVE),
+                        organization.status.eq(ACTIVE)
+                )
                 .fetch();
     }
 }

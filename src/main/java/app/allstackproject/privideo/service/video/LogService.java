@@ -5,7 +5,6 @@ import app.allstackproject.privideo.entity.SegQuitLogs;
 import app.allstackproject.privideo.entity.SegViewLogs;
 import java.math.BigInteger;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -174,6 +173,44 @@ public class LogService {
         return out;
     }
 
+    public List<Long> getSegQuitCounts(Long videoId, int totalSegCnt) {
+        if (videoId == null || totalSegCnt <= 0) {
+            return List.of();
+        }
+
+        long[] result = new long[totalSegCnt];
+
+        Query q = Query.query(Criteria.where("videoId").is(videoId));
+        q.fields().include("packId").include("counts");
+
+        List<SegQuitLogs> packs = mongoTemplate.find(q, SegQuitLogs.class);
+
+        for (SegQuitLogs pack : packs) {
+            int base = Math.toIntExact(pack.getPackId()) * PACK_SIZE;
+            Long[] counts = pack.getCounts();
+
+            if (counts == null) {
+                continue;
+            }
+
+            for (int i = 0; i < counts.length; i++) {
+                int idx = base + i;
+                if (idx >= totalSegCnt) {
+                    break;
+                }
+                Long v = counts[i];
+                if (v != null) {
+                    result[idx] += v;
+                }
+            }
+        }
+
+        List<Long> out = new ArrayList<>(totalSegCnt);
+        for (long v : result) {
+            out.add(v);
+        }
+        return out;
+    }
 
     private String to3hBucketKey(int hour) {
         int start = (hour / 3) * 3;

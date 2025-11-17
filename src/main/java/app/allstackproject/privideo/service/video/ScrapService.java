@@ -39,7 +39,7 @@ public class ScrapService {
         }
 
         try {
-            if (scrapRepository.existsByMemberIdAndVideoIdAndStatus(memberId, videoId, ACTIVE)) {
+            if (scrapRepository.existsByMemberIdAndVideoId(memberId, videoId)) {
                 throw new ApiException(VIDEO_ALREADY_SCRAPPED);
             }
             scrapRepository.save(Scrap.create(memberRepository.getReferenceById(memberId),

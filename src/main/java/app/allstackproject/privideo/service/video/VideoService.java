@@ -59,7 +59,7 @@ public class VideoService {
         Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_IN_ORGANIZATION));
 
-        Video video = videoRepository.findByIdAndStatus(videoId, ACTIVE)
+        Video video = videoRepository.findById(videoId)
                 .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
         if (!video.getOrganization().getId().equals(orgId)) {
             throw new ApiException(VIDEO_NOT_IN_ORGANIZATION);
@@ -100,7 +100,7 @@ public class VideoService {
         }
 
         boolean isScrapped = false;
-        if (scrapRepository.existsByMemberIdAndVideoIdAndStatus(memberId, videoId, ACTIVE)) {
+        if (scrapRepository.existsByMemberIdAndVideoId(memberId, videoId)) {
             isScrapped = true;
         }
 
@@ -142,7 +142,7 @@ public class VideoService {
             throw new ApiException(MEMBER_NOT_IN_ORGANIZATION);
         }
 
-        Video video = videoRepository.findByIdAndStatus(videoId, ACTIVE)
+        Video video = videoRepository.findById(videoId)
                 .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
         if (!video.getOrganization().getId().equals(orgId)) {
             throw new ApiException(VIDEO_NOT_IN_ORGANIZATION);

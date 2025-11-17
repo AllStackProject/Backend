@@ -27,9 +27,7 @@ public class QuizRepositoryImpl implements QuizRepositoryCustom {
                 ))
                 .from(quiz)
                 .join(quiz.video, video)
-                .where(
-                        video.id.eq(videoId),
-                        video.status.eq(ACTIVE))
+                .where(video.id.eq(videoId))
                 .fetch();
     }
 

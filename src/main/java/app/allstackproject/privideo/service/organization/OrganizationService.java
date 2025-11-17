@@ -97,7 +97,7 @@ public class OrganizationService {
             throw new ApiException(USER_NOT_FOUND);
         }
 
-        if (organizationRepository.findByNameAndStatus(orgName, ACTIVE).isPresent()) {
+        if (organizationRepository.findByName(orgName).isPresent()) {
             return false;
         }
 
