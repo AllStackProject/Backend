@@ -54,7 +54,7 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                         video.title,
                         video.thumbnailUrl,
                         history.watchRate,
-                        history.lastModifiedAt,
+                        history.lastWatchedAt,
                         video.wholeTime,
                         scrappedExists
                 ))
@@ -63,32 +63,26 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .where(
                         history.member.id.eq(memberId)
                 )
-                .orderBy(history.lastModifiedAt.desc())
+                .orderBy(history.lastWatchedAt.desc())
                 .fetch();
     }
 
     @Override
     public List<MemberWatchLogItem> findWatchLogByMemberId(Long memberId) {
-        DateTimeExpression<LocalDateTime> watchedAt = new CaseBuilder()
-                .when(history.isComplete.isTrue())
-                .then(history.completedAt)
-                .otherwise(history.lastModifiedAt);
-
         return jpaQueryFactory
                 .select(Projections.constructor(
                         MemberWatchLogItem.class,
                         video.id,
                         video.title,
                         history.watchRate,
-                        watchedAt
-                        // history.lastModifiedAt // 최근 시청일 반환한다면
+                        history.lastWatchedAt
                 ))
                 .from(history)
                 .join(history.video, video)
                 .where(
                         history.member.id.eq(memberId)
                 )
-                .orderBy(watchedAt.asc())
+                .orderBy(history.lastWatchedAt.asc())
                 .fetch();
     }
 
@@ -196,7 +190,7 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                         t.get(member.nickname),
                         groupsMap.getOrDefault(t.get(history.member.id), List.of()),
                         t.get(history.watchRate),
-                        t.get(history.lastModifiedAt)
+                        t.get(history.lastWatchedAt)
                 ))
                 .collect(Collectors.toList());
     }
