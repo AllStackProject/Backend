@@ -32,6 +32,19 @@ spec:
       checkout scm
     }
 
+    stage('SonarQube Analysis') {
+      withSonarQubeEnv('sonarqube') {
+        withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+          sh """
+            ./gradlew sonarqube \
+              -Dsonar.projectKey=backend \
+              -Dsonar.host.url=$SONAR_HOST_URL \
+              -Dsonar.login=$SONAR_TOKEN
+        """
+    }
+  }
+}
+    
     stage('Build & Push with Kaniko') {
       container('kaniko') {
         script {
