@@ -6,6 +6,15 @@ metadata:
   labels:
     jenkins/kaniko: "true"
 spec:
+  nodeSelector:
+    jenkins-node: "true"
+
+  tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "cicd"
+    effect: "NoSchedule"
+    
   containers:
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.6.0-debug
