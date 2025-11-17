@@ -88,7 +88,7 @@ spec:
       // ✅ 변경사항 커밋 및 푸시
       sh '''
         cd DeploymentRepo
-        git add overlays/dev/kustomization.yaml
+        git add backend/overlays/dev/kustomization.yaml
         git commit -m "chore: update image tag to ${BUILD_NUMBER}"
         git push origin main
       '''
