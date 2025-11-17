@@ -9,6 +9,7 @@ import static app.allstackproject.privideo.entity.QVideo.video;
 import static app.allstackproject.privideo.entity.QVideoMemberGroupMapping.videoMemberGroupMapping;
 
 import app.allstackproject.privideo.common.enumStatus.VideoOpenScopeType;
+import app.allstackproject.privideo.dto.admin.QuitLogItem;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoIntervalLogItem;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoItem;
 import com.querydsl.core.types.Projections;
@@ -104,6 +105,84 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                         video.quitCnt
                 )
                 .orderBy(video.createdAt.desc())
+                .fetch();
+    }
+
+    @Override
+    public List<QuitLogItem> findTopQuitRateVideosByOrgId(Long orgId, int limit) {
+        NumberExpression<Long> quitRate = new CaseBuilder()
+                .when(video.watchCnt.eq(0L)).then(0L)
+                .otherwise(video.quitCnt.multiply(100).divide(video.watchCnt));
+
+        NumberExpression<Long> avgWatchTime = history.watchRate
+                .multiply(video.wholeTime)
+                .divide(100L)
+                .avg()
+                .longValue();
+
+        return jpaQueryFactory
+                .select(Projections.constructor(QuitLogItem.class,
+                        video.title,
+                        video.createdAt,
+                        avgWatchTime.coalesce(0L),
+                        quitRate
+                ))
+                .from(video)
+                .leftJoin(history).on(history.video.id.eq(video.id))
+                .where(
+                        video.organization.id.eq(orgId),
+                        video.status.eq(ACTIVE),
+                        video.watchCnt.gt(0L)
+                )
+                .groupBy(
+                        video.id,
+                        video.title,
+                        video.createdAt,
+                        video.watchCnt,
+                        video.quitCnt,
+                        video.wholeTime
+                )
+                .orderBy(quitRate.desc())
+                .limit(limit)
+                .fetch();
+    }
+
+    @Override
+    public List<QuitLogItem> findLowQuitRateVideosByOrgId(Long orgId, int limit) {
+        NumberExpression<Long> quitRate = new CaseBuilder()
+                .when(video.watchCnt.eq(0L)).then(0L)
+                .otherwise(video.quitCnt.multiply(100).divide(video.watchCnt));
+
+        NumberExpression<Long> avgWatchTime = history.watchRate
+                .multiply(video.wholeTime)
+                .divide(100L)
+                .avg()
+                .longValue();
+
+        return jpaQueryFactory
+                .select(Projections.constructor(QuitLogItem.class,
+                        video.title,
+                        video.createdAt,
+                        avgWatchTime.coalesce(0L),
+                        quitRate
+                ))
+                .from(video)
+                .leftJoin(history).on(history.video.id.eq(video.id))
+                .where(
+                        video.organization.id.eq(orgId),
+                        video.status.eq(ACTIVE),
+                        video.watchCnt.gt(0L)
+                )
+                .groupBy(
+                        video.id,
+                        video.title,
+                        video.createdAt,
+                        video.watchCnt,
+                        video.quitCnt,
+                        video.wholeTime
+                )
+                .orderBy(quitRate.asc())
+                .limit(limit)
                 .fetch();
     }
 

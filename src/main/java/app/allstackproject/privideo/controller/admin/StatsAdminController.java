@@ -11,6 +11,7 @@ import app.allstackproject.privideo.dto.admin.ReadGroupWatchCompleteLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadHourWatchCompleteCntResponse;
 import app.allstackproject.privideo.dto.admin.ReadMemberWatchLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadMemberWatchReportResponse;
+import app.allstackproject.privideo.dto.admin.ReadQuitLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadVideoIntervalLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadVideoWatchLogResponse;
 import app.allstackproject.privideo.service.admin.StatsAdminService;
@@ -121,5 +122,11 @@ public class StatsAdminController {
                                                                            @PathVariable Long videoId) {
         return new BaseResponse<>(
                 ReadVideoIntervalLogResponse.of(statsAdminService.readVideoIntervalLog(orgId, videoId)));
+    }
+
+    @GetMapping("/report/quit")
+    @Operation(summary = "중도 이탈 분석 조회")
+    public BaseResponse<ReadQuitLogResponse> readQuitLog(@PathVariable Long orgId) {
+        return new BaseResponse<>(ReadQuitLogResponse.of(statsAdminService.readQuitLog(orgId)));
     }
 }

@@ -17,6 +17,7 @@ import app.allstackproject.privideo.dto.admin.MemberGroupItem;
 import app.allstackproject.privideo.dto.admin.MemberWatchLogItem;
 import app.allstackproject.privideo.dto.admin.MemberWatchReport;
 import app.allstackproject.privideo.dto.admin.MonthlyWatchItem;
+import app.allstackproject.privideo.dto.admin.QuitLogItem;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberItem;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoIntervalLogItem;
 import app.allstackproject.privideo.dto.admin.VideoIntervalLogItem;
@@ -31,6 +32,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -248,5 +250,15 @@ public class StatsAdminService {
                 .collect(Collectors.toList());
 
         return intervals;
+    }
+
+    public List<QuitLogItem> readQuitLog(Long orgId) {
+        int limit = 3;
+        List<QuitLogItem> result = new ArrayList<>();
+        
+        result.addAll(videoRepository.findTopQuitRateVideosByOrgId(orgId, limit));
+        result.addAll(videoRepository.findLowQuitRateVideosByOrgId(orgId, limit));
+
+        return result;
     }
 }
