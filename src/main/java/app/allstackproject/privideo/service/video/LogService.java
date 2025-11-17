@@ -41,7 +41,7 @@ public class LogService {
         Update u = new Update()
                 .inc("buckets." + bucketKey, 1)
                 .setOnInsert("orgId", orgId)
-                .setOnInsert("date", dateKey)
+                .setOnInsert("date", kst.toLocalDate().atStartOfDay())
                 .set("updatedAt", kst.toLocalDateTime().toString());
 
         mongoTemplate.upsert(q, u, OrgViewLog.class);

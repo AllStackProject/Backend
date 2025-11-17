@@ -18,12 +18,13 @@ import app.allstackproject.privideo.entity.OrgViewLog;
 import app.allstackproject.privideo.repository.history.HistoryRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -101,14 +102,22 @@ public class StatsAdminService {
 
         List<OrgViewLog> logs = mongoTemplate.find(query, OrgViewLog.class);
 
-        Map<LocalDate, Long> dateCountMap = logs.stream()
+        Map<DayOfWeek, Long> dayOfWeekMap = logs.stream()
                 .collect(Collectors.groupingBy(
-                        log -> log.getDate().toLocalDate(),
+                        log -> log.getDate().toLocalDate().getDayOfWeek(),
                         Collectors.summingLong(this::calculateTotalViews)
                 ));
 
-        return startDate.datesUntil(endDate.plusDays(1))
-                .map(date -> dateCountMap.getOrDefault(date, 0L))
+        return Stream.of(
+                        DayOfWeek.MONDAY,
+                        DayOfWeek.TUESDAY,
+                        DayOfWeek.WEDNESDAY,
+                        DayOfWeek.THURSDAY,
+                        DayOfWeek.FRIDAY,
+                        DayOfWeek.SATURDAY,
+                        DayOfWeek.SUNDAY
+                )
+                .map(day -> dayOfWeekMap.getOrDefault(day, 0L))
                 .collect(Collectors.toList());
     }
 
