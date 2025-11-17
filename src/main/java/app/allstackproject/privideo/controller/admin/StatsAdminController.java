@@ -58,7 +58,6 @@ public class StatsAdminController {
                 ReadMemberWatchReportResponse.of(statsAdminService.readMemberWatchReport(orgId, memberId)));
     }
 
-
     @GetMapping("/view/videos")
     @Operation(summary = "영상별 시청 기록 목록 조회")
     public BaseResponse<ReadAllVideoWatchLogResponse> readAllVideoWatchLog(@PathVariable Long orgId) {

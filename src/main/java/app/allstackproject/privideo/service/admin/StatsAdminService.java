@@ -187,14 +187,14 @@ public class StatsAdminService {
                 ));
 
         List<String> bucketOrder = List.of(
+                "00-03",
+                "03-06",
                 "06-09",
                 "09-12",
                 "12-15",
                 "15-18",
                 "18-21",
-                "21-24",
-                "00-03",
-                "03-06"
+                "21-24"
         );
 
         return bucketOrder.stream()
@@ -255,7 +255,7 @@ public class StatsAdminService {
     public List<QuitLogItem> readQuitLog(Long orgId) {
         int limit = 3;
         List<QuitLogItem> result = new ArrayList<>();
-        
+
         result.addAll(videoRepository.findTopQuitRateVideosByOrgId(orgId, limit));
         result.addAll(videoRepository.findLowQuitRateVideosByOrgId(orgId, limit));
 
