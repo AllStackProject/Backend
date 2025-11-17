@@ -4,6 +4,7 @@ import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTI
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_IN_ORGANIZATION;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_IN_ORGANIZATION;
 import static app.allstackproject.privideo.common.util.TimeUtil.calculateStartDate;
+import static app.allstackproject.privideo.service.video.LogService.SEGMENT_SECONDS;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -18,12 +19,14 @@ import app.allstackproject.privideo.dto.admin.MemberWatchReport;
 import app.allstackproject.privideo.dto.admin.MonthlyWatchItem;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberItem;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoIntervalLogItem;
+import app.allstackproject.privideo.dto.admin.VideoIntervalLogItem;
 import app.allstackproject.privideo.dto.admin.VideoWatchLogItem;
 import app.allstackproject.privideo.entity.OrgViewLog;
+import app.allstackproject.privideo.entity.Video;
 import app.allstackproject.privideo.repository.history.HistoryRepository;
-import app.allstackproject.privideo.repository.member.MemberGroupRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
+import app.allstackproject.privideo.service.video.LogService;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,6 +34,7 @@ import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -48,7 +52,7 @@ public class StatsAdminService {
     private final HistoryRepository historyRepository;
     private final VideoRepository videoRepository;
     private final MongoTemplate mongoTemplate;
-    private final MemberGroupRepository memberGroupRepository;
+    private final LogService logService;
 
     public List<AllMemberWatchLogItem> readAllMemberWatchLog(Long orgId) {
         List<ReadAllMemberItem> members = memberRepository.findByOrganizationId(orgId);
@@ -217,5 +221,32 @@ public class StatsAdminService {
 
     public List<ReadAllVideoIntervalLogItem> readAllVideoIntervalLog(Long orgId) {
         return videoRepository.findAllVideoIntervalLogByOrgId(orgId);
+    }
+
+    public List<VideoIntervalLogItem> readVideoIntervalLog(Long orgId, Long videoId) {
+        Video video = videoRepository.findByIdAndStatus(videoId, ACTIVE)
+                .orElseThrow(() -> new ApiException(VIDEO_NOT_IN_ORGANIZATION));
+        int totalSegCnt = (int) Math.ceil((double) video.getWholeTime() / SEGMENT_SECONDS);
+
+        List<Long> viewCounts = logService.getSegViewCounts(videoId, totalSegCnt);
+        List<Long> quitCounts = logService.getSegQuitCounts(videoId, totalSegCnt);
+
+        Long totalViews = viewCounts.stream().mapToLong(Long::longValue).sum();
+        Long totalQuits = quitCounts.stream().mapToLong(Long::longValue).sum();
+
+        List<VideoIntervalLogItem> intervals = IntStream.range(0, totalSegCnt)
+                .mapToObj(i -> {
+                    Long views = i < viewCounts.size() ? viewCounts.get(i) : 0L;
+                    Long quits = i < quitCounts.size() ? quitCounts.get(i) : 0L;
+
+                    Long viewRate = totalViews > 0 ? (views * 100) / totalViews : 0L;
+
+                    Long quitRate = totalQuits > 0 ? (quits * 100) / totalQuits : 0L;
+
+                    return new VideoIntervalLogItem((long) i, views, quits, viewRate, quitRate);
+                })
+                .collect(Collectors.toList());
+
+        return intervals;
     }
 }
