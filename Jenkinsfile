@@ -1,3 +1,4 @@
+// test를 위한 주석 
 podTemplate(yaml: """
 apiVersion: v1
 kind: Pod
@@ -31,6 +32,20 @@ spec:
       checkout scm
     }
 
+    stage('SonarQube Analysis') {
+        withSonarQubeEnv('sonarQube') {
+            withCredentials([string(credentialsId: 'sonarQubeToken', variable: 'SONAR_TOKEN')]) {
+                sh """
+                    ./gradlew sonarqube \
+                      -Dsonar.projectKey=backend \
+                      -Dsonar.host.url=$SONAR_HOST_URL \
+                      -Dsonar.login=$SONAR_TOKEN
+                """
+            }
+        }
+    }
+
+    
     stage('Build & Push with Kaniko') {
       container('kaniko') {
         script {
@@ -48,6 +63,38 @@ spec:
         }
       }
     }
+    
+    stage('Update Kustomize for ArgoCD') {
+  withCredentials([usernamePassword(credentialsId: 'git-clone', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+    script {
+      // ✅ Git 설정
+      sh '''
+        git config --global user.email "jenkins@ci.com"
+        git config --global user.name "Jenkins CI"
+      '''
+
+      // ✅ Deployment repo clone
+      sh '''
+        rm -rf DeploymentRepo
+        git clone https://$GIT_USER:$GIT_PASS@github.com/AllStackProject/Deployment.git DeploymentRepo
+      '''
+
+      // ✅ kustomization.yaml 수정
+      sh """
+        cd DeploymentRepo/overlays/dev
+        sed -i 's|newTag:.*|newTag: "${BUILD_NUMBER}"|' kustomization.yaml
+      """
+
+      // ✅ 변경사항 커밋 및 푸시
+      sh '''
+        cd DeploymentRepo
+        git add overlays/dev/kustomization.yaml
+        git commit -m "chore: update image tag to ${BUILD_NUMBER}"
+        git push origin main
+      '''
+    }
+  }
+}
 
     stage('Post-Build') {
       echo "✅ Docker image pushed to DockerHub successfully!"
