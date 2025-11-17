@@ -13,6 +13,7 @@ import static app.allstackproject.privideo.entity.QVideoMemberGroupMapping.video
 
 import app.allstackproject.privideo.common.enumStatus.VideoOpenScopeType;
 import app.allstackproject.privideo.dto.admin.AllVideoWatchLogItem;
+import app.allstackproject.privideo.dto.admin.GroupWatchCompleteRate;
 import app.allstackproject.privideo.dto.admin.MemberAvgWatchRateDto;
 import app.allstackproject.privideo.dto.admin.MemberWatchLogItem;
 import app.allstackproject.privideo.dto.admin.MonthlyWatchItem;
@@ -22,7 +23,6 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.DateTimeExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.JPAExpressions;
@@ -90,7 +90,7 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
     }
 
     @Override
-    public List<MemberAvgWatchRateDto> findAvgWatchRateByOrgId(Long orgId) {
+    public List<MemberAvgWatchRateDto> findMemberAvgWatchRateByOrgId(Long orgId) {
         return jpaQueryFactory
                 .select(Projections.constructor(
                         MemberAvgWatchRateDto.class,
@@ -256,5 +256,41 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                     return new MonthlyWatchItem(t.get(yearExpr), t.get(monthExpr), t.get(countExpr));
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<GroupWatchCompleteRate> findGroupAvgWatchRateByOrgIdWithinPeriod(Long orgId, LocalDateTime startDate,
+                                                                                 LocalDateTime endDate) {
+        NumberExpression<Long> completeCount = new CaseBuilder()
+                .when(history.isComplete.eq(true)).then(1L)
+                .otherwise(0L)
+                .sum();
+
+        NumberExpression<Long> totalCount = history.count();
+
+        NumberExpression<Long> completeRate = new CaseBuilder()
+                .when(totalCount.eq(0L)).then(0L)
+                .otherwise(completeCount.multiply(100).divide(totalCount));
+
+        return jpaQueryFactory
+                .select(Projections.constructor(GroupWatchCompleteRate.class,
+                        memberGroup.name,
+                        completeRate
+                ))
+                .from(memberGroup)
+                .leftJoin(memberGroupMapping).on(
+                        memberGroupMapping.memberGroup.id.eq(memberGroup.id),
+                        memberGroupMapping.status.eq(ACTIVE)
+                )
+                .leftJoin(memberGroupMapping.member, member)
+                .leftJoin(history).on(
+                        history.member.id.eq(member.id),
+                        history.startedAt.goe(startDate),
+                        history.startedAt.lt(endDate)
+                )
+                .where(memberGroup.organization.id.eq(orgId))
+                .groupBy(memberGroup.id, memberGroup.name)
+                .orderBy(memberGroup.name.asc())
+                .fetch();
     }
 }

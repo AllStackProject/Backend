@@ -6,6 +6,7 @@ import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberWatchLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoWatchLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadDayWatchCompleteCntResponse;
+import app.allstackproject.privideo.dto.admin.ReadGroupWatchCompleteLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadHourWatchCompleteCntResponse;
 import app.allstackproject.privideo.dto.admin.ReadMemberWatchLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadMemberWatchReportResponse;
@@ -68,7 +69,7 @@ public class StatsAdminController {
         return new BaseResponse<>(ReadVideoWatchLogResponse.of(statsAdminService.readVideoWatchLog(orgId, videoId)));
     }
 
-    @GetMapping("/report/{standardMonth}/day")
+    @GetMapping("/report/day/{standardMonth}")
     @Operation(summary = "요일별 조회수 조회")
     public BaseResponse<ReadDayWatchCompleteCntResponse> readDayWatchCompleteCnt(
             @AuthenticationPrincipal(expression = "orgId") Long orgId,
@@ -80,7 +81,7 @@ public class StatsAdminController {
                 ReadDayWatchCompleteCntResponse.of(statsAdminService.readDayWatchCompleteCnt(orgId, standardMonth)));
     }
 
-    @GetMapping("/report/{standardMonth}/hour")
+    @GetMapping("/report/hour/{standardMonth}")
     @Operation(summary = "시간대별 조회수 조회")
     public BaseResponse<ReadHourWatchCompleteCntResponse> readHourWatchCompleteCnt(
             @AuthenticationPrincipal(expression = "orgId") Long orgId,
@@ -90,5 +91,18 @@ public class StatsAdminController {
             ) @PathVariable String standardMonth) {
         return new BaseResponse<>(
                 ReadHourWatchCompleteCntResponse.of(statsAdminService.readHourWatchCompleteCnt(orgId, standardMonth)));
+    }
+
+    @GetMapping("/report/watchRate/{standardMonth}")
+    @Operation(summary = "그룹별 시청 완료율 조회")
+    public BaseResponse<ReadGroupWatchCompleteLogResponse> readGroupWatchCompleteLog(
+            @AuthenticationPrincipal(expression = "orgId") Long orgId,
+            @Parameter(
+                    description = "기준 월 (yyyy-MM 형식)",
+                    example = "2025-11"
+            ) @PathVariable String standardMonth) {
+        return new BaseResponse<>(
+                ReadGroupWatchCompleteLogResponse.of(
+                        statsAdminService.readGroupWatchCompleteLog(orgId, standardMonth)));
     }
 }

@@ -1,6 +1,7 @@
 package app.allstackproject.privideo.repository.history.custom;
 
 import app.allstackproject.privideo.dto.admin.AllVideoWatchLogItem;
+import app.allstackproject.privideo.dto.admin.GroupWatchCompleteRate;
 import app.allstackproject.privideo.dto.admin.MemberAvgWatchRateDto;
 import app.allstackproject.privideo.dto.admin.MemberWatchLogItem;
 import app.allstackproject.privideo.dto.admin.MonthlyWatchItem;
@@ -14,7 +15,7 @@ public interface HistoryRepositoryCustom {
 
     List<MemberWatchLogItem> findWatchLogByMemberId(Long memberId);
 
-    List<MemberAvgWatchRateDto> findAvgWatchRateByOrgId(Long orgId);
+    List<MemberAvgWatchRateDto> findMemberAvgWatchRateByOrgId(Long orgId);
 
     List<AllVideoWatchLogItem> findAllVideoWatchLogByOrgId(Long orgId);
 
@@ -24,4 +25,7 @@ public interface HistoryRepositoryCustom {
 
     List<MonthlyWatchItem> findMonthlyStatsByMemberIdWithinPeriod(Long memberId, LocalDateTime startDate,
                                                                   LocalDateTime endDate);
+
+    List<GroupWatchCompleteRate> findGroupAvgWatchRateByOrgIdWithinPeriod(Long orgId, LocalDateTime startDate,
+                                                                          LocalDateTime endDate);
 }

@@ -10,6 +10,7 @@ import static java.util.stream.Collectors.toMap;
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.dto.admin.AllMemberWatchLogItem;
 import app.allstackproject.privideo.dto.admin.AllVideoWatchLogItem;
+import app.allstackproject.privideo.dto.admin.GroupWatchCompleteRate;
 import app.allstackproject.privideo.dto.admin.MemberAvgWatchRateDto;
 import app.allstackproject.privideo.dto.admin.MemberGroupItem;
 import app.allstackproject.privideo.dto.admin.MemberWatchLogItem;
@@ -19,6 +20,7 @@ import app.allstackproject.privideo.dto.admin.ReadAllMemberItem;
 import app.allstackproject.privideo.dto.admin.VideoWatchLogItem;
 import app.allstackproject.privideo.entity.OrgViewLog;
 import app.allstackproject.privideo.repository.history.HistoryRepository;
+import app.allstackproject.privideo.repository.member.MemberGroupRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
 import java.time.DayOfWeek;
@@ -45,11 +47,12 @@ public class StatsAdminService {
     private final HistoryRepository historyRepository;
     private final VideoRepository videoRepository;
     private final MongoTemplate mongoTemplate;
+    private final MemberGroupRepository memberGroupRepository;
 
     public List<AllMemberWatchLogItem> readAllMemberWatchLog(Long orgId) {
         List<ReadAllMemberItem> members = memberRepository.findByOrganizationId(orgId);
 
-        Map<Long, Long> avgWatchRateMap = historyRepository.findAvgWatchRateByOrgId(orgId)
+        Map<Long, Long> avgWatchRateMap = historyRepository.findMemberAvgWatchRateByOrgId(orgId)
                 .stream()
                 .collect(toMap(
                         MemberAvgWatchRateDto::getMemberId,
@@ -190,6 +193,15 @@ public class StatsAdminService {
         return bucketOrder.stream()
                 .map(bucket -> bucketSumMap.getOrDefault(bucket, 0L))
                 .collect(Collectors.toList());
+    }
+
+    public List<GroupWatchCompleteRate> readGroupWatchCompleteLog(Long orgId, String standardMonth) {
+        YearMonth yearMonth = YearMonth.parse(standardMonth);
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+
+        return historyRepository.findGroupAvgWatchRateByOrgIdWithinPeriod(orgId, startDate.atStartOfDay(),
+                endDate.plusDays(1).atStartOfDay());
     }
 
     private Long calculateTotalViews(OrgViewLog log) {
