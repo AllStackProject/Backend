@@ -1,18 +1,21 @@
 package app.allstackproject.privideo.repository.history.custom;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
+import static app.allstackproject.privideo.entity.QCategory.category;
 import static app.allstackproject.privideo.entity.QHistory.history;
 import static app.allstackproject.privideo.entity.QMember.member;
 import static app.allstackproject.privideo.entity.QMemberGroup.memberGroup;
 import static app.allstackproject.privideo.entity.QMemberGroupMapping.memberGroupMapping;
 import static app.allstackproject.privideo.entity.QScrap.scrap;
 import static app.allstackproject.privideo.entity.QVideo.video;
+import static app.allstackproject.privideo.entity.QVideoCategoryMapping.videoCategoryMapping;
 import static app.allstackproject.privideo.entity.QVideoMemberGroupMapping.videoMemberGroupMapping;
 
 import app.allstackproject.privideo.common.enumStatus.VideoOpenScopeType;
 import app.allstackproject.privideo.dto.admin.AllVideoWatchLogItem;
 import app.allstackproject.privideo.dto.admin.MemberAvgWatchRateDto;
 import app.allstackproject.privideo.dto.admin.MemberWatchLogItem;
+import app.allstackproject.privideo.dto.admin.MonthlyWatchItem;
 import app.allstackproject.privideo.dto.admin.VideoWatchLogItem;
 import app.allstackproject.privideo.dto.history.VideoHistory;
 import com.querydsl.core.Tuple;
@@ -199,6 +202,59 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                         t.get(history.watchRate),
                         t.get(history.lastWatchedAt)
                 ))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> findTopCategoriesByMemberIdWithinPeriod(Long memberId, LocalDateTime startDate,
+                                                                LocalDateTime endDate) {
+        List<Tuple> rows = jpaQueryFactory
+                .select(
+                        category.title,
+                        category.id.count()
+                )
+                .from(history)
+                .join(history.video, video)
+                .join(videoCategoryMapping).on(videoCategoryMapping.video.eq(video))
+                .join(videoCategoryMapping.category, category)
+                .where(
+                        history.member.id.eq(memberId),
+                        history.isComplete.isTrue(),
+                        history.completedAt.between(startDate, endDate)
+                )
+                .groupBy(category.id, category.title)
+                .orderBy(category.id.count().desc())
+                .limit(3)
+                .fetch();
+
+        return rows.stream()
+                .map(t -> t.get(category.title))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MonthlyWatchItem> findMonthlyStatsByMemberIdWithinPeriod(Long memberId, LocalDateTime startDate,
+                                                                         LocalDateTime endDate) {
+        NumberExpression<Integer> yearExpr = history.completedAt.year();
+        NumberExpression<Integer> monthExpr = history.completedAt.month();
+        NumberExpression<Long> countExpr = history.id.countDistinct();
+
+        var rows = jpaQueryFactory
+                .select(yearExpr, monthExpr, countExpr)
+                .from(history)
+                .where(
+                        history.member.id.eq(memberId),
+                        history.isComplete.isTrue(),
+                        history.completedAt.between(startDate, endDate)
+                )
+                .groupBy(yearExpr, monthExpr)
+                .orderBy(yearExpr.asc(), monthExpr.asc())
+                .fetch();
+
+        return rows.stream()
+                .map(t -> {
+                    return new MonthlyWatchItem(t.get(yearExpr), t.get(monthExpr), t.get(countExpr));
+                })
                 .collect(Collectors.toList());
     }
 }

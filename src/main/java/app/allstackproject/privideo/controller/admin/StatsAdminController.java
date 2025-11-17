@@ -8,6 +8,7 @@ import app.allstackproject.privideo.dto.admin.ReadAllVideoWatchLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadDayWatchCompleteCntResponse;
 import app.allstackproject.privideo.dto.admin.ReadHourWatchCompleteCntResponse;
 import app.allstackproject.privideo.dto.admin.ReadMemberWatchLogResponse;
+import app.allstackproject.privideo.dto.admin.ReadMemberWatchReportResponse;
 import app.allstackproject.privideo.dto.admin.ReadVideoWatchLogResponse;
 import app.allstackproject.privideo.service.admin.StatsAdminService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,6 +45,15 @@ public class StatsAdminController {
                                                                        @PathVariable Long memberId) {
         return new BaseResponse<>(ReadMemberWatchLogResponse.of(statsAdminService.readMemberWatchLog(orgId, memberId)));
     }
+
+    @GetMapping("/view/report/member/{memberId}")
+    @Operation(summary = "멤버별 영상 리포트 조회")
+    public BaseResponse<ReadMemberWatchReportResponse> readMemberWatchReport(@PathVariable Long orgId,
+                                                                             @PathVariable Long memberId) {
+        return new BaseResponse<>(
+                ReadMemberWatchReportResponse.of(statsAdminService.readMemberWatchReport(orgId, memberId)));
+    }
+
 
     @GetMapping("/view/videos")
     @Operation(summary = "영상별 시청 기록 목록 조회")

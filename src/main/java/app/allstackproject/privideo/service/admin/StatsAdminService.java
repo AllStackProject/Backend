@@ -3,6 +3,7 @@ package app.allstackproject.privideo.service.admin;
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_IN_ORGANIZATION;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_IN_ORGANIZATION;
+import static app.allstackproject.privideo.common.util.TimeUtil.calculateStartDate;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -12,6 +13,8 @@ import app.allstackproject.privideo.dto.admin.AllVideoWatchLogItem;
 import app.allstackproject.privideo.dto.admin.MemberAvgWatchRateDto;
 import app.allstackproject.privideo.dto.admin.MemberGroupItem;
 import app.allstackproject.privideo.dto.admin.MemberWatchLogItem;
+import app.allstackproject.privideo.dto.admin.MemberWatchReport;
+import app.allstackproject.privideo.dto.admin.MonthlyWatchItem;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberItem;
 import app.allstackproject.privideo.dto.admin.VideoWatchLogItem;
 import app.allstackproject.privideo.entity.OrgViewLog;
@@ -20,6 +23,7 @@ import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +82,37 @@ public class StatsAdminService {
         }
 
         return historyRepository.findWatchLogByMemberId(memberId);
+    }
+
+    public MemberWatchReport readMemberWatchReport(Long orgId, Long memberId) {
+        if (!memberRepository.existsByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)) {
+            throw new ApiException(MEMBER_NOT_IN_ORGANIZATION);
+        }
+
+        LocalDateTime startDate = calculateStartDate(3);
+        LocalDateTime endDate = LocalDateTime.now();
+
+        Long totalCount = historyRepository.countByMemberIdAndIsCompleteIsTrueAndCompletedAtBetween(memberId, startDate,
+                endDate);
+
+        List<String> topCategories = historyRepository.findTopCategoriesByMemberIdWithinPeriod(memberId, startDate,
+                endDate);
+        List<MonthlyWatchItem> monthlyStats = historyRepository.findMonthlyStatsByMemberIdWithinPeriod(memberId,
+                startDate, endDate);
+
+        return MemberWatchReport.builder()
+                .totalWatchedVideoCnt(totalCount)
+                .mostWatchedCategories(topCategories)
+                .monthlyWatchedCnts(
+                        monthlyStats.stream()
+                                .map(dto -> new MonthlyWatchItem(
+                                        dto.getYear(),
+                                        dto.getMonth(),
+                                        dto.getWatchedVideoCnt()
+                                ))
+                                .collect(Collectors.toList())
+                )
+                .build();
     }
 
     public List<AllVideoWatchLogItem> readAllVideoWatchLog(Long orgId) {
@@ -161,7 +196,7 @@ public class StatsAdminService {
         if (log.getBuckets() == null) {
             return 0L;
         }
-        
+
         return log.getBuckets().values().stream()
                 .mapToLong(Integer::longValue)
                 .sum();
