@@ -3,6 +3,7 @@ package app.allstackproject.privideo.entity;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import lombok.Getter;
@@ -27,7 +28,7 @@ public class OrgViewLog {
     private Long orgId;
 
     @NotNull
-    private Instant date;
+    private LocalDateTime date;
 
     @NotNull
     private Map<String, Integer> buckets = new LinkedHashMap<>(Map.of(
@@ -36,5 +37,5 @@ public class OrgViewLog {
     ));
 
     @NotNull
-    private Instant updatedAt;
+    private String updatedAt;
 }

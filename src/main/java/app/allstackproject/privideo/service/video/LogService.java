@@ -5,6 +5,7 @@ import app.allstackproject.privideo.entity.SegQuitLogs;
 import app.allstackproject.privideo.entity.SegViewLogs;
 import java.math.BigInteger;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -40,8 +41,8 @@ public class LogService {
         Update u = new Update()
                 .inc("buckets." + bucketKey, 1)
                 .setOnInsert("orgId", orgId)
-                .setOnInsert("date", dateKey)
-                .currentDate("updatedAt");
+                .setOnInsert("date", kst.toLocalDate().atStartOfDay())
+                .set("updatedAt", kst.toLocalDateTime().toString());
 
         mongoTemplate.upsert(q, u, OrgViewLog.class);
     }

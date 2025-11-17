@@ -46,9 +46,11 @@ public class History extends BaseEntity {
 
     private LocalDateTime completedAt;
 
+    private LocalDateTime lastWatchedAt;
+
     @Builder(access = AccessLevel.PRIVATE)
     private History(Member member, Video video, Long watchRate, Long recentPositionSec, LocalDateTime startedAt,
-                    boolean hadEnd, boolean isComplete, LocalDateTime completedAt) {
+                    boolean hadEnd, boolean isComplete, LocalDateTime completedAt, LocalDateTime lastWatchedAt) {
         this.member = member;
         this.video = video;
         this.watchRate = watchRate;
@@ -57,6 +59,7 @@ public class History extends BaseEntity {
         this.hadEnd = hadEnd;
         this.isComplete = isComplete;
         this.completedAt = completedAt;
+        this.lastWatchedAt = lastWatchedAt;
     }
 
     public static History create(Member member, Video video) {
@@ -68,6 +71,7 @@ public class History extends BaseEntity {
                 .startedAt(LocalDateTime.now())
                 .hadEnd(false)
                 .isComplete(false)
+                .lastWatchedAt(LocalDateTime.now())
                 .build();
     }
 
@@ -80,5 +84,9 @@ public class History extends BaseEntity {
             this.isComplete = true;
             this.completedAt = LocalDateTime.now();
         }
+    }
+
+    public void updateLastWatchedAt() {
+        this.lastWatchedAt = LocalDateTime.now();
     }
 }

@@ -89,7 +89,7 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
                         video.title,
                         video.thumbnailUrl,
                         history.watchRate,
-                        history.lastModifiedAt,
+                        history.lastWatchedAt,
                         video.wholeTime
                 ))
                 .from(history)
@@ -101,7 +101,7 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
                         video.organization.id.eq(orgId),
                         scrappedExists
                 )
-                .orderBy(history.lastModifiedAt.desc())
+                .orderBy(history.lastWatchedAt.desc())
                 .fetch();
     }
 }

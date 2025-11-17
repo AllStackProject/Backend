@@ -160,14 +160,16 @@ public class VideoService {
         BigInteger watchedSegments = new BigInteger(leaveVideoSessionInfo.getWatchSegments(), 2);
         int totalSegCnt = (int) Math.ceil((double) video.getWholeTime() / SEGMENT_SECONDS);
 
+        History history = historyRepository.findByMemberIdAndVideoId(memberId, videoId)
+                .orElseThrow(() -> new ApiException(HISTORY_NOT_FOUND));
+
         // TODO: Redis에서 세션 키 삭제
         if (isFirstWatch) {
-            History history = historyRepository.findByMemberIdAndVideoId(memberId, videoId)
-                    .orElseThrow(() -> new ApiException(HISTORY_NOT_FOUND));
-
             boolean watchEnd = watchedSegments.testBit(totalSegCnt - 1);
             history.update(leaveVideoSessionInfo.getWatchRate(), leaveVideoSessionInfo.getRecentPosition(), watchEnd);
         }
+
+        history.updateLastWatchedAt();
 
         logService.incSegViewBucket(videoId, watchedSegments, totalSegCnt);
 
