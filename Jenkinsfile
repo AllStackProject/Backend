@@ -84,7 +84,7 @@ spec:
 
       // ✅ kustomization.yaml 수정
       sh """
-        cd DeploymentRepo/overlays/dev
+        cd DeploymentRepo/backend/overlays/dev
         sed -i 's|newTag:.*|newTag: "${BUILD_NUMBER}"|' kustomization.yaml
       """
 
