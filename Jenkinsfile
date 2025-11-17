@@ -34,7 +34,7 @@ spec:
 
     stage('SonarQube Analysis') {
         withSonarQubeEnv('sonarQube') {
-            withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+            withCredentials([string(credentialsId: 'sonarQubeToken', variable: 'SONAR_TOKEN')]) {
                 sh """
                     ./gradlew sonarqube \
                       -Dsonar.projectKey=backend \
