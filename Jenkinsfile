@@ -16,6 +16,12 @@ spec:
       volumeMounts:
         - name: docker-config
           mountPath: /kaniko/.docker
+        - name: kaniko-storage
+          mountPath: /workspace
+        - name: kaniko-storage
+          mountPath: /kaniko/tmp
+        - name: kaniko-storage
+          mountPath: /home/jenkins/agent
   volumes:
     - name: docker-config
       secret:
@@ -23,6 +29,9 @@ spec:
         items:
           - key: .dockerconfigjson
             path: config.json
+    - name: kaniko-storage
+      persistentVolumeClaim:
+        claimName: pvc-hdd-kaniko
 """) {
 
   node(POD_LABEL) {
