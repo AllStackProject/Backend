@@ -29,7 +29,7 @@ public class AllVideoWatchLogItem {
         this.title = title;
         this.creator = creator;
         this.expiredAt = expiredAt;
-        this.createdAt = createdAt.toLocalDate();
+        this.createdAt = createdAt != null ? createdAt.toLocalDate() : null;
         this.openScope = VideoOpenScopeType.valueOf(openScope);
         this.watchCompleteRate = watchCompleteRate;
         this.watchMemberCnt = watchMemberCnt;

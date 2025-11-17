@@ -117,10 +117,9 @@ public class StatsAdminController {
 
     @GetMapping("/report/interval/{videoId}")
     @Operation(summary = "영상 시청 구간 분석 조회", description = "세그먼트 인덱스는 영상의 뒷 구간부터 시작합니다.")
-    public BaseResponse<ReadVideoIntervalLogResponse> readVideoIntervalLog(@PathVariable Long orgId,
-                                                                           @PathVariable Long videoId) {
+    public BaseResponse<ReadVideoIntervalLogResponse> readVideoIntervalLog(@PathVariable Long videoId) {
         return new BaseResponse<>(
-                ReadVideoIntervalLogResponse.of(statsAdminService.readVideoIntervalLog(orgId, videoId)));
+                ReadVideoIntervalLogResponse.of(statsAdminService.readVideoIntervalLog(videoId)));
     }
 
     @GetMapping("/report/quit")

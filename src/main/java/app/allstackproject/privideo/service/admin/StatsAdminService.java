@@ -217,7 +217,7 @@ public class StatsAdminService {
         return videoRepository.findAllVideoIntervalLogByOrgId(orgId);
     }
 
-    public List<VideoIntervalLogItem> readVideoIntervalLog(Long orgId, Long videoId) {
+    public List<VideoIntervalLogItem> readVideoIntervalLog(Long videoId) {
         Video video = videoRepository.findById(videoId)
                 .orElseThrow(() -> new ApiException(VIDEO_NOT_IN_ORGANIZATION));
         int totalSegCnt = (int) Math.ceil((double) video.getWholeTime() / SEGMENT_SECONDS);
