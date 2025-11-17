@@ -24,6 +24,8 @@ import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.video.CategoryRepository;
+import app.allstackproject.privideo.repository.video.VideoCategoryMappingRepository;
+import app.allstackproject.privideo.repository.video.VideoMemberGroupMappingRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -40,6 +42,8 @@ public class OrgAdminService {
     private final MemberGroupRepository memberGroupRepository;
     private final CategoryRepository categoryRepository;
     private final MemberGroupMappingRepository memberGroupMappingRepository;
+    private final VideoMemberGroupMappingRepository videoMemberGroupMappingRepository;
+    private final VideoCategoryMappingRepository videoCategoryMappingRepository;
 
     public boolean modifyOrgInfo(Long orgId, String imgUrl) {
         Organization organization = organizationRepository.findById(orgId)
@@ -81,6 +85,7 @@ public class OrgAdminService {
         MemberGroup memberGroup = memberGroupRepository.findByIdAndOrganizationId(groupId, orgId)
                 .orElseThrow(() -> new ApiException(MEMBER_GROUP_NOT_FOUND));
         memberGroupMappingRepository.deleteByMemberGroupId(groupId);
+        videoMemberGroupMappingRepository.deleteByMemberGroupId(groupId);
         memberGroupRepository.delete(memberGroup);
         return true;
     }
@@ -132,8 +137,8 @@ public class OrgAdminService {
 
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ApiException(CATEGORY_NOT_FOUND));
+        videoCategoryMappingRepository.deleteByCategoryId(categoryId);
         categoryRepository.delete(category);
-        // TODO: CategoryVideoMapping도 삭제
 
         return true;
     }
