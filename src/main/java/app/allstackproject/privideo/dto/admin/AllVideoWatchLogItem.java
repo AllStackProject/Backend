@@ -1,7 +1,7 @@
 package app.allstackproject.privideo.dto.admin;
 
 import app.allstackproject.privideo.common.enumStatus.VideoOpenScopeType;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import lombok.Getter;
 
 @Getter
@@ -12,7 +12,7 @@ public class AllVideoWatchLogItem {
 
     private final String creator;
 
-    private final LocalDateTime expiredAt;
+    private final LocalDate expiredAt;
 
     private final VideoOpenScopeType openScope;
 
@@ -20,7 +20,7 @@ public class AllVideoWatchLogItem {
 
     private final Long watchMemberCnt;
 
-    public AllVideoWatchLogItem(Long id, String title, String creator, LocalDateTime expiredAt, String openScope,
+    public AllVideoWatchLogItem(Long id, String title, String creator, LocalDate expiredAt, String openScope,
                                 Long watchCompleteRate, Long watchMemberCnt) {
         this.id = id;
         this.title = title;

@@ -140,7 +140,13 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .join(video.creator, member)
                 .leftJoin(history).on(history.video.id.eq(video.id))
                 .where(video.organization.id.eq(orgId))
-                .groupBy(video.id)
+                .groupBy(
+                        video.id,
+                        video.title,
+                        member.nickname,
+                        video.expiredAt,
+                        openScope
+                )
                 .fetch();
     }
 
@@ -148,14 +154,15 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
     public List<VideoWatchLogItem> findVideoWatchLogByVideoId(Long videoId) {
         List<Tuple> historyData = jpaQueryFactory
                 .select(
+                        history.member.id,
                         member.nickname,
                         history.watchRate,
-                        history.startedAt
+                        history.lastWatchedAt
                 )
                 .from(history)
                 .join(history.member, member)
                 .where(history.video.id.eq(videoId))
-                .orderBy(history.startedAt.desc())
+                .orderBy(history.lastWatchedAt.desc())
                 .fetch();
 
         if (historyData.isEmpty()) {
