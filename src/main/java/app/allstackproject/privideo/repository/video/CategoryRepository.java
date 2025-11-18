@@ -9,4 +9,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long>, Categ
     List<Category> findByMemberGroupId(Long groupId);
 
     boolean existsByMemberGroupIdAndTitle(Long memberGroupId, String title);
+
+    List<Category> findByMemberGroupIdIn(List<Long> groupIds);
 }

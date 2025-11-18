@@ -12,7 +12,9 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.util.OrgCodeGenerator;
+import app.allstackproject.privideo.dto.admin.MemberGroupItem;
 import app.allstackproject.privideo.dto.admin.ReadAllCategoryItem;
+import app.allstackproject.privideo.dto.admin.ReadAllMemberGroupItem;
 import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.entity.Category;
 import app.allstackproject.privideo.entity.Member;
@@ -27,6 +29,8 @@ import app.allstackproject.privideo.repository.video.CategoryRepository;
 import app.allstackproject.privideo.repository.video.VideoCategoryMappingRepository;
 import app.allstackproject.privideo.repository.video.VideoMemberGroupMappingRepository;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,6 +72,39 @@ public class OrgAdminService {
         orgRedisRepository.regenerateCode(orgId, newCode);
 
         return new OrgCodeResponse(newCode);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReadAllMemberGroupItem> readAllMemberGroup(Long orgId) {
+        List<MemberGroupItem> memberGroups = memberGroupRepository.findAllByOrganizationId(orgId);
+
+        if (memberGroups.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> groupIds = memberGroups.stream()
+                .map(MemberGroupItem::getId)
+                .toList();
+
+        List<Category> allCategories = categoryRepository.findByMemberGroupIdIn(groupIds);
+
+        Map<Long, List<Category>> categoriesByGroupId = allCategories.stream()
+                .collect(Collectors.groupingBy(Category::getMemberGroupId));
+
+        return memberGroups.stream()
+                .map(group -> {
+                    List<ReadAllCategoryItem> categories =
+                            categoriesByGroupId.getOrDefault(group.getId(), List.of()).stream()
+                                    .map(c -> new ReadAllCategoryItem(c.getId(), c.getTitle()))
+                                    .toList();
+
+                    return new ReadAllMemberGroupItem(
+                            group.getId(),
+                            group.getName(),
+                            categories
+                    );
+                })
+                .toList();
     }
 
     public boolean createMemberGroup(Long orgId, String memberGroupName) {

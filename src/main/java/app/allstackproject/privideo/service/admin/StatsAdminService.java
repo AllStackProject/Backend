@@ -20,7 +20,9 @@ import app.allstackproject.privideo.dto.admin.MonthlyWatchItem;
 import app.allstackproject.privideo.dto.admin.QuitLogItem;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberItem;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoIntervalLogItem;
+import app.allstackproject.privideo.dto.admin.ReadQuitLogResponse;
 import app.allstackproject.privideo.dto.admin.VideoIntervalLogItem;
+import app.allstackproject.privideo.dto.admin.VideoRankItem;
 import app.allstackproject.privideo.dto.admin.VideoWatchLogItem;
 import app.allstackproject.privideo.entity.OrgViewLog;
 import app.allstackproject.privideo.entity.Video;
@@ -244,13 +246,15 @@ public class StatsAdminService {
         return intervals;
     }
 
-    public List<QuitLogItem> readQuitLog(Long orgId) {
+    public ReadQuitLogResponse readQuitLog(Long orgId) {
         int limit = 3;
-        List<QuitLogItem> result = new ArrayList<>();
+        List<QuitLogItem> high = videoRepository.findTopQuitRateVideosByOrgId(orgId, limit);
+        List<QuitLogItem> low = videoRepository.findLowQuitRateVideosByOrgId(orgId, limit);
 
-        result.addAll(videoRepository.findTopQuitRateVideosByOrgId(orgId, limit));
-        result.addAll(videoRepository.findLowQuitRateVideosByOrgId(orgId, limit));
+        return ReadQuitLogResponse.of(high, low);
+    }
 
-        return result;
+    public List<VideoRankItem> readVideoRank(Long orgId) {
+        return videoRepository.findTop5VideoRankByOrgId(orgId);
     }
 }
