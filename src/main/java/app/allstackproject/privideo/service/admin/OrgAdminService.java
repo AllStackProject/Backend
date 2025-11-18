@@ -15,6 +15,7 @@ import app.allstackproject.privideo.common.util.OrgCodeGenerator;
 import app.allstackproject.privideo.dto.admin.MemberGroupItem;
 import app.allstackproject.privideo.dto.admin.ReadAllCategoryItem;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberGroupItem;
+import app.allstackproject.privideo.dto.admin.ReadOrganizationInfoResponse;
 import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.entity.Category;
 import app.allstackproject.privideo.entity.Member;
@@ -75,11 +76,19 @@ public class OrgAdminService {
     }
 
     @Transactional(readOnly = true)
-    public List<ReadAllMemberGroupItem> readAllMemberGroup(Long orgId) {
+    public ReadOrganizationInfoResponse readOrganizationInfo(Long orgId) {
+        Organization organization = organizationRepository.findById(orgId)
+                .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
+
+        String orgName = organization.getName();
+        String imgUrl = organization.getImgUrl();
+        Long memberCnt = memberRepository.countByOrganizationIdAndJoinStatusAndStatus(orgId, APPROVED, ACTIVE);
+        String orgCode = orgRedisRepository.getOrgcodeById(orgId);
+
         List<MemberGroupItem> memberGroups = memberGroupRepository.findAllByOrganizationId(orgId);
 
         if (memberGroups.isEmpty()) {
-            return List.of();
+            return ReadOrganizationInfoResponse.of(orgName, imgUrl, memberCnt, orgCode, List.of());
         }
 
         List<Long> groupIds = memberGroups.stream()
@@ -91,7 +100,7 @@ public class OrgAdminService {
         Map<Long, List<Category>> categoriesByGroupId = allCategories.stream()
                 .collect(Collectors.groupingBy(Category::getMemberGroupId));
 
-        return memberGroups.stream()
+        List<ReadAllMemberGroupItem> memberGroupItems = memberGroups.stream()
                 .map(group -> {
                     List<ReadAllCategoryItem> categories =
                             categoriesByGroupId.getOrDefault(group.getId(), List.of()).stream()
@@ -105,6 +114,8 @@ public class OrgAdminService {
                     );
                 })
                 .toList();
+
+        return ReadOrganizationInfoResponse.of(orgName, imgUrl, memberCnt, orgCode, memberGroupItems);
     }
 
     public boolean createMemberGroup(Long orgId, String memberGroupName) {
