@@ -123,7 +123,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .leftJoin(history).on(history.video.id.eq(video.id))
                 .where(
                         video.organization.id.eq(orgId),
-                        video.status.eq(ACTIVE)
+                        history.member.status.eq(ACTIVE),
+                        history.member.joinStatus.eq(APPROVED)
                 )
                 .groupBy(video.id, video.title, video.createdAt)
                 .orderBy(
