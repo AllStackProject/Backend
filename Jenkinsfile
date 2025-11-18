@@ -23,8 +23,8 @@ spec:
         - cat
       tty: true
       volumeMounts:
-        - name: docker-config
-          mountPath: /kaniko/.docker
+        - name: kaniko-storage
+          mountPath: /workspace
   volumes:
     - name: docker-config
       secret:
