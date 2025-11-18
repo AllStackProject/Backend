@@ -90,8 +90,9 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     HISTORY_NOT_FOUND(9001, HttpStatus.NOT_FOUND, "시청 내역을 찾을 수 없습니다."),
 
     /**
-     * 10000: Quiz 오류
+     * 10000: Home 오류
      */
+    INVALID_HOME_FILTER(10001, HttpStatus.BAD_REQUEST, "영상 조회 필터는 recommend, recent, popular 중 하나여야 합니다."),
 
     /***
      * 11000: MultipartFile 오류

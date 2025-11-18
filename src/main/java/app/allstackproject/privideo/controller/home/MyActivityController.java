@@ -1,4 +1,4 @@
-package app.allstackproject.privideo.controller;
+package app.allstackproject.privideo.controller.home;
 
 import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_KEY;
 
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("{orgId}/myactivity")
 @Slf4j
-@PreAuthorize("hasAuthority('org:granted')") // TODO: org에 가입 완료된 상태로 변경
+@PreAuthorize("hasAuthority('org:granted')")
 @Tag(name = "MyActivity", description = "내 활동 관련 API")
 @SecurityRequirement(name = ORG_AUTH_KEY)
 public class MyActivityController {
