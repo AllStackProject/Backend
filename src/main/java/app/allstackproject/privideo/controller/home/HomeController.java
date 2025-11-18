@@ -4,6 +4,7 @@ import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_
 
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.dto.home.ReadHomeResponse;
+import app.allstackproject.privideo.dto.home.ReadSearchVideoResponse;
 import app.allstackproject.privideo.service.home.HomeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/{orgId}")
+@RequestMapping("/{orgId}/home")
 @PreAuthorize("hasAuthority('org:granted')")
 @Tag(name = "Home", description = "홈 관련 API")
 @SecurityRequirement(name = ORG_AUTH_KEY)
@@ -27,10 +28,21 @@ public class HomeController {
 
     private final HomeService homeService;
 
-    @GetMapping("/homne")
+    @GetMapping("")
     @Operation(summary = "홈 조회")
-    public BaseResponse<ReadHomeResponse> readHome(@AuthenticationPrincipal(expression = "memberId") Long memberId,
-                                                   @PathVariable Long orgId, @RequestParam String filter) {
+    public BaseResponse<ReadHomeResponse> readHome(
+            @AuthenticationPrincipal(expression = "memberId") Long memberId,
+            @PathVariable Long orgId,
+            @RequestParam String filter) {
         return new BaseResponse<>(homeService.readHome(memberId, orgId, filter));
+    }
+
+    @GetMapping("/search")
+    @Operation(summary = "영상 검색")
+    public BaseResponse<ReadSearchVideoResponse> readSearchVideo(
+            @AuthenticationPrincipal(expression = "memberId") Long memberId,
+            @PathVariable Long orgId,
+            @RequestParam String keyword) {
+        return new BaseResponse<>(ReadSearchVideoResponse.of(homeService.readSearchVideo(memberId, orgId, keyword)));
     }
 }

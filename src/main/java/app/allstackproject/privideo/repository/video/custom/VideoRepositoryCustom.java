@@ -25,4 +25,6 @@ public interface VideoRepositoryCustom {
     List<HomeVideoItem> findHomeVideos(Long orgId, Long memberId, FilterType filter);
 
     Map<Long, List<String>> findCategoriesForHomeVideos(Long memberId, List<Long> videoIds);
+
+    List<HomeVideoItem> findSearchVideos(Long orgId, Long memberId, String keyword);
 }

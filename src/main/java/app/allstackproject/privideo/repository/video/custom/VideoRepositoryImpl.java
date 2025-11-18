@@ -129,8 +129,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .leftJoin(history).on(history.video.id.eq(video.id))
                 .where(
                         video.organization.id.eq(orgId),
-                        history.member.status.eq(ACTIVE),
-                        history.member.joinStatus.eq(APPROVED)
+                        video.creator.status.eq(ACTIVE),
+                        video.creator.joinStatus.eq(APPROVED)
                 )
                 .groupBy(video.id, video.title, video.createdAt)
                 .orderBy(
@@ -203,7 +203,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .leftJoin(memberGroupMapping)
                 .on(
                         memberGroupMapping.memberGroup.eq(videoMemberGroupMapping.memberGroup),
-                        memberGroupMapping.member.id.eq(memberId)
+                        memberGroupMapping.member.id.eq(memberId),
+                        video.creator.joinStatus.eq(APPROVED),
+                        video.creator.status.eq(ACTIVE)
                 )
                 .where(
                         video.organization.id.eq(orgId),
@@ -241,7 +243,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .leftJoin(memberGroupMapping)
                 .on(
                         memberGroupMapping.memberGroup.eq(videoMemberGroupMapping.memberGroup),
-                        memberGroupMapping.member.id.eq(memberId)
+                        memberGroupMapping.member.id.eq(memberId),
+                        video.creator.joinStatus.eq(APPROVED),
+                        video.creator.status.eq(ACTIVE)
                 )
                 .where(
                         video.id.in(videoIds),
@@ -258,6 +262,63 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                                 Collectors.toList()
                         )
                 ));
+    }
+
+    @Override
+    public List<HomeVideoItem> findSearchVideos(Long orgId, Long memberId, String keyword) {
+        BooleanExpression scrappedExists = JPAExpressions
+                .selectOne()
+                .from(scrap)
+                .where(
+                        scrap.member.id.eq(memberId),
+                        scrap.video.id.eq(video.id)
+                )
+                .exists();
+
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        HomeVideoItem.class,
+                        video.id,
+                        video.title,
+                        video.thumbnailUrl,
+                        video.creator.nickname,
+                        video.wholeTime,
+                        video.watchCnt,
+                        video.createdAt,
+                        scrappedExists
+                ))
+                .from(video)
+                .leftJoin(videoMemberGroupMapping)
+                .on(
+                        videoMemberGroupMapping.video.eq(video),
+                        videoMemberGroupMapping.status.eq(ACTIVE),
+                        video.creator.joinStatus.eq(APPROVED),
+                        video.status.eq(ACTIVE)
+                )
+                .leftJoin(memberGroupMapping)
+                .on(
+                        memberGroupMapping.memberGroup.eq(videoMemberGroupMapping.memberGroup),
+                        memberGroupMapping.member.id.eq(memberId),
+                        memberGroupMapping.status.eq(ACTIVE)
+                )
+                .where(
+                        video.organization.id.eq(orgId),
+                        video.status.eq(ACTIVE),
+                        video.title.containsIgnoreCase(keyword),
+                        videoMemberGroupMapping.id.isNull()
+                                .or(memberGroupMapping.id.isNotNull())
+                )
+                .groupBy(
+                        video.id,
+                        video.title,
+                        video.thumbnailUrl,
+                        video.creator.nickname,
+                        video.wholeTime,
+                        video.watchCnt,
+                        video.createdAt
+                )
+                .orderBy(video.createdAt.desc())
+                .fetch();
     }
 
     /**
@@ -322,8 +383,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .where(
                         video.organization.id.eq(orgId),
                         video.watchCnt.gt(0L),
-                        history.member.joinStatus.eq(APPROVED),
-                        history.member.status.eq(ACTIVE),
+                        video.creator.joinStatus.eq(APPROVED),
+                        video.creator.status.eq(ACTIVE),
                         quitRateCondition
                 )
                 .groupBy(

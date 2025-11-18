@@ -10,6 +10,7 @@ import app.allstackproject.privideo.dto.home.HomeVideoItem;
 import app.allstackproject.privideo.dto.home.ReadHomeResponse;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.Organization;
+import app.allstackproject.privideo.entity.Video;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
@@ -69,5 +70,14 @@ public class HomeService {
                 .toList();
 
         return ReadHomeResponse.of(nickname, isAdmin, orgName, homeVideoItems, globalCategories);
+    }
+
+    @Transactional(readOnly = true)
+    public List<HomeVideoItem> readSearchVideo(Long memberId, Long orgId, String keyword) {
+        if (!memberRepository.existsByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)) {
+            throw new ApiException(MEMBER_NOT_IN_ORGANIZATION);
+        }
+
+        return videoRepository.findSearchVideos(orgId, memberId, keyword);
     }
 }
