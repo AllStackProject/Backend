@@ -291,19 +291,15 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .leftJoin(videoMemberGroupMapping)
                 .on(
                         videoMemberGroupMapping.video.eq(video),
-                        videoMemberGroupMapping.status.eq(ACTIVE),
-                        video.creator.joinStatus.eq(APPROVED),
-                        video.status.eq(ACTIVE)
+                        video.creator.joinStatus.eq(APPROVED)
                 )
                 .leftJoin(memberGroupMapping)
                 .on(
                         memberGroupMapping.memberGroup.eq(videoMemberGroupMapping.memberGroup),
-                        memberGroupMapping.member.id.eq(memberId),
-                        memberGroupMapping.status.eq(ACTIVE)
+                        memberGroupMapping.member.id.eq(memberId)
                 )
                 .where(
                         video.organization.id.eq(orgId),
-                        video.status.eq(ACTIVE),
                         video.title.containsIgnoreCase(keyword),
                         videoMemberGroupMapping.id.isNull()
                                 .or(memberGroupMapping.id.isNotNull())

@@ -21,7 +21,6 @@ public class CategoryRepositoryImpl implements CategoryRepositoryCustom {
                 .join(videoCategoryMapping.category, category)
                 .where(
                         videoCategoryMapping.video.id.eq(videoId),
-                        videoCategoryMapping.status.eq(ACTIVE),
                         category.status.eq(ACTIVE)
                 )
                 .orderBy(category.title.asc())
