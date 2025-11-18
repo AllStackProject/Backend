@@ -192,6 +192,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                         video.title,
                         video.thumbnailUrl,
                         video.creator.nickname,
+                        video.wholeTime,
                         video.watchCnt,
                         video.createdAt,
                         scrappedExists

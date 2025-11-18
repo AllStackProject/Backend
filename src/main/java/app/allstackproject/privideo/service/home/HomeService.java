@@ -55,6 +55,7 @@ public class HomeService {
                         v.getTitle(),
                         v.getThumbnailUrl(),
                         v.getCreator(),
+                        v.getWholeTime(),
                         v.getWatchCnt(),
                         v.getCreatedAt(),
                         v.getIsScrapped(),
