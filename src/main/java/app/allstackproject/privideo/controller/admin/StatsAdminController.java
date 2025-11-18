@@ -126,7 +126,7 @@ public class StatsAdminController {
     @GetMapping("/report/quit")
     @Operation(summary = "중도 이탈 분석 조회")
     public BaseResponse<ReadQuitLogResponse> readQuitLog(@PathVariable Long orgId) {
-        return new BaseResponse<>(ReadQuitLogResponse.of(statsAdminService.readQuitLog(orgId)));
+        return new BaseResponse<>(statsAdminService.readQuitLog(orgId));
     }
 
     @GetMapping("/report/top-rank")
