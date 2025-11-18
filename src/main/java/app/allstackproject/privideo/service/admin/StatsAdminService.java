@@ -21,6 +21,7 @@ import app.allstackproject.privideo.dto.admin.QuitLogItem;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberItem;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoIntervalLogItem;
 import app.allstackproject.privideo.dto.admin.VideoIntervalLogItem;
+import app.allstackproject.privideo.dto.admin.VideoRankItem;
 import app.allstackproject.privideo.dto.admin.VideoWatchLogItem;
 import app.allstackproject.privideo.entity.OrgViewLog;
 import app.allstackproject.privideo.entity.Video;
@@ -252,5 +253,9 @@ public class StatsAdminService {
         result.addAll(videoRepository.findLowQuitRateVideosByOrgId(orgId, limit));
 
         return result;
+    }
+
+    public List<VideoRankItem> readVideoRank(Long orgId) {
+        return videoRepository.findTop5VideoRankByOrgId(orgId);
     }
 }

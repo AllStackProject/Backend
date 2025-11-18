@@ -13,6 +13,7 @@ import app.allstackproject.privideo.dto.admin.ReadMemberWatchLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadMemberWatchReportResponse;
 import app.allstackproject.privideo.dto.admin.ReadQuitLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadVideoIntervalLogResponse;
+import app.allstackproject.privideo.dto.admin.ReadVideoRankResponse;
 import app.allstackproject.privideo.dto.admin.ReadVideoWatchLogResponse;
 import app.allstackproject.privideo.service.admin.StatsAdminService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -126,5 +127,11 @@ public class StatsAdminController {
     @Operation(summary = "중도 이탈 분석 조회")
     public BaseResponse<ReadQuitLogResponse> readQuitLog(@PathVariable Long orgId) {
         return new BaseResponse<>(ReadQuitLogResponse.of(statsAdminService.readQuitLog(orgId)));
+    }
+
+    @GetMapping("/report/top-rank")
+    @Operation(summary = "인기 동영상 목록 조회")
+    public BaseResponse<ReadVideoRankResponse> readVideoRank(@PathVariable Long orgId) {
+        return new BaseResponse<>(ReadVideoRankResponse.of(statsAdminService.readVideoRank(orgId)));
     }
 }

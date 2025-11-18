@@ -12,6 +12,8 @@ import app.allstackproject.privideo.common.enumStatus.VideoOpenScopeType;
 import app.allstackproject.privideo.dto.admin.QuitLogItem;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoIntervalLogItem;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoItem;
+import app.allstackproject.privideo.dto.admin.VideoRankItem;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
@@ -19,7 +21,9 @@ import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -183,6 +187,45 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .orderBy(quitRate.asc())
                 .limit(limit)
                 .fetch();
+    }
+
+    @Override
+    public List<VideoRankItem> findTop5VideoRankByOrgId(Long orgId) {
+        List<Tuple> results = jpaQueryFactory
+                .select(
+                        video.title,
+                        video.createdAt,
+                        video.watchCnt.as("watchCnt"),
+                        history.isComplete.when(true).then(1L).otherwise(0L).sum().as("completeCnt")
+                )
+                .from(video)
+                .leftJoin(history).on(history.video.id.eq(video.id))
+                .where(
+                        video.organization.id.eq(orgId),
+                        video.status.eq(ACTIVE)
+                )
+                .groupBy(video.id, video.title, video.createdAt)
+                .orderBy(
+                        video.watchCnt.desc(),
+                        history.isComplete.when(true).then(1L).otherwise(0L).sum().desc()
+                )
+                .limit(5)
+                .fetch();
+
+        return results.stream()
+                .map(tuple -> {
+                    Long watchCnt = tuple.get(2, Long.class);
+                    Long completeCnt = tuple.get(3, Long.class);
+                    Long watchCompleteRate = watchCnt > 0 ? (completeCnt * 100 / watchCnt) : 0L;
+
+                    return new VideoRankItem(
+                            tuple.get(0, String.class),
+                            tuple.get(1, LocalDateTime.class),
+                            watchCnt,
+                            watchCompleteRate
+                    );
+                })
+                .collect(Collectors.toList());
     }
 
     /**
