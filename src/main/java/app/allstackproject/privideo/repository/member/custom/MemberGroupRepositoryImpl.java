@@ -6,6 +6,7 @@ import static app.allstackproject.privideo.entity.QMemberGroup.memberGroup;
 import static app.allstackproject.privideo.entity.QMemberGroupMapping.memberGroupMapping;
 import static app.allstackproject.privideo.entity.QVideoMemberGroupMapping.videoMemberGroupMapping;
 
+import app.allstackproject.privideo.entity.MemberGroup;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -39,9 +40,9 @@ public class MemberGroupRepositoryImpl implements MemberGroupRepositoryCustom {
     }
 
     @Override
-    public List<String> findAllByMemberId(Long memberId) {
+    public List<MemberGroup> findAllByMemberId(Long memberId) {
         return jpaQueryFactory
-                .select(memberGroup.name)
+                .select(memberGroup)
                 .from(memberGroupMapping)
                 .join(memberGroupMapping.memberGroup, memberGroup)
                 .where(

@@ -6,6 +6,7 @@ import app.allstackproject.privideo.common.enumStatus.AuthPrincipal;
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.comment.CommentResponse;
+import app.allstackproject.privideo.dto.home.ReadMemberGroupResponse;
 import app.allstackproject.privideo.dto.organization.ReadMemberOrganizationInfoResponse;
 import app.allstackproject.privideo.dto.scrap.ScrapResponse;
 import app.allstackproject.privideo.dto.history.HistoryResponse;
@@ -93,6 +94,13 @@ public class MyActivityController {
     public BaseResponse<ReadMemberOrganizationInfoResponse> readOrganizationInfo(
             @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId) {
         return new BaseResponse<>(organizationService.readOrganizationInfo(memberId, orgId));
+    }
+
+    @GetMapping("/group")
+    @Operation(summary = "내 그룹 목록 조회")
+    public BaseResponse<ReadMemberGroupResponse> readMemberGroup(
+            @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId) {
+        return new BaseResponse<>(ReadMemberGroupResponse.of(organizationService.readMemberGroup(memberId, orgId)));
     }
 }
 
