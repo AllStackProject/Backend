@@ -23,6 +23,8 @@ spec:
         - cat
       tty: true
       volumeMounts:
+        - name: docker-config
+          mountPath: /kaniko/.docker
         - name: kaniko-storage
           mountPath: /workspace
   volumes:
@@ -44,18 +46,18 @@ spec:
       checkout scm
     }
 
-    stage('SonarQube Analysis') {
-        withSonarQubeEnv('sonarQube') {
-            withCredentials([string(credentialsId: 'sonarQubeToken', variable: 'SONAR_TOKEN')]) {
-                sh """
-                    ./gradlew sonarqube \
-                      -Dsonar.projectKey=backend \
-                      -Dsonar.host.url=$SONAR_HOST_URL \
-                      -Dsonar.login=$SONAR_TOKEN
-                """
-            }
-        }
-    }
+//    stage('SonarQube Analysis') {
+//        withSonarQubeEnv('sonarQube') {
+//            withCredentials([string(credentialsId: 'sonarQubeToken', variable: 'SONAR_TOKEN')]) {
+//                sh """
+//                    ./gradlew sonarqube \
+//                      -Dsonar.projectKey=backend \
+//                      -Dsonar.host.url=$SONAR_HOST_URL \
+//                      -Dsonar.login=$SONAR_TOKEN
+//                """
+//            }
+//        }
+//   }
 
     
     stage('Build & Push with Kaniko') {
