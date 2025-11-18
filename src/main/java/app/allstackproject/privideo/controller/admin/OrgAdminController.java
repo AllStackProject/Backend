@@ -9,6 +9,7 @@ import app.allstackproject.privideo.dto.admin.CreateMemberGroupRequest;
 import app.allstackproject.privideo.dto.admin.ModifyCategoryRequest;
 import app.allstackproject.privideo.dto.admin.ModifyOrgInfoRequest;
 import app.allstackproject.privideo.dto.admin.ReadAllCategoryResponse;
+import app.allstackproject.privideo.dto.admin.ReadAllMemberGroupResponse;
 import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.service.admin.OrgAdminService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -55,6 +56,12 @@ public class OrgAdminController {
             @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId) {
         OrgCodeResponse newOrgCode = orgAdminService.regenerateOrgCode(memberId, orgId);
         return new BaseResponse<>(newOrgCode);
+    }
+
+    @GetMapping("/group")
+    @Operation(summary = "멤버 그룹 전체 조회")
+    public BaseResponse<ReadAllMemberGroupResponse> readAllMemberGroup(@PathVariable("orgId") Long orgId) {
+        return new BaseResponse<>(ReadAllMemberGroupResponse.of(orgAdminService.readAllMemberGroup(orgId)));
     }
 
     @PostMapping("/group")
