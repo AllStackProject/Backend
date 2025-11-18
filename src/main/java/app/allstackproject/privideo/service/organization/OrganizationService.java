@@ -15,24 +15,33 @@ import static app.allstackproject.privideo.common.util.OrgCodeGenerator.generate
 
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.jwt.JwtProvider;
+import app.allstackproject.privideo.dto.admin.ReadAllCategoryItem;
+import app.allstackproject.privideo.dto.admin.ReadAllMemberGroupItem;
 import app.allstackproject.privideo.dto.organization.CreatOrgResult;
 import app.allstackproject.privideo.dto.organization.CreateOrgRequest;
 import app.allstackproject.privideo.dto.organization.OrgTokenDto;
+import app.allstackproject.privideo.dto.organization.ReadMemberOrganizationInfoResponse;
 import app.allstackproject.privideo.dto.organization.ReadOrgDto;
 import app.allstackproject.privideo.dto.organization.ReadOrgResult;
 import app.allstackproject.privideo.dto.organization.SelectOrgResult;
+import app.allstackproject.privideo.entity.Category;
 import app.allstackproject.privideo.entity.Member;
+import app.allstackproject.privideo.entity.MemberGroup;
 import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.entity.User;
+import app.allstackproject.privideo.repository.member.MemberGroupRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.user.UserRepository;
+import app.allstackproject.privideo.repository.video.CategoryRepository;
 import app.allstackproject.privideo.service.permission.PermissionService;
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -48,6 +57,8 @@ public class OrganizationService {
     private final UserRepository userRepository;
     private final MemberRepository memberRepository;
     private final OrganizationRepository organizationRepository;
+    private final MemberGroupRepository memberGroupRepository;
+    private final CategoryRepository categoryRepository;
     private final OrgRedisRepository orgRedisRepository;
     private final PermissionService permissionService;
 
@@ -229,5 +240,65 @@ public class OrganizationService {
 
         member.updateToInactive();
         return true;
+    }
+
+    @Transactional(readOnly = true)
+    public ReadMemberOrganizationInfoResponse readOrganizationInfo(Long memberId, Long orgId) {
+        Organization organization = organizationRepository.findById(orgId)
+                .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
+        Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
+                .orElseThrow(() -> new ApiException(MEMBER_NOT_IN_ORGANIZATION));
+
+        String orgName = organization.getName();
+        String orgCode = orgRedisRepository.getOrgcodeById(orgId);
+        String nickname = member.getNickname();
+        Boolean isAdmin = member.getPermissionCode() != 0L;
+        LocalDateTime joinedAt = member.getCreatedAt();
+        List<String> memberGroups = memberGroupRepository.findAllByMemberId(memberId).stream()
+                .map(MemberGroup::getName)
+                .toList();
+
+        return ReadMemberOrganizationInfoResponse.of(orgName, orgCode, nickname, isAdmin, joinedAt, memberGroups);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReadAllMemberGroupItem> readMemberGroup(Long memberId, Long orgId) {
+        if (!memberRepository.existsByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)) {
+            throw new ApiException(MEMBER_NOT_IN_ORGANIZATION);
+        }
+
+        List<MemberGroup> memberGroups = memberGroupRepository.findAllByMemberId(memberId);
+
+        if (memberGroups.isEmpty()) {
+            return List.of();
+        }
+
+        // 1) 그룹 ID 리스트
+        List<Long> groupIds = memberGroups.stream()
+                .map(MemberGroup::getId)
+                .toList();
+
+        // 2) 해당 그룹들의 카테고리 전부 조회
+        List<Category> allCategories = categoryRepository.findByMemberGroupIdIn(groupIds);
+
+        // 3) 그룹 ID -> Category 리스트 매핑
+        Map<Long, List<Category>> categoriesByGroupId = allCategories.stream()
+                .collect(Collectors.groupingBy(Category::getMemberGroupId));
+        
+        // 4) 최종 DTO 리스트 생성
+        return memberGroups.stream()
+                .map(group -> {
+                    List<ReadAllCategoryItem> categories =
+                            categoriesByGroupId.getOrDefault(group.getId(), List.of()).stream()
+                                    .map(c -> new ReadAllCategoryItem(c.getId(), c.getTitle()))
+                                    .toList();
+
+                    return new ReadAllMemberGroupItem(
+                            group.getId(),
+                            group.getName(),
+                            categories
+                    );
+                })
+                .toList();
     }
 }

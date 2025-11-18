@@ -6,7 +6,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoItem;
 import app.allstackproject.privideo.entity.Video;
-import app.allstackproject.privideo.repository.organization.OrganizationRepository;
+import app.allstackproject.privideo.repository.video.VideoCategoryMappingRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class VideoAdminService {
 
     private final VideoRepository videoRepository;
-    private final OrganizationRepository organizationRepository;
+    private final VideoCategoryMappingRepository videoCategoryMappingRepository;
 
     @Transactional(readOnly = true)
     public List<ReadAllVideoItem> readAllVideos(Long orgId) {
@@ -32,7 +32,10 @@ public class VideoAdminService {
             throw new ApiException(VIDEO_NOT_IN_ORGANIZATION);
         }
 
-        video.updateToInactive();
+        videoRepository.delete(video);
+        videoCategoryMappingRepository.deleteByVideoId(videoId);
+
+        // TODO: S3에 저장된 파일도 지워야 함
         return true;
     }
 }

@@ -1,4 +1,4 @@
-package app.allstackproject.privideo.controller;
+package app.allstackproject.privideo.controller.home;
 
 import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_KEY;
 
@@ -6,9 +6,12 @@ import app.allstackproject.privideo.common.enumStatus.AuthPrincipal;
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.comment.CommentResponse;
+import app.allstackproject.privideo.dto.home.ReadMemberGroupResponse;
+import app.allstackproject.privideo.dto.organization.ReadMemberOrganizationInfoResponse;
 import app.allstackproject.privideo.dto.scrap.ScrapResponse;
 import app.allstackproject.privideo.dto.history.HistoryResponse;
 import app.allstackproject.privideo.service.CommentService;
+import app.allstackproject.privideo.service.organization.OrganizationService;
 import app.allstackproject.privideo.service.video.ScrapService;
 import app.allstackproject.privideo.service.video.HistoryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("{orgId}/myactivity")
 @Slf4j
-@PreAuthorize("hasAuthority('org:granted')") // TODO: org에 가입 완료된 상태로 변경
+@PreAuthorize("hasAuthority('org:granted')")
 @Tag(name = "MyActivity", description = "내 활동 관련 API")
 @SecurityRequirement(name = ORG_AUTH_KEY)
 public class MyActivityController {
@@ -36,6 +39,7 @@ public class MyActivityController {
     private final HistoryService historyService;
     private final ScrapService scrapService;
     private final CommentService commentService;
+    private final OrganizationService organizationService;
 
     @GetMapping("/video")
     @Operation(summary = "영상 시청 기록 조회")
@@ -83,6 +87,20 @@ public class MyActivityController {
 
         boolean result = commentService.deleteComment(memberId, orgId, commentId);
         return new BaseResponse<>(SuccessResponse.of(result));
+    }
+
+    @GetMapping("/info")
+    @Operation(summary = "조직 정보 조회")
+    public BaseResponse<ReadMemberOrganizationInfoResponse> readOrganizationInfo(
+            @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId) {
+        return new BaseResponse<>(organizationService.readOrganizationInfo(memberId, orgId));
+    }
+
+    @GetMapping("/group")
+    @Operation(summary = "내 그룹 목록 조회")
+    public BaseResponse<ReadMemberGroupResponse> readMemberGroup(
+            @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId) {
+        return new BaseResponse<>(ReadMemberGroupResponse.of(organizationService.readMemberGroup(memberId, orgId)));
     }
 }
 
