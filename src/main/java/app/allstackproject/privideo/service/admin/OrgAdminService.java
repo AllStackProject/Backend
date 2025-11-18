@@ -15,7 +15,7 @@ import app.allstackproject.privideo.common.util.OrgCodeGenerator;
 import app.allstackproject.privideo.dto.admin.MemberGroupItem;
 import app.allstackproject.privideo.dto.admin.ReadAllCategoryItem;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberGroupItem;
-import app.allstackproject.privideo.dto.admin.ReadOrganizationInfoResponse;
+import app.allstackproject.privideo.dto.admin.ReadAdminOrganizationInfoResponse;
 import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.entity.Category;
 import app.allstackproject.privideo.entity.Member;
@@ -76,7 +76,7 @@ public class OrgAdminService {
     }
 
     @Transactional(readOnly = true)
-    public ReadOrganizationInfoResponse readOrganizationInfo(Long orgId) {
+    public ReadAdminOrganizationInfoResponse readOrganizationInfo(Long orgId) {
         Organization organization = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
 
@@ -88,7 +88,7 @@ public class OrgAdminService {
         List<MemberGroupItem> memberGroups = memberGroupRepository.findAllByOrganizationId(orgId);
 
         if (memberGroups.isEmpty()) {
-            return ReadOrganizationInfoResponse.of(orgName, imgUrl, memberCnt, orgCode, List.of());
+            return ReadAdminOrganizationInfoResponse.of(orgName, imgUrl, memberCnt, orgCode, List.of());
         }
 
         List<Long> groupIds = memberGroups.stream()
@@ -115,7 +115,7 @@ public class OrgAdminService {
                 })
                 .toList();
 
-        return ReadOrganizationInfoResponse.of(orgName, imgUrl, memberCnt, orgCode, memberGroupItems);
+        return ReadAdminOrganizationInfoResponse.of(orgName, imgUrl, memberCnt, orgCode, memberGroupItems);
     }
 
     public boolean createMemberGroup(Long orgId, String memberGroupName) {

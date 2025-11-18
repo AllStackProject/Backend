@@ -9,7 +9,7 @@ import app.allstackproject.privideo.dto.admin.CreateMemberGroupRequest;
 import app.allstackproject.privideo.dto.admin.ModifyCategoryRequest;
 import app.allstackproject.privideo.dto.admin.ModifyOrgInfoRequest;
 import app.allstackproject.privideo.dto.admin.ReadAllCategoryResponse;
-import app.allstackproject.privideo.dto.admin.ReadOrganizationInfoResponse;
+import app.allstackproject.privideo.dto.admin.ReadAdminOrganizationInfoResponse;
 import app.allstackproject.privideo.dto.organization.OrgCodeResponse;
 import app.allstackproject.privideo.service.admin.OrgAdminService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,7 +42,7 @@ public class OrgAdminController {
 
     @GetMapping("/orgs/info")
     @Operation(summary = "조직 정보 조회")
-    public BaseResponse<ReadOrganizationInfoResponse> readOrganizationInfo(@PathVariable("orgId") Long orgId) {
+    public BaseResponse<ReadAdminOrganizationInfoResponse> readOrganizationInfo(@PathVariable("orgId") Long orgId) {
         return new BaseResponse<>(orgAdminService.readOrganizationInfo(orgId));
     }
 

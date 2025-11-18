@@ -6,9 +6,11 @@ import app.allstackproject.privideo.common.enumStatus.AuthPrincipal;
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.comment.CommentResponse;
+import app.allstackproject.privideo.dto.organization.ReadMemberOrganizationInfoResponse;
 import app.allstackproject.privideo.dto.scrap.ScrapResponse;
 import app.allstackproject.privideo.dto.history.HistoryResponse;
 import app.allstackproject.privideo.service.CommentService;
+import app.allstackproject.privideo.service.organization.OrganizationService;
 import app.allstackproject.privideo.service.video.ScrapService;
 import app.allstackproject.privideo.service.video.HistoryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,6 +38,7 @@ public class MyActivityController {
     private final HistoryService historyService;
     private final ScrapService scrapService;
     private final CommentService commentService;
+    private final OrganizationService organizationService;
 
     @GetMapping("/video")
     @Operation(summary = "영상 시청 기록 조회")
@@ -83,6 +86,13 @@ public class MyActivityController {
 
         boolean result = commentService.deleteComment(memberId, orgId, commentId);
         return new BaseResponse<>(SuccessResponse.of(result));
+    }
+
+    @GetMapping("/info")
+    @Operation(summary = "조직 정보 조회")
+    public BaseResponse<ReadMemberOrganizationInfoResponse> readOrganizationInfo(
+            @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId) {
+        return new BaseResponse<>(organizationService.readOrganizationInfo(memberId, orgId));
     }
 }
 

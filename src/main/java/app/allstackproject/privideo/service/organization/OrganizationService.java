@@ -18,18 +18,22 @@ import app.allstackproject.privideo.common.jwt.JwtProvider;
 import app.allstackproject.privideo.dto.organization.CreatOrgResult;
 import app.allstackproject.privideo.dto.organization.CreateOrgRequest;
 import app.allstackproject.privideo.dto.organization.OrgTokenDto;
+import app.allstackproject.privideo.dto.organization.ReadMemberOrganizationInfoResponse;
 import app.allstackproject.privideo.dto.organization.ReadOrgDto;
 import app.allstackproject.privideo.dto.organization.ReadOrgResult;
 import app.allstackproject.privideo.dto.organization.SelectOrgResult;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.entity.User;
+import app.allstackproject.privideo.repository.member.MemberGroupMappingRepository;
+import app.allstackproject.privideo.repository.member.MemberGroupRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.user.UserRepository;
 import app.allstackproject.privideo.service.permission.PermissionService;
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -52,6 +56,7 @@ public class OrganizationService {
     private final PermissionService permissionService;
 
     private final JwtProvider jwtProvider;
+    private final MemberGroupRepository memberGroupRepository;
 
     public CreatOrgResult createOrg(Long userId, @Valid CreateOrgRequest createOrgRequest, String imgUrl) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
@@ -229,5 +234,22 @@ public class OrganizationService {
 
         member.updateToInactive();
         return true;
+    }
+
+    @Transactional(readOnly = true)
+    public ReadMemberOrganizationInfoResponse readOrganizationInfo(Long orgId, Long memberId) {
+        Organization organization = organizationRepository.findById(orgId)
+                .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
+        Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
+                .orElseThrow(() -> new ApiException(MEMBER_NOT_IN_ORGANIZATION));
+
+        String orgName = organization.getName();
+        String orgCode = orgRedisRepository.getOrgcodeById(orgId);
+        String nickname = member.getNickname();
+        Boolean isAdmin = member.getPermissionCode() != 0L;
+        LocalDateTime joinedAt = member.getCreatedAt();
+        List<String> memberGroups = memberGroupRepository.findAllByMemberId(memberId);
+
+        return ReadMemberOrganizationInfoResponse.of(orgName, orgCode, nickname, isAdmin, joinedAt, memberGroups);
     }
 }

@@ -1,9 +1,13 @@
 package app.allstackproject.privideo.repository.member.custom;
 
+import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
+import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
+import static app.allstackproject.privideo.entity.QMemberGroup.memberGroup;
 import static app.allstackproject.privideo.entity.QMemberGroupMapping.memberGroupMapping;
 import static app.allstackproject.privideo.entity.QVideoMemberGroupMapping.videoMemberGroupMapping;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -32,5 +36,19 @@ public class MemberGroupRepositoryImpl implements MemberGroupRepositoryCustom {
                 .fetchOne();
 
         return accessibleCount != null && accessibleCount > 0;
+    }
+
+    @Override
+    public List<String> findAllByMemberId(Long memberId) {
+        return jpaQueryFactory
+                .select(memberGroup.name)
+                .from(memberGroupMapping)
+                .join(memberGroupMapping.memberGroup, memberGroup)
+                .where(
+                        memberGroupMapping.member.id.eq(memberId),
+                        memberGroupMapping.member.joinStatus.eq(APPROVED),
+                        memberGroupMapping.member.status.eq(ACTIVE)
+                )
+                .fetch();
     }
 }
