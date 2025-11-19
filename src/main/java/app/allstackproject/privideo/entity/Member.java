@@ -132,4 +132,8 @@ public class Member extends BaseEntity {
 
         this.joinStatus = destStatus;
     }
+
+    public void changeNickname(String nickname) {
+        this.nickname = nickname;
+    }
 }

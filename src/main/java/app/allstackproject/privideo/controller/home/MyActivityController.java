@@ -8,6 +8,7 @@ import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.admin.ReadAllVideosResponse;
 import app.allstackproject.privideo.dto.admin.ReadVideoIntervalLogResponse;
 import app.allstackproject.privideo.dto.comment.CommentResponse;
+import app.allstackproject.privideo.dto.home.ModifyNicknameRequest;
 import app.allstackproject.privideo.dto.home.ReadMemberGroupResponse;
 import app.allstackproject.privideo.dto.organization.ReadMemberOrganizationInfoResponse;
 import app.allstackproject.privideo.dto.scrap.ScrapResponse;
@@ -20,6 +21,7 @@ import app.allstackproject.privideo.service.video.VideoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,6 +29,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -123,6 +127,15 @@ public class MyActivityController {
     public BaseResponse<ReadMemberGroupResponse> readMemberGroup(
             @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId) {
         return new BaseResponse<>(ReadMemberGroupResponse.of(organizationService.readMemberGroup(memberId, orgId)));
+    }
+
+    @PutMapping("/nickname")
+    @Operation(summary = "닉네임 변경")
+    public BaseResponse<SuccessResponse> modifyNickname(@AuthenticationPrincipal(expression = "memberId") Long memberId,
+                                                        @PathVariable("orgId") Long orgId,
+                                                        @Valid @RequestBody ModifyNicknameRequest modifyNicknameRequest) {
+        return new BaseResponse<>(SuccessResponse.of(
+                organizationService.modifyNickname(memberId, orgId, modifyNicknameRequest.getNickname())));
     }
 }
 
