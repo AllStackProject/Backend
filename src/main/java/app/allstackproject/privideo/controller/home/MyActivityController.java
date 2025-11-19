@@ -5,6 +5,7 @@ import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_
 import app.allstackproject.privideo.common.enumStatus.AuthPrincipal;
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
+import app.allstackproject.privideo.dto.admin.ReadAllVideosResponse;
 import app.allstackproject.privideo.dto.comment.CommentResponse;
 import app.allstackproject.privideo.dto.home.ReadMemberGroupResponse;
 import app.allstackproject.privideo.dto.organization.ReadMemberOrganizationInfoResponse;
@@ -14,6 +15,7 @@ import app.allstackproject.privideo.service.CommentService;
 import app.allstackproject.privideo.service.organization.OrganizationService;
 import app.allstackproject.privideo.service.video.ScrapService;
 import app.allstackproject.privideo.service.video.HistoryService;
+import app.allstackproject.privideo.service.video.VideoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -40,6 +42,15 @@ public class MyActivityController {
     private final ScrapService scrapService;
     private final CommentService commentService;
     private final OrganizationService organizationService;
+    private final VideoService videoService;
+
+    @GetMapping("/myvideo")
+    @Operation(summary = "업로드한 영상 목록 조회")
+    public BaseResponse<ReadAllVideosResponse> readMyVideos(
+            @AuthenticationPrincipal(expression = "memberId") Long memberId,
+            @PathVariable long orgId) {
+        return new BaseResponse<>(ReadAllVideosResponse.of(videoService.getMemberVideos(memberId, orgId)));
+    }
 
     @GetMapping("/video")
     @Operation(summary = "영상 시청 기록 조회")

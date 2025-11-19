@@ -14,6 +14,8 @@ public interface VideoRepositoryCustom {
 
     List<ReadAllVideoItem> findByOrgId(Long orgId);
 
+    List<ReadAllVideoItem> findByOrgIdAndCreatorId(Long orgId, Long memberId);
+
     List<ReadAllVideoIntervalLogItem> findAllVideoIntervalLogByOrgId(Long orgId);
 
     List<QuitLogItem> findTopQuitRateVideosByOrgId(Long orgId, int limit);
