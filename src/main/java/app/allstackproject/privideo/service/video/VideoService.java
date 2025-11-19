@@ -183,7 +183,7 @@ public class VideoService {
         return true;
     }
 
-    public List<ReadAllVideoItem> getMemberVideos(Long memberId, long orgId) {
+    public List<ReadAllVideoItem> getMemberVideos(Long memberId, Long orgId) {
         if (!memberRepository.existsByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)) {
             throw new ApiException(MEMBER_NOT_IN_ORGANIZATION);
         }

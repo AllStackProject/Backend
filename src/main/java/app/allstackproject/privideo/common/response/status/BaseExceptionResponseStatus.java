@@ -83,6 +83,7 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     INVALID_SCRAP_REQUEST(8006, HttpStatus.BAD_REQUEST, "영상 스크랩 요청에서 올바르지 않은 값이 존재합니다."),
     VIDEO_ALREADY_SCRAPPED(8007, HttpStatus.BAD_REQUEST, "해당 영상은 이미 스크랩되었습니다."),
     VIDEO_NOT_SCRAPPED(8008, HttpStatus.NOT_FOUND, "해당 영상은 스크랩되어있지 않습니다."),
+    VIDEO_CREATE_NOT_FOUND(8009, HttpStatus.NOT_FOUND, "해당 사용자가 업로드한 영상이 아닙니다."),
 
     /**
      * 9000: History 오류

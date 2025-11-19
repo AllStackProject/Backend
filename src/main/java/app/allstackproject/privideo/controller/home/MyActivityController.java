@@ -6,6 +6,7 @@ import app.allstackproject.privideo.common.enumStatus.AuthPrincipal;
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.admin.ReadAllVideosResponse;
+import app.allstackproject.privideo.dto.admin.ReadVideoIntervalLogResponse;
 import app.allstackproject.privideo.dto.comment.CommentResponse;
 import app.allstackproject.privideo.dto.home.ReadMemberGroupResponse;
 import app.allstackproject.privideo.dto.organization.ReadMemberOrganizationInfoResponse;
@@ -48,8 +49,18 @@ public class MyActivityController {
     @Operation(summary = "업로드한 영상 목록 조회")
     public BaseResponse<ReadAllVideosResponse> readMyVideos(
             @AuthenticationPrincipal(expression = "memberId") Long memberId,
-            @PathVariable long orgId) {
+            @PathVariable Long orgId) {
         return new BaseResponse<>(ReadAllVideosResponse.of(videoService.getMemberVideos(memberId, orgId)));
+    }
+
+    @GetMapping("/myvideo/{videoId}")
+    @Operation(summary = "업로드한 영상 통계 조회")
+    public BaseResponse<ReadVideoIntervalLogResponse> readMyVideoReport(
+            @AuthenticationPrincipal(expression = "memberId") Long memberId,
+            @PathVariable Long orgId,
+            @PathVariable Long videoId) {
+        return new BaseResponse<>(
+                ReadVideoIntervalLogResponse.of(historyService.readMyVideoReport(memberId, orgId, videoId)));
     }
 
     @GetMapping("/video")
