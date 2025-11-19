@@ -52,6 +52,7 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     ALREADY_REJECTED_MEMBER(5011, HttpStatus.BAD_REQUEST, "이미 해당 조직에 가입 거절 처리된 멤버입니다."),
     ALREADY_REQUESTED_MEMBER(5012, HttpStatus.BAD_REQUEST, "이미 가입 요청을 보낸 멤버입니다. 관리자 승인을 기다려주세요."),
     MEMBER_NOT_IN_ORGANIZATION(5013, HttpStatus.NOT_FOUND, "해당 조직에서 찾을 수 없는 멤버입니다."),
+    DUPLICATE_NICKNAME(5014, HttpStatus.BAD_REQUEST, "이미 존재하는 닉네임입니다."),
 
     /**
      * 6000: Comment 오류
