@@ -16,6 +16,7 @@ import static app.allstackproject.privideo.service.video.LogService.SEGMENT_SECO
 
 import app.allstackproject.privideo.common.enumStatus.AiResultType;
 import app.allstackproject.privideo.common.exception.ApiException;
+import app.allstackproject.privideo.dto.admin.ReadAllVideoItem;
 import app.allstackproject.privideo.dto.video.JoinVideoSessionResult;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionInfo;
 import app.allstackproject.privideo.dto.video.QuizInfo;
@@ -180,5 +181,13 @@ public class VideoService {
         }
 
         return true;
+    }
+
+    public List<ReadAllVideoItem> getMemberVideos(Long memberId, Long orgId) {
+        if (!memberRepository.existsByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)) {
+            throw new ApiException(MEMBER_NOT_IN_ORGANIZATION);
+        }
+
+        return videoRepository.findByOrgIdAndCreatorId(orgId, memberId);
     }
 }

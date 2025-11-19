@@ -79,7 +79,42 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                         video.watchCnt
                 ))
                 .from(video)
-                .where(video.organization.id.eq(orgId))
+                .where(
+                        video.organization.id.eq(orgId),
+                        video.creator.status.eq(ACTIVE),
+                        video.creator.joinStatus.eq(APPROVED)
+                )
+                .fetch();
+    }
+
+    @Override
+    public List<ReadAllVideoItem> findByOrgIdAndCreatorId(Long orgId, Long memberId) {
+        StringExpression openScope = new CaseBuilder()
+                .when(JPAExpressions
+                        .selectOne()
+                        .from(videoMemberGroupMapping)
+                        .where(videoMemberGroupMapping.video.id.eq(video.id))
+                        .exists())
+                .then(VideoOpenScopeType.GROUP.name())
+                .otherwise(VideoOpenScopeType.PUBLIC.name());
+
+        return jpaQueryFactory
+                .select(Projections.constructor(ReadAllVideoItem.class,
+                        video.id,
+                        video.title,
+                        video.thumbnailUrl,
+                        video.createdAt,
+                        video.expiredAt,
+                        openScope,
+                        video.watchCnt
+                ))
+                .from(video)
+                .where(
+                        video.organization.id.eq(orgId),
+                        video.creator.id.eq(memberId),
+                        video.creator.status.eq(ACTIVE),
+                        video.creator.joinStatus.eq(APPROVED)
+                )
                 .fetch();
     }
 

@@ -6,6 +6,7 @@ import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.PEND
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.REJECTED;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_APPROVED_MEMBER;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_REQUESTED_MEMBER;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DUPLICATE_NICKNAME;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_IN_ORGANIZATION;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
@@ -284,7 +285,7 @@ public class OrganizationService {
         // 3) 그룹 ID -> Category 리스트 매핑
         Map<Long, List<Category>> categoriesByGroupId = allCategories.stream()
                 .collect(Collectors.groupingBy(Category::getMemberGroupId));
-        
+
         // 4) 최종 DTO 리스트 생성
         return memberGroups.stream()
                 .map(group -> {
@@ -300,5 +301,19 @@ public class OrganizationService {
                     );
                 })
                 .toList();
+    }
+
+    public boolean modifyNickname(Long memberId, Long orgId, String nickname) {
+        Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
+                .orElseThrow(() -> new ApiException(MEMBER_NOT_IN_ORGANIZATION));
+
+        Optional<Member> duplicateMember = memberRepository.findByOrganizationIdAndNicknameAndStatus(orgId, nickname,
+                ACTIVE);
+        if (duplicateMember.isPresent() && !duplicateMember.get().getId().equals(memberId)) {
+            throw new ApiException(DUPLICATE_NICKNAME);
+        }
+
+        member.changeNickname(nickname);
+        return true;
     }
 }
