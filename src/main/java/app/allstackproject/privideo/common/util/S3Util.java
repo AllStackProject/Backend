@@ -45,6 +45,7 @@ public class S3Util {
     private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png");
 
     private static final String VIDEO_EXTENSION = ".mp4";
+    private static final String VIDEO_CONTENT_TYPE = "video/mp4";
     private static final String PLAY_FILE = "master.m3u8";
 
     // ================== Upload ==================
@@ -79,7 +80,7 @@ public class S3Util {
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(videoBucket)
                 .key(objectKey)
-                .contentType(VIDEO_EXTENSION)
+                .contentType(VIDEO_CONTENT_TYPE)
                 .build();
 
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
