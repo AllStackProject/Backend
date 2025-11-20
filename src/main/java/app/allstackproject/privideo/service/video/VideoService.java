@@ -223,7 +223,7 @@ public class VideoService {
         if (!s3Util.isImageFile(thumbnailImg)) {
             throw new ApiException(IS_NOT_IMAGE_FILE);
         }
-        
+
         String thumbnailKey = s3Util.generateThumbnailKey(orgId, thumbnailImg.getOriginalFilename());
         s3Util.uploadImgWithKey(thumbnailImg, thumbnailKey);
 
@@ -243,8 +243,8 @@ public class VideoService {
         videoRepository.save(video);
 
         // 4) HLS Prefix 계산해서 엔티티에 반영
-        //    규칙: hls/org-{orgId}/video_{videoId}/
-        String hlsPrefix = s3Util.generateHlsPrefix(orgId, video.getId());
+        //    규칙: hls/org-{orgId}/{originalKey}
+        String hlsPrefix = s3Util.generateHlsPrefix(orgId, originalKey);
         video.setHlsPrefix(hlsPrefix);
 
         // 5) 업로드용 Pre-signed URL 생성 (privideo-original, inputBucket)
