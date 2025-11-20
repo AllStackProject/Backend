@@ -6,8 +6,10 @@ import static app.allstackproject.privideo.common.enumStatus.AiResultType.QUIZ;
 import static app.allstackproject.privideo.common.enumStatus.AiResultType.SUMMARY;
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.HISTORY_NOT_FOUND;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.IS_NOT_IMAGE_FILE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_IN_ORGANIZATION;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_ALREADY_WATCHED;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_ACCESSIBLE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_FOUND;
@@ -16,14 +18,20 @@ import static app.allstackproject.privideo.service.video.LogService.SEGMENT_SECO
 
 import app.allstackproject.privideo.common.enumStatus.AiResultType;
 import app.allstackproject.privideo.common.exception.ApiException;
+import app.allstackproject.privideo.common.util.CdnUrlProvider;
+import app.allstackproject.privideo.common.util.S3Util;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoItem;
+import app.allstackproject.privideo.dto.video.CreateVideoRequest;
+import app.allstackproject.privideo.dto.video.CreateVideoResponse;
 import app.allstackproject.privideo.dto.video.JoinVideoSessionResult;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionInfo;
 import app.allstackproject.privideo.dto.video.QuizInfo;
 import app.allstackproject.privideo.dto.video.VideoInfo;
 import app.allstackproject.privideo.entity.History;
 import app.allstackproject.privideo.entity.Member;
+import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.entity.Video;
+import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.scrap.ScrapRepository;
 import app.allstackproject.privideo.repository.member.MemberGroupRepository;
 import app.allstackproject.privideo.repository.video.CategoryRepository;
@@ -32,7 +40,9 @@ import app.allstackproject.privideo.repository.quiz.QuizRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
 import java.math.BigInteger;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +51,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -55,6 +66,9 @@ public class VideoService {
     private final CategoryRepository categoryRepository;
     private final ScrapRepository scrapRepository;
     private final QuizRepository quizRepository;
+    private final OrganizationRepository organizationRepository;
+    private final S3Util s3Util;
+    private final CdnUrlProvider cdnUrlProvider;
 
     public JoinVideoSessionResult joinVideoSession(Long memberId, Long orgId, Long videoId) {
         Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
@@ -188,6 +202,56 @@ public class VideoService {
             throw new ApiException(MEMBER_NOT_IN_ORGANIZATION);
         }
 
-        return videoRepository.findByOrgIdAndCreatorId(orgId, memberId);
+        List<ReadAllVideoItem> allVideoItems = videoRepository.findByOrgIdAndCreatorId(orgId, memberId);
+        allVideoItems.forEach(item -> item.setThumbnailUrl(cdnUrlProvider.generateFileUrl(item.getThumbnailUrl())));
+        return allVideoItems;
+    }
+
+    public CreateVideoResponse createVideo(Long memberId, Long orgId, CreateVideoRequest request) {
+        Organization organization = organizationRepository.findById(orgId)
+                .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
+        Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
+                .orElseThrow(() -> new ApiException(MEMBER_NOT_IN_ORGANIZATION));
+
+        // 1) 원본 비디오 키 생성 (privideo-original 버킷, 업로드는 presigned URL로)
+        //    규칙: org-{orgId}/{UUID}.mp4
+        String originalKey = s3Util.generateVideoKey(orgId);
+
+        // 2) 썸네일 키 생성 + 업로드 (privideo-img 버킷)
+        //    규칙: org-{orgId}/thumbnail/{UUID}.{ext}
+        MultipartFile thumbnailImg = request.getThumbnailImg();
+        if (!s3Util.isImageFile(thumbnailImg)) {
+            throw new ApiException(IS_NOT_IMAGE_FILE);
+        }
+        
+        String thumbnailKey = s3Util.generateThumbnailKey(orgId, thumbnailImg.getOriginalFilename());
+        s3Util.uploadImgWithKey(thumbnailImg, thumbnailKey);
+
+        // 3) Video 엔티티 저장
+        Video video = Video.create(
+                organization,
+                member,
+                request.getTitle(),
+                request.getDescription(),
+                originalKey,
+                thumbnailKey,
+                request.getWholeTime(),
+                request.getIsComment(),
+                !request.getAiFunction().equals("NONE"),
+                request.getExpiredAt()
+        );
+        videoRepository.save(video);
+
+        // 4) HLS Prefix 계산해서 엔티티에 반영
+        //    규칙: hls/org-{orgId}/video_{videoId}/
+        String hlsPrefix = s3Util.generateHlsPrefix(orgId, video.getId());
+        video.setHlsPrefix(hlsPrefix);
+
+        // 5) 업로드용 Pre-signed URL 생성 (privideo-original, inputBucket)
+        //    클라이언트가 이 URL로 비디오 파일 업로드
+        URL presignedUrl = s3Util.generatePresignedUploadUrl(originalKey);
+
+        // 6) 응답: presigned URL + 원본 비디오 키
+        return CreateVideoResponse.of(presignedUrl.toString());
     }
 }
