@@ -80,6 +80,8 @@ cloud:
       buckets:
         original: ${AWS_ORIGINAL_BUCKET}
         img: ${AWS_IMG_BUCKET}
+      presign:
+        upload-expiration: ${AWS_UPLOAD_EXPIRATION}
 ---
 
 spring:
