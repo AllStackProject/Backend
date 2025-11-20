@@ -51,16 +51,22 @@ spring:
     activate:
       on-profile: "devRedis"
 
-data:
   redis:
-    host: ${REDIS_HOST}
-    port: ${REDIS_PORT}
+    sentinel:
+      master: mymaster
+      nodes:
+        - redis-node-0.redis-headless:26379
+        - redis-node-1.redis-headless:26379
+        - redis-node-2.redis-headless:26379
+
     password: ${REDIS_PASSWORD}
+
     lettuce:
       pool:
         max-active: ${REDIS_ACTIVE}
         max-idle: ${REDIS_MAX_IDLE}
         min-idle: ${REDIS_MIN_IDLE}
+
     timeout: ${REDIS_TIMEOUT}
 
 ---
