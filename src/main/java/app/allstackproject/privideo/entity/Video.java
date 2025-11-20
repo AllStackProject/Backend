@@ -111,6 +111,7 @@ public class Video extends BaseEntity {
                 .description(description)
                 .videoKey(videoKey)
                 .thumbnailKey(thumbnailKey)
+                .hlsPrefix("")
                 .wholeTime(wholeTime)
                 .isComment(isComment)
                 .isAiFunction(isAiFunction)
