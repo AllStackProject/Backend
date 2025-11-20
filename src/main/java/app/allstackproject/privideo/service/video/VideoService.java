@@ -42,7 +42,6 @@ import app.allstackproject.privideo.repository.video.VideoRepository;
 import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,6 +91,14 @@ public class VideoService {
             throw new ApiException(VIDEO_NOT_ACCESSIBLE);
         }
 
+        // video의 hlsPrefix 확인 후 playbackUrl 생성 : cdnBaseUrl + hlsPrefix + master.m3u8
+        String playbackUrl = s3Util.generatePlaybackUrl(video.getHlsPrefix());
+
+        /**
+         * cdnBaseUrl + hlsPrefix/* 에 허용하도록 cloudfront에 설정
+         * cloudfront 접근 권한 담은 3개 쿠키 생성해서 프론트 응답 헤더에 추가
+         */
+
         video.watch();
 
         VideoInfo videoInfo = VideoInfo.from(video);
@@ -128,8 +135,8 @@ public class VideoService {
         if (history.isPresent()) {
             if (history.get().isComplete()) {
                 isFirstWatch = false;
-                return JoinVideoSessionResult.completed(sessionId, videoInfo, segViewCnts, video.getIsComment(),
-                        isScrapped, categories, aiType, quizInfos, aiFeedback, aiSummary);
+                return JoinVideoSessionResult.completed(sessionId, playbackUrl, videoInfo, segViewCnts,
+                        video.getIsComment(), isScrapped, categories, aiType, quizInfos, aiFeedback, aiSummary);
             }
             logService.incOrgViewBucket(orgId, Instant.now());
         } else {
@@ -142,8 +149,8 @@ public class VideoService {
             // TODO: Redis에 해당 멤버 + 재시청 여부 + 영상 아이디에 대해 세션 키 저장
         }
 
-        return JoinVideoSessionResult.create(sessionId, videoInfo, segViewCnts, video.getIsComment(), isScrapped,
-                categories, aiType, quizInfos, aiFeedback, aiSummary);
+        return JoinVideoSessionResult.create(sessionId, playbackUrl, videoInfo, segViewCnts, video.getIsComment(),
+                isScrapped, categories, aiType, quizInfos, aiFeedback, aiSummary);
     }
 
     public boolean leaveVideoSession(LeaveVideoSessionInfo leaveVideoSessionInfo) {

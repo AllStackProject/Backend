@@ -1,7 +1,6 @@
 package app.allstackproject.privideo.common.util;
 
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.IS_NOT_IMAGE_FILE;
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.IS_NOT_VIDEO_FILE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MULTIPARTFILE_CONVERT_FAIL_IN_MEMORY;
 
 import app.allstackproject.privideo.common.exception.ApiException;
@@ -40,9 +39,13 @@ public class S3Util {
     @Value("${cloud.aws.s3.presign.upload-expiration}")
     private Duration uploadExpiration;
 
+    @Value("${cdn.base-url}")
+    private String CDN_BASE_URL;
+
     private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png");
 
     private static final String VIDEO_EXTENSION = ".mp4";
+    private static final String PLAY_FILE = "master.m3u8";
 
     // ================== Upload ==================
 
@@ -90,6 +93,10 @@ public class S3Util {
         return presignedRequest.url();
     }
 
+    public String generatePlaybackUrl(String hlsPrefix) {
+        return CDN_BASE_URL + hlsPrefix + PLAY_FILE;
+    }
+
     // ================== Key 생성 ==================
 
     public String generateThumbnailKey(Long orgId, String originalFileName) {
@@ -104,7 +111,7 @@ public class S3Util {
 
     public String generateVideoKey(Long orgId) {
         String uuid = UUID.randomUUID().toString();
-        return String.format("org-%d/%s%s", orgId, uuid, VIDEO_EXTENSION);
+        return String.format("org-%d/%s/original%s", orgId, uuid, VIDEO_EXTENSION);
     }
 
     public String generateHlsPrefix(Long orgId, String key) {
