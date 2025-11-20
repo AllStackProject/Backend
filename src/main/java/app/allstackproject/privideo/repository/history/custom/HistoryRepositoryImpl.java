@@ -55,7 +55,7 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                         VideoHistory.class,
                         video.id,
                         video.title,
-                        video.thumbnailUrl,
+                        video.thumbnailKey,
                         history.watchRate,
                         history.lastWatchedAt,
                         video.wholeTime,
