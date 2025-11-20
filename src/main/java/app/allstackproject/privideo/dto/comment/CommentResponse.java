@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.dto.comment;
 
+import app.allstackproject.privideo.common.util.CdnUrlProvider;
 import app.allstackproject.privideo.entity.Comment;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,7 +18,7 @@ public class CommentResponse {
 
     private List<CommentItem> comments;
 
-    public static CommentResponse of(List<Comment> comments) {
+    public static CommentResponse of(List<Comment> comments, CdnUrlProvider cdnUrlProvider) {
         List<CommentItem> commentItems = comments.stream()
                 .map(comment -> CommentItem.builder()
                         .id(comment.getId())
@@ -25,7 +26,9 @@ public class CommentResponse {
                         .createdAt(comment.getCreatedAt())
                         .videoId(comment.getVideo().getId())
                         .videoName(comment.getVideo().getTitle())
-                        .videoImg(comment.getVideo().getThumbnailUrl())
+                        .videoImg(
+                                cdnUrlProvider.generateFileUrl(comment.getVideo().getThumbnailKey())
+                        )
                         .build())
                 .collect(Collectors.toList());
 

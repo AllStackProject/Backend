@@ -83,7 +83,7 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
                         HistoryItem.class,
                         video.id,
                         video.title,
-                        video.thumbnailUrl,
+                        video.thumbnailKey,
                         history.watchRate,
                         history.lastWatchedAt,
                         video.wholeTime

@@ -16,6 +16,7 @@ import static app.allstackproject.privideo.common.util.OrgCodeGenerator.generate
 
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.jwt.JwtProvider;
+import app.allstackproject.privideo.common.util.CdnUrlProvider;
 import app.allstackproject.privideo.dto.admin.ReadAllCategoryItem;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberGroupItem;
 import app.allstackproject.privideo.dto.organization.CreatOrgResult;
@@ -64,6 +65,7 @@ public class OrganizationService {
     private final PermissionService permissionService;
 
     private final JwtProvider jwtProvider;
+    private final CdnUrlProvider cdnUrlProvider;
 
     public CreatOrgResult createOrg(Long userId, @Valid CreateOrgRequest createOrgRequest, String imgUrl) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
@@ -131,7 +133,7 @@ public class OrganizationService {
                 .map(r -> new ReadOrgDto(
                         r.getId(),
                         r.getName(),
-                        r.getImgUrl(),
+                        cdnUrlProvider.generateFileUrl(r.getImgUrl()),
                         r.getJoinAt(),
                         r.getIsSuperAdmin(),
                         r.getIsAdmin(),

@@ -7,6 +7,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.service.video.LogService.SEGMENT_SECONDS;
 
 import app.allstackproject.privideo.common.exception.ApiException;
+import app.allstackproject.privideo.common.util.CdnUrlProvider;
 import app.allstackproject.privideo.dto.admin.VideoIntervalLogItem;
 import app.allstackproject.privideo.dto.history.HistoryResponse;
 import app.allstackproject.privideo.dto.history.VideoHistory;
@@ -14,7 +15,6 @@ import app.allstackproject.privideo.entity.Video;
 import app.allstackproject.privideo.repository.history.HistoryRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +32,7 @@ public class HistoryService {
     private final MemberRepository memberRepository;
     private final VideoRepository videoRepository;
     private final LogService logService;
+    private final CdnUrlProvider cdnUrlProvider;
 
     public List<VideoIntervalLogItem> readMyVideoReport(Long memberId, Long orgId, Long videoId) {
         if (!memberRepository.existsByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)) {
@@ -76,6 +77,7 @@ public class HistoryService {
         }
 
         List<VideoHistory> histories = historyRepository.findByMemberId(memberId);
+        histories.forEach(history -> history.setImg(cdnUrlProvider.generateFileUrl(history.getImg())));
         return HistoryResponse.of(histories);
     }
 }

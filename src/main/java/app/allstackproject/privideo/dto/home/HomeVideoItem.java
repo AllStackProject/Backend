@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @AllArgsConstructor
@@ -12,6 +13,7 @@ public class HomeVideoItem {
 
     private String title;
 
+    @Setter
     private String thumbnailUrl;
 
     private String creator;

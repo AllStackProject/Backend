@@ -4,6 +4,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_IN_ORGANIZATION;
 
 import app.allstackproject.privideo.common.exception.ApiException;
+import app.allstackproject.privideo.common.util.CdnUrlProvider;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoItem;
 import app.allstackproject.privideo.entity.Video;
 import app.allstackproject.privideo.repository.video.VideoCategoryMappingRepository;
@@ -20,10 +21,13 @@ public class VideoAdminService {
 
     private final VideoRepository videoRepository;
     private final VideoCategoryMappingRepository videoCategoryMappingRepository;
+    private final CdnUrlProvider cdnUrlProvider;
 
     @Transactional(readOnly = true)
     public List<ReadAllVideoItem> readAllVideos(Long orgId) {
-        return videoRepository.findByOrgId(orgId);
+        List<ReadAllVideoItem> allVideoItems = videoRepository.findByOrgId(orgId);
+        allVideoItems.forEach(item -> item.setThumbnailUrl(cdnUrlProvider.generateFileUrl(item.getThumbnailUrl())));
+        return allVideoItems;
     }
 
     public boolean deleteVideo(Long orgId, Long videoId) {
