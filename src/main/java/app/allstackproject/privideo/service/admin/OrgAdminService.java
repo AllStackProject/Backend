@@ -11,6 +11,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
 
 import app.allstackproject.privideo.common.exception.ApiException;
+import app.allstackproject.privideo.common.util.CdnUrlProvider;
 import app.allstackproject.privideo.common.util.OrgCodeGenerator;
 import app.allstackproject.privideo.dto.admin.MemberGroupItem;
 import app.allstackproject.privideo.dto.admin.ReadAllCategoryItem;
@@ -49,6 +50,7 @@ public class OrgAdminService {
     private final MemberGroupMappingRepository memberGroupMappingRepository;
     private final VideoMemberGroupMappingRepository videoMemberGroupMappingRepository;
     private final VideoCategoryMappingRepository videoCategoryMappingRepository;
+    private final CdnUrlProvider cdnUrlProvider;
 
     public boolean modifyOrgInfo(Long orgId, String imgUrl) {
         Organization organization = organizationRepository.findById(orgId)
@@ -81,7 +83,7 @@ public class OrgAdminService {
                 .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
 
         String orgName = organization.getName();
-        String imgUrl = organization.getImgUrl();
+        String imgUrl = cdnUrlProvider.generateFileUrl(organization.getImgUrl());
         Long memberCnt = memberRepository.countByOrganizationIdAndJoinStatusAndStatus(orgId, APPROVED, ACTIVE);
         String orgCode = orgRedisRepository.getOrgcodeById(orgId);
 

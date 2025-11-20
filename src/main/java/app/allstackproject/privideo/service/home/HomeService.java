@@ -6,11 +6,11 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 
 import app.allstackproject.privideo.common.enumStatus.FilterType;
 import app.allstackproject.privideo.common.exception.ApiException;
+import app.allstackproject.privideo.common.util.CdnUrlProvider;
 import app.allstackproject.privideo.dto.home.HomeVideoItem;
 import app.allstackproject.privideo.dto.home.ReadHomeResponse;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.Organization;
-import app.allstackproject.privideo.entity.Video;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
@@ -28,6 +28,7 @@ public class HomeService {
     private final MemberRepository memberRepository;
     private final OrganizationRepository organizationRepository;
     private final VideoRepository videoRepository;
+    private final CdnUrlProvider cdnUrlProvider;
 
     @Transactional(readOnly = true)
     public ReadHomeResponse readHome(Long memberId, Long orgId, String filterStr) {
@@ -43,6 +44,7 @@ public class HomeService {
         String orgName = organization.getName();
 
         List<HomeVideoItem> videoInfos = videoRepository.findHomeVideos(orgId, memberId, filter);
+        videoInfos.forEach(info -> info.setThumbnailUrl(cdnUrlProvider.generateFileUrl(info.getThumbnailUrl())));
 
         List<Long> videoIds = videoInfos.stream()
                 .map(HomeVideoItem::getId)
@@ -78,6 +80,8 @@ public class HomeService {
             throw new ApiException(MEMBER_NOT_IN_ORGANIZATION);
         }
 
-        return videoRepository.findSearchVideos(orgId, memberId, keyword);
+        List<HomeVideoItem> result = videoRepository.findSearchVideos(orgId, memberId, keyword);
+        result.forEach(item -> item.setThumbnailUrl(cdnUrlProvider.generateFileUrl(item.getThumbnailUrl())));
+        return result;
     }
 }

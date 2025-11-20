@@ -25,7 +25,7 @@ public class CommentResponse {
                         .createdAt(comment.getCreatedAt())
                         .videoId(comment.getVideo().getId())
                         .videoName(comment.getVideo().getTitle())
-                        .videoImg(comment.getVideo().getThumbnailUrl())
+                        .videoImg(comment.getVideo().getThumbnailKey())
                         .build())
                 .collect(Collectors.toList());
 
