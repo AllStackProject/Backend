@@ -221,7 +221,7 @@ public class VideoService {
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_IN_ORGANIZATION));
 
         // 1) 원본 비디오 키 생성 (privideo-original 버킷, 업로드는 presigned URL로)
-        //    규칙: org-{orgId}/{UUID}.mp4
+        //    규칙: org-{orgId}/{UUID}/original.mp4
         String originalKey = s3Util.generateVideoKey(orgId);
 
         // 2) 썸네일 키 생성 + 업로드 (privideo-img 버킷)
@@ -250,8 +250,8 @@ public class VideoService {
         videoRepository.save(video);
 
         // 4) HLS Prefix 계산해서 엔티티에 반영
-        //    규칙: hls/org-{orgId}/{originalKey}
-        String hlsPrefix = s3Util.generateHlsPrefix(orgId, originalKey);
+        //    규칙: hls/{originalKey}
+        String hlsPrefix = s3Util.generateHlsPrefix(originalKey);
         video.setHlsPrefix(hlsPrefix);
 
         // 5) 업로드용 Pre-signed URL 생성 (privideo-original, inputBucket)

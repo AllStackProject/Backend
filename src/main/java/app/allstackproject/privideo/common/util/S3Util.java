@@ -114,8 +114,10 @@ public class S3Util {
         return String.format("org-%d/%s/original%s", orgId, uuid, VIDEO_EXTENSION);
     }
 
-    public String generateHlsPrefix(Long orgId, String key) {
-        return String.format("hls/org-%d/%s/", orgId, key.substring(0, key.length() - 4));
+    public String generateHlsPrefix(String key) {
+        int lastSlash = key.lastIndexOf('/');
+        String basePath = key.substring(0, lastSlash + 1);
+        return "hls/" + basePath;
     }
 
     public boolean isImageFile(MultipartFile file) {
