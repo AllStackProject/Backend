@@ -42,7 +42,7 @@ public class S3Util {
 
     private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png");
 
-    private static final Set<String> ALLOWED_VIDEO_EXTENSIONS = Set.of("mp4");
+    private static final String VIDEO_EXTENSION = ".mp4";
 
     // ================== Upload ==================
 
@@ -76,7 +76,7 @@ public class S3Util {
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(videoBucket)
                 .key(objectKey)
-                .contentType(getContentTypeFromKey(objectKey, true))
+                .contentType(VIDEO_EXTENSION)
                 .build();
 
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
@@ -104,7 +104,7 @@ public class S3Util {
 
     public String generateVideoKey(Long orgId) {
         String uuid = UUID.randomUUID().toString();
-        return String.format("org-%d/%s%s", orgId, uuid, ".mp4");
+        return String.format("org-%d/%s%s", orgId, uuid, VIDEO_EXTENSION);
     }
 
     public String generateHlsPrefix(Long orgId, Long videoId) {
@@ -167,19 +167,13 @@ public class S3Util {
         return fileName.substring(fileName.lastIndexOf("."));
     }
 
-    private String getContentTypeFromKey(String key, boolean isVideo) {
+    private String getContentTypeFromKey(String key) {
         String extension = getFileExtension(key).toLowerCase();
-
-        if (isVideo && !ALLOWED_VIDEO_EXTENSIONS.contains(extension)) {
-            throw new ApiException(IS_NOT_VIDEO_FILE);
-        }
-
-        if (!isVideo && !ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
+        if (!ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
             throw new ApiException(IS_NOT_IMAGE_FILE);
         }
 
         return switch (extension) {
-            case ".mp4" -> "video/mp4";
             case ".jpeg", ".jpg" -> "image/jpeg";
             case ".png" -> "image/png";
             default -> "application/octet-stream";
