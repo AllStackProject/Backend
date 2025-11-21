@@ -19,13 +19,13 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @EnableRedisRepositories
 public class RedisConfig {
 
-    @Value("${redis.master:mymaster}")
+    @Value("${redis.master}")
     private String sentinelMaster;
 
-    @Value("${redis.host:redis}")
+    @Value("${redis.host}")
     private String sentinelHost;
 
-    @Value("${redis.port:26379}")
+    @Value("${redis.port}")
     private int sentinelPort;
     
     @Bean
