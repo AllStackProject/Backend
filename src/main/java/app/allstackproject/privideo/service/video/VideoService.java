@@ -91,13 +91,7 @@ public class VideoService {
             throw new ApiException(VIDEO_NOT_ACCESSIBLE);
         }
 
-        // video의 hlsPrefix 확인 후 playbackUrl 생성 : cdnBaseUrl + hlsPrefix + master.m3u8
         String playbackUrl = s3Util.generatePlaybackUrl(video.getHlsPrefix());
-
-        /**
-         * cdnBaseUrl + hlsPrefix/* 에 허용하도록 cloudfront에 설정
-         * cloudfront 접근 권한 담은 3개 쿠키 생성해서 프론트 응답 헤더에 추가
-         */
 
         video.watch();
 
