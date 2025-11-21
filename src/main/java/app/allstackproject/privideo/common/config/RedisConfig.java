@@ -35,7 +35,11 @@ public class RedisConfig {
                 .master(sentinelMaster)
                 .sentinel(sentinelHost, sentinelPort);
 
-        return new LettuceConnectionFactory(sentinelConfiguration);
+        LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(sentinelConfiguration);
+        lettuceConnectionFactory.afterPropertiesSet();
+
+        return lettuceConnectionFactory;
+
         }
 
 
