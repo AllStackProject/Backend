@@ -31,7 +31,7 @@ public class ScrapService {
     @Transactional(readOnly = true)
     public ScrapResponse getUserScraps(Long memberId, Long orgId) {
         List<HistoryItem> scrapList = scrapRepository.findByMemberIdAndOrganizationId(memberId, orgId);
-        scrapList.forEach(scrap -> scrap.setImg(cdnUrlProvider.generateFileUrl(scrap.getImg())));
+        scrapList.forEach(scrap -> scrap.setImg(cdnUrlProvider.generateImgUrl(scrap.getImg())));
         return ScrapResponse.of(scrapList);
     }
 

@@ -10,10 +10,10 @@ public class CdnUrlProvider {
     @Value("${cdn.base-url}")
     private String baseUrl;
 
-    public String generateFileUrl(String fileKey) {
-        if (fileKey == null || fileKey.isBlank()) {
+    public String generateImgUrl(String imgKey) {
+        if (imgKey == null || imgKey.isBlank()) {
             return null;
         }
-        return baseUrl + "/" + fileKey;
+        return baseUrl + "/" + imgKey;
     }
 }

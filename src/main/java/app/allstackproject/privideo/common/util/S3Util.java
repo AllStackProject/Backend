@@ -107,7 +107,7 @@ public class S3Util {
         }
 
         String uuid = UUID.randomUUID().toString();
-        return String.format("org-%d/thumbnail/%s%s", orgId, uuid, extension);
+        return String.format("images/org-%d/thumbnail/%s%s", orgId, uuid, extension);
     }
 
     public String generateVideoKey(Long orgId) {

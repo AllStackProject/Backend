@@ -77,7 +77,7 @@ public class HistoryService {
         }
 
         List<VideoHistory> histories = historyRepository.findByMemberId(memberId);
-        histories.forEach(history -> history.setImg(cdnUrlProvider.generateFileUrl(history.getImg())));
+        histories.forEach(history -> history.setImg(cdnUrlProvider.generateImgUrl(history.getImg())));
         return HistoryResponse.of(histories);
     }
 }

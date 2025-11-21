@@ -83,7 +83,7 @@ public class OrgAdminService {
                 .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
 
         String orgName = organization.getName();
-        String imgUrl = cdnUrlProvider.generateFileUrl(organization.getImgUrl());
+        String imgUrl = cdnUrlProvider.generateImgUrl(organization.getImgUrl());
         Long memberCnt = memberRepository.countByOrganizationIdAndJoinStatusAndStatus(orgId, APPROVED, ACTIVE);
         String orgCode = orgRedisRepository.getOrgcodeById(orgId);
 

@@ -44,7 +44,7 @@ public class HomeService {
         String orgName = organization.getName();
 
         List<HomeVideoItem> videoInfos = videoRepository.findHomeVideos(orgId, memberId, filter);
-        videoInfos.forEach(info -> info.setThumbnailUrl(cdnUrlProvider.generateFileUrl(info.getThumbnailUrl())));
+        videoInfos.forEach(info -> info.setThumbnailUrl(cdnUrlProvider.generateImgUrl(info.getThumbnailUrl())));
 
         List<Long> videoIds = videoInfos.stream()
                 .map(HomeVideoItem::getId)
@@ -81,7 +81,7 @@ public class HomeService {
         }
 
         List<HomeVideoItem> result = videoRepository.findSearchVideos(orgId, memberId, keyword);
-        result.forEach(item -> item.setThumbnailUrl(cdnUrlProvider.generateFileUrl(item.getThumbnailUrl())));
+        result.forEach(item -> item.setThumbnailUrl(cdnUrlProvider.generateImgUrl(item.getThumbnailUrl())));
         return result;
     }
 }
