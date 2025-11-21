@@ -51,23 +51,25 @@ spring:
     activate:
       on-profile: "devRedis"
 
-  redis:
-    sentinel:
-      master: mymaster
-      nodes:
-        - redis-node-0.redis-headless:26379
-        - redis-node-1.redis-headless:26379
-        - redis-node-2.redis-headless:26379
+redis:
+  sentinel:
+    master: ${REDIS_SENTINEL_MASTER}
+    host: ${REDIS_SENTINEL_HOST}
+    port: ${REDIS_SENTINEL_PORT}
+  #    nodes:
+  #      - redis-node-0.redis-headless
+  #      - redis-node-1.redis-headless
+  #      - redis-node-2.redis-headless
 
-    password: ${REDIS_PASSWORD}
+  password: ${REDIS_PASSWORD}
 
-    lettuce:
-      pool:
-        max-active: ${REDIS_ACTIVE}
-        max-idle: ${REDIS_MAX_IDLE}
-        min-idle: ${REDIS_MIN_IDLE}
+  lettuce:
+    pool:
+      max-active: ${REDIS_ACTIVE}
+      max-idle: ${REDIS_MAX_IDLE}
+      min-idle: ${REDIS_MIN_IDLE}
 
-    timeout: ${REDIS_TIMEOUT}
+  timeout: ${REDIS_TIMEOUT}
 
 ---
 
@@ -92,6 +94,8 @@ cloud:
       domain: ${CDN_BASE_URL}
       key-pair-id: ${CF_KEY_PAIR_ID}
       private-key-path: ${CF_PRIVATE_KEY_PATH}
+      cookie-ttl-seconds: ${CF_COOKIE_TTL}
+      private-key-base64: ${CF_PRIVATE_KEY_BASE64}
 ---
 
 spring:

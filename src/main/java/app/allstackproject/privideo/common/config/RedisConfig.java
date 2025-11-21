@@ -19,21 +19,20 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @EnableRedisRepositories
 public class RedisConfig {
 
-    @Value("${redis.master}")
+    @Value("${redis.sentinel.master}")
     private String sentinelMaster;
 
-    @Value("${redis.host}")
+    @Value("${redis.sentinel.host}")
     private String sentinelHost;
 
-    @Value("${redis.port}")
+    @Value("${redis.sentinel.port}")
     private int sentinelPort;
 
     @Value("${redis.password}")
     private String redisPassword;
-    
+
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-
         RedisSentinelConfiguration sentinelConfiguration = new RedisSentinelConfiguration()
                 .master(sentinelMaster)
                 .sentinel(sentinelHost, sentinelPort);
@@ -45,8 +44,7 @@ public class RedisConfig {
         LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(sentinelConfiguration);
         lettuceConnectionFactory.afterPropertiesSet();
         return lettuceConnectionFactory;
-        }
-
+    }
 
     @Bean
     public RedisTemplate<String, String> redisTemplate() {
