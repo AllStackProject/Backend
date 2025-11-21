@@ -1,12 +1,12 @@
 package app.allstackproject.privideo.common.config;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.RedisSentinelConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -19,22 +19,25 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @EnableRedisRepositories
 public class RedisConfig {
 
-    private final RedisProperties redisProperties;
+    @Value("${redis.master:mymaster}")
+    private String sentinelMaster;
+
+    @Value("${redis.host:redis}")
+    private String sentinelHost;
+
+    @Value("${redis.port:26379}")
+    private int sentinelPort;
     
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
 
-        RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
-        redisConfig.setHostName(redisProperties.getHost());
-        redisConfig.setPort(redisProperties.getPort());
-        redisConfig.setDatabase(redisProperties.getDatabase());
+        RedisSentinelConfiguration sentinelConfiguration = new RedisSentinelConfiguration()
+                .master(sentinelMaster)
+                .sentinel(sentinelHost, sentinelPort);
 
-        if (redisProperties.getPassword() != null && !redisProperties.getPassword().isEmpty()) {
-            redisConfig.setPassword(redisProperties.getPassword());
+        return new LettuceConnectionFactory(sentinelConfiguration);
         }
 
-        return new LettuceConnectionFactory(redisConfig);
-    }
 
     @Bean
     public RedisTemplate<String, String> redisTemplate() {
