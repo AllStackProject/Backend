@@ -27,6 +27,9 @@ public class RedisConfig {
 
     @Value("${redis.port}")
     private int sentinelPort;
+
+    @Value("${redis.password}")
+    private String redisPassword;
     
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
@@ -35,11 +38,13 @@ public class RedisConfig {
                 .master(sentinelMaster)
                 .sentinel(sentinelHost, sentinelPort);
 
+        if (redisPassword != null && !redisPassword.isEmpty()) {
+            sentinelConfiguration.setPassword(redisPassword);
+        }
+
         LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(sentinelConfiguration);
         lettuceConnectionFactory.afterPropertiesSet();
-
         return lettuceConnectionFactory;
-
         }
 
 
