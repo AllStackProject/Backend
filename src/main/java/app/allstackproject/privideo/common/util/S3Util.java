@@ -39,7 +39,7 @@ public class S3Util {
     @Value("${cloud.aws.s3.presign.upload-expiration}")
     private Duration uploadExpiration;
 
-    @Value("${cdn.base-url}")
+    @Value("${cloud.aws.cloudfront.domain}")
     private String CDN_BASE_URL;
 
     private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png");

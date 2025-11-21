@@ -2,8 +2,8 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
     group:
-      "local": "localPort, localRDB, localMongodb, localRedis, localAws, localJPA, localSecret, localCdn"
-      "dev": "devPort, devRDB, devMongodb, devRedis, devAws, devJPA, devSecret, devCdn"
+      "local": "localPort, localRDB, localMongodb, localRedis, localAws, localJPA, localSecret"
+      "dev": "devPort, devRDB, devMongodb, devRedis, devAws, devJPA, devSecret"
 ---
 spring:
   config:
@@ -82,6 +82,10 @@ cloud:
         img: ${AWS_IMG_BUCKET}
       presign:
         upload-expiration: ${AWS_UPLOAD_EXPIRATION}
+    cloudfront:
+      domain: ${CDN_BASE_URL}
+      key-pair-id: ${CF_KEY_PAIR_ID}
+      private-key-path: ${CF_PRIVATE_KEY_PATH}
 ---
 
 spring:
@@ -107,11 +111,3 @@ secret:
   jwt:
     secret-key: ${TOKEN_SECRET_KEY}
     expired-in: ${TOKEN_EXPIRED_IN}
----
-spring:
-  config:
-    activate:
-      on-profile: "devCdn"
-
-cdn:
-  base-url: ${CDN_BASE_URL} # CloudFront 도메인
