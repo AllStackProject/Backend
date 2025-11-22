@@ -95,7 +95,7 @@ public class S3Util {
     }
 
     public String generatePlaybackUrl(String hlsPrefix) {
-        return CDN_BASE_URL + hlsPrefix + PLAY_FILE;
+        return CDN_BASE_URL + "/" + hlsPrefix + "/" + PLAY_FILE;
     }
 
     // ================== Key 생성 ==================
@@ -117,7 +117,7 @@ public class S3Util {
 
     public String generateHlsPrefix(String key) {
         int lastSlash = key.lastIndexOf('/');
-        String basePath = key.substring(0, lastSlash + 1);
+        String basePath = key.substring(0, lastSlash);
         return "hls/" + basePath;
     }
 

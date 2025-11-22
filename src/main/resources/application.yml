@@ -93,7 +93,6 @@ cloud:
     cloudfront:
       domain: ${CDN_BASE_URL}
       key-pair-id: ${CF_KEY_PAIR_ID}
-      private-key-path: ${CF_PRIVATE_KEY_PATH}
       cookie-ttl-seconds: ${CF_COOKIE_TTL}
       private-key-base64: ${CF_PRIVATE_KEY_BASE64}
 ---
