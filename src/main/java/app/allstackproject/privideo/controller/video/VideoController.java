@@ -13,17 +13,18 @@ import app.allstackproject.privideo.dto.video.JoinVideoSessionResponse;
 import app.allstackproject.privideo.dto.video.JoinVideoSessionResult;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionInfo;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionRequest;
+import app.allstackproject.privideo.service.video.CloudFrontCookieService;
 import app.allstackproject.privideo.service.video.VideoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,6 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class VideoController {
 
     private final VideoService videoService;
+    private final CloudFrontCookieService cloudFrontCookieService;
 
     @PostMapping("")
     @Operation(summary = "영상 업로드")
@@ -65,8 +67,10 @@ public class VideoController {
     @Operation(summary = "영상 시청 세션 시작")
     public BaseResponse<JoinVideoSessionResponse> joinVideoSession(
             @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId,
-            @PathVariable("videoId") Long videoId) {
+            @PathVariable("videoId") Long videoId, HttpServletResponse response) {
         JoinVideoSessionResult result = videoService.joinVideoSession(memberId, orgId, videoId);
+        cloudFrontCookieService.addSignedCookies(response, result.getVideo().getHlsPrefix());
+
         return new BaseResponse<>(JoinVideoSessionResponse.from(result));
     }
 

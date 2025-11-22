@@ -1,6 +1,5 @@
 package app.allstackproject.privideo.common.util;
 
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.IS_NOT_IMAGE_FILE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MULTIPARTFILE_CONVERT_FAIL_IN_MEMORY;
 
 import app.allstackproject.privideo.common.exception.ApiException;
@@ -39,7 +38,7 @@ public class S3Util {
     @Value("${cloud.aws.s3.presign.upload-expiration}")
     private Duration uploadExpiration;
 
-    @Value("${cdn.base-url}")
+    @Value("${cloud.aws.cloudfront.domain}")
     private String CDN_BASE_URL;
 
     private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png");
@@ -95,7 +94,7 @@ public class S3Util {
     }
 
     public String generatePlaybackUrl(String hlsPrefix) {
-        return CDN_BASE_URL + hlsPrefix + PLAY_FILE;
+        return CDN_BASE_URL + "/" + hlsPrefix + "/" + PLAY_FILE;
     }
 
     // ================== Key 생성 ==================
@@ -107,7 +106,7 @@ public class S3Util {
         }
 
         String uuid = UUID.randomUUID().toString();
-        return String.format("org-%d/thumbnail/%s%s", orgId, uuid, extension);
+        return String.format("images/org-%d/thumbnail/%s%s", orgId, uuid, extension);
     }
 
     public String generateVideoKey(Long orgId) {
@@ -117,7 +116,7 @@ public class S3Util {
 
     public String generateHlsPrefix(String key) {
         int lastSlash = key.lastIndexOf('/');
-        String basePath = key.substring(0, lastSlash + 1);
+        String basePath = key.substring(0, lastSlash);
         return "hls/" + basePath;
     }
 
@@ -175,18 +174,5 @@ public class S3Util {
             return "";
         }
         return fileName.substring(fileName.lastIndexOf("."));
-    }
-
-    private String getContentTypeFromKey(String key) {
-        String extension = getFileExtension(key).toLowerCase();
-        if (!ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
-            throw new ApiException(IS_NOT_IMAGE_FILE);
-        }
-
-        return switch (extension) {
-            case ".jpeg", ".jpg" -> "image/jpeg";
-            case ".png" -> "image/png";
-            default -> "application/octet-stream";
-        };
     }
 }

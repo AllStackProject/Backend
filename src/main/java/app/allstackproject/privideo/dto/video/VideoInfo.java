@@ -1,6 +1,7 @@
 package app.allstackproject.privideo.dto.video;
 
 import app.allstackproject.privideo.entity.Video;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -14,6 +15,9 @@ public class VideoInfo {
 
     private final String description;
 
+    @JsonIgnore
+    private final String hlsPrefix;
+
     private final Long watchCnt;
 
     private final Long wholeTime;
@@ -21,11 +25,12 @@ public class VideoInfo {
     private final LocalDateTime createdAt;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private VideoInfo(Long id, String title, String description, Long watchCnt, Long wholeTime,
+    private VideoInfo(Long id, String title, String description, String hlsPrefix, Long watchCnt, Long wholeTime,
                       LocalDateTime createdAt) {
         this.id = id;
         this.title = title;
         this.description = description;
+        this.hlsPrefix = hlsPrefix;
         this.watchCnt = watchCnt;
         this.wholeTime = wholeTime;
         this.createdAt = createdAt;
@@ -34,8 +39,9 @@ public class VideoInfo {
     public static VideoInfo from(Video video) {
         return VideoInfo.builder()
                 .id(video.getId())
-                .description(video.getDescription())
                 .title(video.getTitle())
+                .description(video.getDescription())
+                .hlsPrefix(video.getHlsPrefix())
                 .watchCnt(video.getWatchCnt())
                 .wholeTime(video.getWholeTime())
                 .createdAt(video.getCreatedAt())

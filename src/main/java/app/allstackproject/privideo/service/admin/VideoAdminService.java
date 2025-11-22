@@ -26,7 +26,7 @@ public class VideoAdminService {
     @Transactional(readOnly = true)
     public List<ReadAllVideoItem> readAllVideos(Long orgId) {
         List<ReadAllVideoItem> allVideoItems = videoRepository.findByOrgId(orgId);
-        allVideoItems.forEach(item -> item.setThumbnailUrl(cdnUrlProvider.generateFileUrl(item.getThumbnailUrl())));
+        allVideoItems.forEach(item -> item.setThumbnailUrl(cdnUrlProvider.generateImgUrl(item.getThumbnailUrl())));
         return allVideoItems;
     }
 

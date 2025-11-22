@@ -100,8 +100,7 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
      * 11000: MultipartFile 오류
      */
     IS_NOT_IMAGE_FILE(11001, HttpStatus.UNSUPPORTED_MEDIA_TYPE, "지원되는 이미지 파일의 형식이 아닙니다."),
-    IS_NOT_VIDEO_FILE(11002, HttpStatus.UNSUPPORTED_MEDIA_TYPE, "지원되는 동영상 파일의 형식이 아닙니다."),
-    MULTIPARTFILE_CONVERT_FAIL_IN_MEMORY(11003, HttpStatus.INTERNAL_SERVER_ERROR,
+    MULTIPARTFILE_CONVERT_FAIL_IN_MEMORY(11002, HttpStatus.INTERNAL_SERVER_ERROR,
             "multipartFile memory 변환 과정에서 문제가 생겼습니다."),
 
     /**
@@ -116,7 +115,12 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
      */
     CATEGORY_NOT_FOUND(13001, HttpStatus.NOT_FOUND, "해당 멤버 그룹 내에서 존재하지 않는 카테고리입니다."),
     CATEGORY_ALREADY_EXIST(13001, HttpStatus.BAD_REQUEST, "해당 멤버 그룹 내에서 이미 존재하는 카테고리입니다."),
-    DUPLICATE_CATEGORY_NAME(13002, HttpStatus.BAD_REQUEST, "해당 멤버 그룹 내에서 중복되는 카테고리 이름이 존재합니다.");
+    DUPLICATE_CATEGORY_NAME(13002, HttpStatus.BAD_REQUEST, "해당 멤버 그룹 내에서 중복되는 카테고리 이름이 존재합니다."),
+
+    /**
+     * 14000: CloudFront 오류
+     */
+    CLOUD_FRONT_SIGN_FAIL(14001, HttpStatus.INTERNAL_SERVER_ERROR, "CloudFront 서명 과정에서 문제가 생겼습니다.");
 
     private final int code;
     private final HttpStatus httpStatus;

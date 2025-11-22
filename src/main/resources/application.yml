@@ -2,8 +2,8 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
     group:
-      "local": "localPort, localRDB, localMongodb, localRedis, localAws, localJPA, localSecret, localCdn"
-      "dev": "devPort, devRDB, devMongodb, devRedis, devAws, devJPA, devSecret, devCdn"
+      "local": "localPort, localRDB, localMongodb, localRedis, localAws, localJPA, localSecret"
+      "dev": "devPort, devRDB, devMongodb, devRedis, devAws, devJPA, devSecret"
 ---
 spring:
   config:
@@ -51,23 +51,25 @@ spring:
     activate:
       on-profile: "devRedis"
 
-  redis:
-    sentinel:
-      master: mymaster
-      nodes:
-        - redis-node-0.redis-headless:26379
-        - redis-node-1.redis-headless:26379
-        - redis-node-2.redis-headless:26379
+redis:
+  sentinel:
+    master: ${REDIS_SENTINEL_MASTER}
+    host: ${REDIS_SENTINEL_HOST}
+    port: ${REDIS_SENTINEL_PORT}
+  #    nodes:
+  #      - redis-node-0.redis-headless
+  #      - redis-node-1.redis-headless
+  #      - redis-node-2.redis-headless
 
-    password: ${REDIS_PASSWORD}
+  password: ${REDIS_PASSWORD}
 
-    lettuce:
-      pool:
-        max-active: ${REDIS_ACTIVE}
-        max-idle: ${REDIS_MAX_IDLE}
-        min-idle: ${REDIS_MIN_IDLE}
+  lettuce:
+    pool:
+      max-active: ${REDIS_ACTIVE}
+      max-idle: ${REDIS_MAX_IDLE}
+      min-idle: ${REDIS_MIN_IDLE}
 
-    timeout: ${REDIS_TIMEOUT}
+  timeout: ${REDIS_TIMEOUT}
 
 ---
 
@@ -88,6 +90,11 @@ cloud:
         img: ${AWS_IMG_BUCKET}
       presign:
         upload-expiration: ${AWS_UPLOAD_EXPIRATION}
+    cloudfront:
+      domain: ${CDN_BASE_URL}
+      key-pair-id: ${CF_KEY_PAIR_ID}
+      cookie-ttl-seconds: ${CF_COOKIE_TTL}
+      private-key-base64: ${CF_PRIVATE_KEY_BASE64}
 ---
 
 spring:
@@ -113,11 +120,3 @@ secret:
   jwt:
     secret-key: ${TOKEN_SECRET_KEY}
     expired-in: ${TOKEN_EXPIRED_IN}
----
-spring:
-  config:
-    activate:
-      on-profile: "devCdn"
-
-cdn:
-  base-url: ${CDN_BASE_URL} # CloudFront 도메인

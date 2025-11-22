@@ -27,7 +27,7 @@ public class CommentResponse {
                         .videoId(comment.getVideo().getId())
                         .videoName(comment.getVideo().getTitle())
                         .videoImg(
-                                cdnUrlProvider.generateFileUrl(comment.getVideo().getThumbnailKey())
+                                cdnUrlProvider.generateImgUrl(comment.getVideo().getThumbnailKey())
                         )
                         .build())
                 .collect(Collectors.toList());

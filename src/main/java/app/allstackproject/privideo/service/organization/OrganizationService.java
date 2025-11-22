@@ -133,7 +133,7 @@ public class OrganizationService {
                 .map(r -> new ReadOrgDto(
                         r.getId(),
                         r.getName(),
-                        cdnUrlProvider.generateFileUrl(r.getImgUrl()),
+                        cdnUrlProvider.generateImgUrl(r.getImgUrl()),
                         r.getJoinAt(),
                         r.getIsSuperAdmin(),
                         r.getIsAdmin(),

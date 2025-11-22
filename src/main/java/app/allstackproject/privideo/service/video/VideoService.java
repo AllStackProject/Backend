@@ -91,13 +91,7 @@ public class VideoService {
             throw new ApiException(VIDEO_NOT_ACCESSIBLE);
         }
 
-        // video의 hlsPrefix 확인 후 playbackUrl 생성 : cdnBaseUrl + hlsPrefix + master.m3u8
         String playbackUrl = s3Util.generatePlaybackUrl(video.getHlsPrefix());
-
-        /**
-         * cdnBaseUrl + hlsPrefix/* 에 허용하도록 cloudfront에 설정
-         * cloudfront 접근 권한 담은 3개 쿠키 생성해서 프론트 응답 헤더에 추가
-         */
 
         video.watch();
 
@@ -210,7 +204,7 @@ public class VideoService {
         }
 
         List<ReadAllVideoItem> allVideoItems = videoRepository.findByOrgIdAndCreatorId(orgId, memberId);
-        allVideoItems.forEach(item -> item.setThumbnailUrl(cdnUrlProvider.generateFileUrl(item.getThumbnailUrl())));
+        allVideoItems.forEach(item -> item.setThumbnailUrl(cdnUrlProvider.generateImgUrl(item.getThumbnailUrl())));
         return allVideoItems;
     }
 
@@ -225,7 +219,7 @@ public class VideoService {
         String originalKey = s3Util.generateVideoKey(orgId);
 
         // 2) 썸네일 키 생성 + 업로드 (privideo-img 버킷)
-        //    규칙: org-{orgId}/thumbnail/{UUID}.{ext}
+        //    규칙: images/org-{orgId}/thumbnail/{UUID}.{ext}
         MultipartFile thumbnailImg = request.getThumbnailImg();
         if (!s3Util.isImageFile(thumbnailImg)) {
             throw new ApiException(IS_NOT_IMAGE_FILE);
@@ -254,8 +248,7 @@ public class VideoService {
         String hlsPrefix = s3Util.generateHlsPrefix(originalKey);
         video.setHlsPrefix(hlsPrefix);
 
-        // 5) 업로드용 Pre-signed URL 생성 (privideo-original, inputBucket)
-        //    클라이언트가 이 URL로 비디오 파일 업로드
+        // 5) 업로드용 Pre-signed URL 생성
         URL presignedUrl = s3Util.generatePresignedUploadUrl(originalKey);
 
         // 6) 응답: presigned URL + 원본 비디오 키
