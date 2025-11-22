@@ -1,6 +1,5 @@
 package app.allstackproject.privideo.common.util;
 
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.IS_NOT_IMAGE_FILE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MULTIPARTFILE_CONVERT_FAIL_IN_MEMORY;
 
 import app.allstackproject.privideo.common.exception.ApiException;
@@ -175,18 +174,5 @@ public class S3Util {
             return "";
         }
         return fileName.substring(fileName.lastIndexOf("."));
-    }
-
-    private String getContentTypeFromKey(String key) {
-        String extension = getFileExtension(key).toLowerCase();
-        if (!ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
-            throw new ApiException(IS_NOT_IMAGE_FILE);
-        }
-
-        return switch (extension) {
-            case ".jpeg", ".jpg" -> "image/jpeg";
-            case ".png" -> "image/png";
-            default -> "application/octet-stream";
-        };
     }
 }

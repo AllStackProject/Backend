@@ -100,8 +100,7 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
      * 11000: MultipartFile 오류
      */
     IS_NOT_IMAGE_FILE(11001, HttpStatus.UNSUPPORTED_MEDIA_TYPE, "지원되는 이미지 파일의 형식이 아닙니다."),
-    IS_NOT_VIDEO_FILE(11002, HttpStatus.UNSUPPORTED_MEDIA_TYPE, "지원되는 동영상 파일의 형식이 아닙니다."),
-    MULTIPARTFILE_CONVERT_FAIL_IN_MEMORY(11003, HttpStatus.INTERNAL_SERVER_ERROR,
+    MULTIPARTFILE_CONVERT_FAIL_IN_MEMORY(11002, HttpStatus.INTERNAL_SERVER_ERROR,
             "multipartFile memory 변환 과정에서 문제가 생겼습니다."),
 
     /**
