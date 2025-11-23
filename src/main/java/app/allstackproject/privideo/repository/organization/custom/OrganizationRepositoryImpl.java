@@ -21,7 +21,7 @@ public class OrganizationRepositoryImpl implements OrganizationRepositoryCustom 
                 .select(Projections.constructor(ReadOrgResult.class,
                         organization.id,
                         organization.name,
-                        organization.imgUrl,
+                        organization.imgKey,
                         member.createdAt,
                         member.isAdmin,
                         member.permissionCode.gt(0L),

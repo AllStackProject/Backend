@@ -50,10 +50,8 @@ public class OrgAdminController {
     @Operation(summary = "조직 이미지 수정")
     public BaseResponse<SuccessResponse> modifyOrgInfo(@PathVariable("orgId") Long orgId,
                                                        @Valid @ModelAttribute ModifyOrgInfoRequest modifyOrgInfoRequest) {
-        // TODO: S3에 이미지 업로드
-        String imgUrl = "";
         return new BaseResponse<>(
-                SuccessResponse.of(orgAdminService.modifyOrgInfo(orgId, imgUrl)));
+                SuccessResponse.of(orgAdminService.modifyOrgInfo(orgId, modifyOrgInfoRequest.getImg())));
     }
 
     @PatchMapping("/orgs/code")

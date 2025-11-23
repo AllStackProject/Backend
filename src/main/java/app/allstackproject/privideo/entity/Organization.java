@@ -33,7 +33,8 @@ public class Organization extends BaseEntity {
     private String name;
 
     @NotNull
-    private String imgUrl;
+    @Column(name = "img_url")
+    private String imgKey;
 
     // TODO: 생성 시 기본 이미지 확정되면 @NotBlank로 복원 및 적용
     @NotNull
@@ -43,25 +44,25 @@ public class Organization extends BaseEntity {
     private String description;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Organization(User creator, String name, String imgUrl, String adImgUrl, String description) {
+    private Organization(User creator, String name, String imgKey, String adImgUrl, String description) {
         this.creator = creator;
         this.name = name;
-        this.imgUrl = imgUrl;
+        this.imgKey = imgKey;
         this.adImgUrl = adImgUrl;
         this.description = description;
     }
 
-    public static Organization create(User creator, String name, String imgUrl, String description) {
+    public static Organization create(User creator, String name, String imgKey, String description) {
         return Organization.builder()
                 .creator(creator)
                 .name(name)
-                .imgUrl(imgUrl)
+                .imgKey(imgKey)
                 .adImgUrl("")
                 .description(description)
                 .build();
     }
 
-    public void modifyImgUrl(String imgUrl) {
-        this.imgUrl = imgUrl;
+    public void modifyImg(String imgKey) {
+        this.imgKey = imgKey;
     }
 }
