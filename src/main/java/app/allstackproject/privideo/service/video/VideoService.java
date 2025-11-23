@@ -1,6 +1,8 @@
 package app.allstackproject.privideo.service.video;
 
+import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.FEEDBACK;
 import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.NONE;
+import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.SUMMARY;
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.HISTORY_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.IS_NOT_IMAGE_FILE;
@@ -107,6 +109,12 @@ public class VideoService {
         List<QuizInfo> quizInfos = new ArrayList<>();
         String aiFeedback = "", aiSummary = "";
 
+        if (aiType.equals(SUMMARY)) {
+            aiFeedback = video.getAiSummary();
+        } else if (aiType.equals(FEEDBACK)) {
+            aiSummary = video.getAiFeedback();
+        }
+        
         boolean isScrapped = false;
         if (scrapRepository.existsByMemberIdAndVideoId(memberId, videoId)) {
             isScrapped = true;
