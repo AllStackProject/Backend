@@ -5,6 +5,7 @@ import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.NONE
 import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.QUIZ;
 import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.SUMMARY;
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
+import static app.allstackproject.privideo.common.enumStatus.S3ImgType.THUMBNAIL;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.HISTORY_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.IS_NOT_IMAGE_FILE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
@@ -231,7 +232,7 @@ public class VideoService {
             throw new ApiException(IS_NOT_IMAGE_FILE);
         }
 
-        String thumbnailKey = s3Util.generateThumbnailKey(orgId, thumbnailImg.getOriginalFilename());
+        String thumbnailKey = s3Util.generateImgKey(orgId, thumbnailImg.getOriginalFilename(), THUMBNAIL);
         s3Util.uploadImgWithKey(thumbnailImg, thumbnailKey);
 
         // 3) Video 엔티티 저장
