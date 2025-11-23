@@ -60,11 +60,12 @@ public class OrgAdminService {
         Organization organization = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
 
+        String oldImgKey = organization.getImgKey();
         String newImgKey = s3Util.generateImgKey(orgId, img.getOriginalFilename(), ORG);
-        
-        s3Util.deleteFileByKey(organization.getImgKey(), true);
+
         s3Util.uploadImgWithKey(img, newImgKey);
         organization.modifyImg(newImgKey);
+        s3Util.deleteFileByKey(oldImgKey, true);
 
         return true;
     }
