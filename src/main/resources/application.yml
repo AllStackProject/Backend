@@ -133,8 +133,10 @@ spring:
         gemini:
           project-id: ${GOOGLE_CLOUD_PROJECT_ID}
           location: ${GOOGLE_CLOUD_LOCATION}
-          api-key: ${GEMINI_API_KEY}
-          model: ${GEMINI_MODEL_NAME}
+          chat:
+            options:
+              model: ${GEMINI_MODEL_NAME}
+
 
 rtzr:
   api:
