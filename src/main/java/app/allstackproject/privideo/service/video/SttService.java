@@ -40,7 +40,6 @@ public class SttService {
      */
     public String requestTranscription(File audioFile) {
         String token = getAccessToken();
-        log.info("전사 요청 시 사용되는 토큰 : " + token);
 
         // Whisper 모델 설정: 다중 언어 처리 (한국어, 영어, 일본어)
         TranscribeConfig config = new TranscribeConfig(
@@ -75,7 +74,6 @@ public class SttService {
      */
     public String getTranscriptionResult(String transcribeId) {
         String token = getAccessToken();
-        log.info("전사 결과 조회 시 사용되는 토큰 : " + token);
 
         int maxRetries = 60; // 최대 5분 대기 (5초 * 60)
         int retryCount = 0;

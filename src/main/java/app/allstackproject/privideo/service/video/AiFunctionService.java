@@ -50,7 +50,6 @@ public class AiFunctionService {
             // 3단계: STT 결과 조회 (폴링)
             String sttText = sttService.getTranscriptionResult(transcribeId);
             log.info("STT 완료: videoId={}, textLength={}", videoId, sttText.length());
-            log.info("STT 완료: result={}", sttText);
 
             // 4단계: Gemini AI 처리
             processWithGemini(videoId, sttText, aiFunction);
