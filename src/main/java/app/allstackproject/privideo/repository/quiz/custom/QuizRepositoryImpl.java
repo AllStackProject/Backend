@@ -16,11 +16,10 @@ public class QuizRepositoryImpl implements QuizRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<QuizInfo> findByVideoId(Long videoId) {
+    public List<QuizInfo> findAllByVideoId(Long videoId) {
         return jpaQueryFactory
                 .select(Projections.constructor(
                         QuizInfo.class,
-                        quiz.id,
                         quiz.question,
                         quiz.answer,
                         quiz.description

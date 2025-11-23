@@ -27,6 +27,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -61,6 +62,17 @@ public class VideoController {
                 isComment, aiFunction, expiredAt
         );
         return new BaseResponse<>(videoService.createVideo(memberId, orgId, createVideoRequest));
+    }
+
+    @PutMapping("/{videoId}")
+    @Operation(summary = "영상 업로드 성공 여부")
+    public BaseResponse<SuccessResponse> notifyVideoEncodingResult(
+            @AuthenticationPrincipal(expression = "memberId") Long memberId,
+            @PathVariable("orgId") Long orgId,
+            @PathVariable("videoId") Long videoId,
+            @RequestParam("is_success") boolean isSuccess
+    ) {
+        return new BaseResponse<>(videoService.updateVideoEncodingStatus(memberId, orgId, videoId, isSuccess));
     }
 
     @PostMapping("/{videoId}/join")

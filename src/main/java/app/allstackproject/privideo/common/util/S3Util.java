@@ -3,8 +3,9 @@ package app.allstackproject.privideo.common.util;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MULTIPARTFILE_CONVERT_FAIL_IN_MEMORY;
 
 import app.allstackproject.privideo.common.exception.ApiException;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Set;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
@@ -126,38 +128,47 @@ public class S3Util {
         return ALLOWED_IMAGE_EXTENSIONS.contains(extension.toLowerCase());
     }
 
-    // ================== Delete ==================
+    // ================== Download ==================
+    
+    public File downloadToTempFile(String bucket, String key) throws IOException {
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .build();
 
-    public void deleteFileByUrl(String fileUrl) {
-        try {
-            URL url = new URL(fileUrl);
-            String path = url.getPath();
-            String key = path.startsWith("/") ? path.substring(1) : path;
+        try (ResponseInputStream<GetObjectResponse> s3Object = s3Client.getObject(getObjectRequest)) {
 
-            if (exists(key)) {
-                s3Client.deleteObject(DeleteObjectRequest.builder()
-                        .bucket(imgBucket)
-                        .key(key)
-                        .build());
-                log.info("S3에서 파일 삭제됨: {}", key);
-            } else {
-                log.warn("삭제할 파일이 존재하지 않음: {}", key);
+            String extension = getFileExtension(key);
+            if (extension.isEmpty()) {
+                extension = ".tmp";
             }
-        } catch (MalformedURLException e) {
-            log.error("URL 파싱 오류: {}", fileUrl, e);
+
+            File tempFile = File.createTempFile("s3_", extension);
+            tempFile.deleteOnExit();
+
+            try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = s3Object.read(buffer)) != -1) {
+                    fos.write(buffer, 0, bytesRead);
+                }
+            }
+
+            log.info("S3 파일 임시 다운로드 완료: bucket={}, key={}, size={}MB",
+                    bucket, key, tempFile.length() / 1024 / 1024);
+
+            return tempFile;
         }
     }
 
-    private boolean exists(String key) {
-        try {
-            s3Client.headObject(HeadObjectRequest.builder()
-                    .bucket(imgBucket)
-                    .key(key)
-                    .build());
-            return true;
-        } catch (NoSuchKeyException e) {
-            return false;
-        }
+    // ================== Delete ==================
+
+    public void deleteFileByKey(String fileKey, boolean isImage) {
+        s3Client.deleteObject(DeleteObjectRequest.builder()
+                .bucket(isImage ? imgBucket : videoBucket)
+                .key(fileKey)
+                .build());
+        log.info("S3에서 파일 삭제됨: {}", fileKey);
     }
 
     // ================== Private Helper ==================

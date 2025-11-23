@@ -85,6 +85,7 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     VIDEO_ALREADY_SCRAPPED(8007, HttpStatus.BAD_REQUEST, "해당 영상은 이미 스크랩되었습니다."),
     VIDEO_NOT_SCRAPPED(8008, HttpStatus.NOT_FOUND, "해당 영상은 스크랩되어있지 않습니다."),
     VIDEO_CREATE_NOT_FOUND(8009, HttpStatus.NOT_FOUND, "해당 사용자가 업로드한 영상이 아닙니다."),
+    INVALID_AI_FUNCTION_TYPE(8010, HttpStatus.BAD_REQUEST, "AI 기능의 유형은 NONE, QUIZ, FEEDBACK, SUMMARY 중 하나여야 합니다."),
 
     /**
      * 9000: History 오류
@@ -120,7 +121,8 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     /**
      * 14000: CloudFront 오류
      */
-    CLOUD_FRONT_SIGN_FAIL(14001, HttpStatus.INTERNAL_SERVER_ERROR, "CloudFront 서명 과정에서 문제가 생겼습니다.");
+    CLOUD_FRONT_SIGN_FAIL(14001, HttpStatus.INTERNAL_SERVER_ERROR, "CloudFront 서명 과정에서 문제가 생겼습니다."),
+    ;
 
     private final int code;
     private final HttpStatus httpStatus;
