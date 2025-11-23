@@ -4,6 +4,7 @@ import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTI
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.PENDING;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.REJECTED;
+import static app.allstackproject.privideo.common.enumStatus.S3ImgType.ORG;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_APPROVED_MEMBER;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_REQUESTED_MEMBER;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DUPLICATE_NICKNAME;
@@ -17,6 +18,7 @@ import static app.allstackproject.privideo.common.util.OrgCodeGenerator.generate
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.jwt.JwtProvider;
 import app.allstackproject.privideo.common.util.CdnUrlProvider;
+import app.allstackproject.privideo.common.util.S3Util;
 import app.allstackproject.privideo.dto.admin.ReadAllCategoryItem;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberGroupItem;
 import app.allstackproject.privideo.dto.organization.CreatOrgResult;
@@ -66,11 +68,15 @@ public class OrganizationService {
 
     private final JwtProvider jwtProvider;
     private final CdnUrlProvider cdnUrlProvider;
+    private final S3Util s3Util;
 
-    public CreatOrgResult createOrg(Long userId, @Valid CreateOrgRequest createOrgRequest, String imgUrl) {
+    public CreatOrgResult createOrg(Long userId, @Valid CreateOrgRequest createOrgRequest) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
-        Organization organization = Organization.create(user, createOrgRequest.getName(), imgUrl,
-                createOrgRequest.getDesc());
+        Organization organization = Organization.create(user, createOrgRequest.getName(), createOrgRequest.getDesc());
+
+        String imgKey = s3Util.generateImgKey(organization.getId(), createOrgRequest.getImg().getName(), ORG);
+        s3Util.uploadImgWithKey(createOrgRequest.getImg(), imgKey);
+        organization.modifyImg(imgKey);
 
         Member member = Member.create(user, organization, createOrgRequest.getNickname(), true, APPROVED);
         member.adminPermissionSet();

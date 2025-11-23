@@ -52,11 +52,10 @@ public class Organization extends BaseEntity {
         this.description = description;
     }
 
-    public static Organization create(User creator, String name, String imgKey, String description) {
+    public static Organization create(User creator, String name, String description) {
         return Organization.builder()
                 .creator(creator)
                 .name(name)
-                .imgKey(imgKey)
                 .adImgUrl("")
                 .description(description)
                 .build();
