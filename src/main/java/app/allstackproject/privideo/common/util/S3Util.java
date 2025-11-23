@@ -1,7 +1,9 @@
 package app.allstackproject.privideo.common.util;
 
+import static app.allstackproject.privideo.common.enumStatus.S3ImgType.THUMBNAIL;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MULTIPARTFILE_CONVERT_FAIL_IN_MEMORY;
 
+import app.allstackproject.privideo.common.enumStatus.S3ImgType;
 import app.allstackproject.privideo.common.exception.ApiException;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -101,14 +103,18 @@ public class S3Util {
 
     // ================== Key 생성 ==================
 
-    public String generateThumbnailKey(Long orgId, String originalFileName) {
+    public String generateImgKey(Long orgId, String originalFileName, S3ImgType imgType) {
         String extension = getFileExtension(originalFileName);
         if (extension.isEmpty()) {
             extension = ".png"; // fallback
         }
 
         String uuid = UUID.randomUUID().toString();
-        return String.format("images/org-%d/thumbnail/%s%s", orgId, uuid, extension);
+        if (imgType.equals(THUMBNAIL)) {
+            return String.format("images/org-%d/thumbnail/%s%s", orgId, uuid, extension);
+        } else {
+            return String.format("images/org-%d/%s%s", orgId, uuid, extension);
+        }
     }
 
     public String generateVideoKey(Long orgId) {
@@ -129,7 +135,7 @@ public class S3Util {
     }
 
     // ================== Download ==================
-    
+
     public File downloadToTempFile(String bucket, String key) throws IOException {
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucket)

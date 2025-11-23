@@ -2,6 +2,7 @@ package app.allstackproject.privideo.service.admin;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
+import static app.allstackproject.privideo.common.enumStatus.S3ImgType.ORG;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.CATEGORY_ALREADY_EXIST;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.CATEGORY_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DUPLICATE_CATEGORY_NAME;
@@ -13,6 +14,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.util.CdnUrlProvider;
 import app.allstackproject.privideo.common.util.OrgCodeGenerator;
+import app.allstackproject.privideo.common.util.S3Util;
 import app.allstackproject.privideo.dto.admin.MemberGroupItem;
 import app.allstackproject.privideo.dto.admin.ReadAllCategoryItem;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberGroupItem;
@@ -36,6 +38,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Transactional
@@ -50,12 +53,20 @@ public class OrgAdminService {
     private final MemberGroupMappingRepository memberGroupMappingRepository;
     private final VideoMemberGroupMappingRepository videoMemberGroupMappingRepository;
     private final VideoCategoryMappingRepository videoCategoryMappingRepository;
+    private final S3Util s3Util;
     private final CdnUrlProvider cdnUrlProvider;
 
-    public boolean modifyOrgInfo(Long orgId, String imgUrl) {
+    public boolean modifyOrgInfo(Long orgId, MultipartFile img) {
         Organization organization = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
-        organization.modifyImgUrl(imgUrl);
+
+        String oldImgKey = organization.getImgKey();
+        String newImgKey = s3Util.generateImgKey(orgId, img.getOriginalFilename(), ORG);
+
+        s3Util.uploadImgWithKey(img, newImgKey);
+        organization.modifyImg(newImgKey);
+        s3Util.deleteFileByKey(oldImgKey, true);
+
         return true;
     }
 
@@ -83,7 +94,7 @@ public class OrgAdminService {
                 .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
 
         String orgName = organization.getName();
-        String imgUrl = cdnUrlProvider.generateImgUrl(organization.getImgUrl());
+        String imgUrl = cdnUrlProvider.generateImgUrl(organization.getImgKey());
         Long memberCnt = memberRepository.countByOrganizationIdAndJoinStatusAndStatus(orgId, APPROVED, ACTIVE);
         String orgCode = orgRedisRepository.getOrgcodeById(orgId);
 
