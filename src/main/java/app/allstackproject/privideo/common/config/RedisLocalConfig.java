@@ -1,13 +1,12 @@
 package app.allstackproject.privideo.common.config;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisSentinelConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -18,47 +17,33 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 @RequiredArgsConstructor
 @EnableRedisRepositories
-@Profile("!localRedis")
-public class RedisConfig {
+@Profile("localRedis")
+public class RedisLocalConfig {
 
-    @Value("${redis.sentinel.master}")
-    private String sentinelMaster;
-
-    @Value("${redis.sentinel.host}")
-    private String sentinelHost;
-
-    @Value("${redis.sentinel.port}")
-    private int sentinelPort;
-
-    @Value("${redis.password}")
-    private String redisPassword;
+    private final RedisProperties redisProperties;
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        RedisSentinelConfiguration sentinelConfiguration = new RedisSentinelConfiguration()
-                .master(sentinelMaster)
-                .sentinel(sentinelHost, sentinelPort);
+        LettuceConnectionFactory factory = new LettuceConnectionFactory(
+                redisProperties.getHost(),
+                redisProperties.getPort()
+        );
 
-        if (redisPassword != null && !redisPassword.isEmpty()) {
-            sentinelConfiguration.setPassword(redisPassword);
+        if (redisProperties.getPassword() != null && !redisProperties.getPassword().isEmpty()) {
+            factory.setPassword(redisProperties.getPassword());
         }
 
-        LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(sentinelConfiguration);
-        lettuceConnectionFactory.afterPropertiesSet();
-        return lettuceConnectionFactory;
+        factory.setDatabase(redisProperties.getDatabase());
+
+        return factory;
     }
 
     @Bean
     public RedisTemplate<String, String> redisTemplate() {
         RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory());
-
-        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
-
-        redisTemplate.setKeySerializer(stringRedisSerializer);
-        redisTemplate.setHashKeySerializer(stringRedisSerializer);
-        redisTemplate.setValueSerializer(stringRedisSerializer);
-        redisTemplate.setHashValueSerializer(stringRedisSerializer);
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
 
         redisTemplate.afterPropertiesSet();
         return redisTemplate;
@@ -72,3 +57,4 @@ public class RedisConfig {
         return script;
     }
 }
+
