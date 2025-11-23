@@ -11,6 +11,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_IN_ORGANIZATION;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_ALREADY_WATCHED;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_CREATE_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_ACCESSIBLE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_IN_ORGANIZATION;
@@ -18,6 +19,7 @@ import static app.allstackproject.privideo.service.video.LogService.SEGMENT_SECO
 
 import app.allstackproject.privideo.common.enumStatus.AiResultType;
 import app.allstackproject.privideo.common.exception.ApiException;
+import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.common.util.CdnUrlProvider;
 import app.allstackproject.privideo.common.util.S3Util;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoItem;
@@ -252,5 +254,25 @@ public class VideoService {
         URL presignedUrl = s3Util.generatePresignedUploadUrl(originalKey);
 
         return CreateVideoResponse.of(presignedUrl.toString(), video.getId());
+    }
+
+    public SuccessResponse updateVideoEncodingStatus(Long memberId, Long orgId, Long videoId, boolean isSuccess) {
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
+        if (!video.getOrganization().getId().equals(orgId)) {
+            throw new ApiException(VIDEO_NOT_IN_ORGANIZATION);
+        }
+        if (!video.getCreator().getId().equals(memberId)) {
+            throw new ApiException(VIDEO_CREATE_NOT_FOUND);
+        }
+
+        if (!isSuccess) {
+            videoRepository.delete(video);
+            s3Util.deleteFileByKey(video.getVideoKey(), false);
+            s3Util.deleteFileByKey(video.getThumbnailKey(), true);
+        } else {
+            // TODO: 업로드 성공 -> AI 결과 생성
+        }
+        return SuccessResponse.of(true);
     }
 }

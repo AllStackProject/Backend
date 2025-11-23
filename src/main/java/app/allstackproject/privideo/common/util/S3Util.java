@@ -4,7 +4,6 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 
 import app.allstackproject.privideo.common.exception.ApiException;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Set;
@@ -128,36 +127,12 @@ public class S3Util {
 
     // ================== Delete ==================
 
-    public void deleteFileByUrl(String fileUrl) {
-        try {
-            URL url = new URL(fileUrl);
-            String path = url.getPath();
-            String key = path.startsWith("/") ? path.substring(1) : path;
-
-            if (exists(key)) {
-                s3Client.deleteObject(DeleteObjectRequest.builder()
-                        .bucket(imgBucket)
-                        .key(key)
-                        .build());
-                log.info("S3에서 파일 삭제됨: {}", key);
-            } else {
-                log.warn("삭제할 파일이 존재하지 않음: {}", key);
-            }
-        } catch (MalformedURLException e) {
-            log.error("URL 파싱 오류: {}", fileUrl, e);
-        }
-    }
-
-    private boolean exists(String key) {
-        try {
-            s3Client.headObject(HeadObjectRequest.builder()
-                    .bucket(imgBucket)
-                    .key(key)
-                    .build());
-            return true;
-        } catch (NoSuchKeyException e) {
-            return false;
-        }
+    public void deleteFileByKey(String fileKey, boolean isImage) {
+        s3Client.deleteObject(DeleteObjectRequest.builder()
+                .bucket(isImage ? imgBucket : videoBucket)
+                .key(fileKey)
+                .build());
+        log.info("S3에서 파일 삭제됨: {}", fileKey);
     }
 
     // ================== Private Helper ==================
