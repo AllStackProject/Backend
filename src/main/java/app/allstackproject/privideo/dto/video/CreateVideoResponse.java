@@ -8,11 +8,14 @@ import lombok.NoArgsConstructor;
 public class CreateVideoResponse {
     private String presignedUrl;
 
-    private CreateVideoResponse(String presignedUrl) {
+    private Long videoId;
+
+    private CreateVideoResponse(String presignedUrl, Long videoId) {
         this.presignedUrl = presignedUrl;
+        this.videoId = videoId;
     }
 
-    public static CreateVideoResponse of(String presignedUrl) {
-        return new CreateVideoResponse(presignedUrl);
+    public static CreateVideoResponse of(String presignedUrl, Long videoId) {
+        return new CreateVideoResponse(presignedUrl, videoId);
     }
 }

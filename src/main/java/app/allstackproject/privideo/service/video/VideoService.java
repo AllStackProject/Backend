@@ -248,10 +248,9 @@ public class VideoService {
         String hlsPrefix = s3Util.generateHlsPrefix(originalKey);
         video.setHlsPrefix(hlsPrefix);
 
-        // 5) 업로드용 Pre-signed URL 생성
+        // 5) 업로드용 URL 생성
         URL presignedUrl = s3Util.generatePresignedUploadUrl(originalKey);
 
-        // 6) 응답: presigned URL + 원본 비디오 키
-        return CreateVideoResponse.of(presignedUrl.toString());
+        return CreateVideoResponse.of(presignedUrl.toString(), video.getId());
     }
 }
