@@ -161,8 +161,6 @@ public class GeminiAiService {
                     .replaceAll("```\\s*", "")
                     .trim();
 
-            log.info("정제된 JSON: {}", cleanJson);
-
             List<QuizInfo> quizzes = objectMapper.readValue(
                     cleanJson,
                     new TypeReference<List<QuizInfo>>() {
