@@ -2,9 +2,16 @@ package app.allstackproject.privideo.service.video;
 
 import app.allstackproject.privideo.common.enumStatus.AiFunctionType;
 import app.allstackproject.privideo.common.util.S3Util;
+import app.allstackproject.privideo.dto.video.QuizInfo;
+import app.allstackproject.privideo.entity.Quiz;
+import app.allstackproject.privideo.entity.Video;
+import app.allstackproject.privideo.repository.quiz.QuizRepository;
+import app.allstackproject.privideo.repository.video.VideoRepository;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class AiFunctionService {
 
     private final SttService sttService;
+    private final GeminiAiService geminiService;
+    private final VideoRepository videoRepository;
+    private final QuizRepository quizRepository;
     private final S3Util s3Util;
 
     @Value("${cloud.aws.s3.buckets.output}")
@@ -42,7 +52,8 @@ public class AiFunctionService {
             log.info("STT 완료: videoId={}, textLength={}", videoId, sttText.length());
             log.info("STT 완료: result={}", sttText);
 
-            // TODO: Gemini AI 처리
+            // 4단계: Gemini AI 처리
+            processWithGemini(videoId, sttText, aiFunction);
 
             log.info("AI 기능 처리 완료: videoId={}, function={}", videoId, aiFunction);
 
@@ -58,6 +69,48 @@ public class AiFunctionService {
                 }
             }
         }
+    }
+
+    /**
+     * Gemini로 AI 결과 생성
+     */
+    private void processWithGemini(Long videoId, String sttText, AiFunctionType aiFunction) {
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(() -> new RuntimeException("Video not found"));
+
+        switch (aiFunction) {
+            case SUMMARY -> {
+                String summary = geminiService.generateSummary(sttText);
+                video.setAiSummary(summary);
+                log.info("Summary 저장 완료: videoId={}", videoId);
+            }
+            case FEEDBACK -> {
+                String feedback = geminiService.generateFeedback(sttText);
+                video.setAiFeedback(feedback);
+                log.info("Feedback 저장 완료: videoId={}", videoId);
+            }
+            case QUIZ -> {
+                List<QuizInfo> quizItems = geminiService.generateQuiz(sttText);
+                saveQuizzesToDatabase(video, quizItems);
+                log.info("Quiz 저장 완료: videoId={}, count={}", videoId, quizItems.size());
+            }
+        }
+    }
+
+    /**
+     * 퀴즈를 DB에 저장
+     */
+    private void saveQuizzesToDatabase(Video video, List<QuizInfo> quizItems) {
+        List<Quiz> quizzes = quizItems.stream()
+                .map(q -> Quiz.create(
+                        video,
+                        q.getQuestion(),
+                        q.getAnswer(),
+                        q.getDescription()
+                ))
+                .collect(Collectors.toList());
+
+        quizRepository.saveAll(quizzes);
     }
 
 }

@@ -2,15 +2,15 @@ package app.allstackproject.privideo.dto.video;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 @AllArgsConstructor
 public class QuizInfo {
-    private final Long id;
+    private String question;
 
-    private final String question;
+    private Boolean answer;
 
-    private final Boolean answer;
-
-    private final String description;
+    private String description;
 }

@@ -66,9 +66,11 @@ public class Video extends BaseEntity {
     @Column(name = "ai_function_type")
     private AiFunctionType aiFunctionType;
 
+    @Setter
     @Column(columnDefinition = "text")
     private String aiFeedback;
 
+    @Setter
     @Column(columnDefinition = "text")
     private String aiSummary;
 
