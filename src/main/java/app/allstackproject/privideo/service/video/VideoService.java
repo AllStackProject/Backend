@@ -2,6 +2,7 @@ package app.allstackproject.privideo.service.video;
 
 import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.FEEDBACK;
 import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.NONE;
+import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.QUIZ;
 import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.SUMMARY;
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.HISTORY_NOT_FOUND;
@@ -74,6 +75,7 @@ public class VideoService {
     private final CdnUrlProvider cdnUrlProvider;
     private final VideoMemberGroupMappingRepository videoMemberGroupMappingRepository;
     private final VideoCategoryMappingRepository videoCategoryMappingRepository;
+    private final QuizRepository quizRepository;
     private final AiFunctionService aiFunctionService;
 
     public JoinVideoSessionResult joinVideoSession(Long memberId, Long orgId, Long videoId) {
@@ -110,11 +112,13 @@ public class VideoService {
         String aiFeedback = "", aiSummary = "";
 
         if (aiType.equals(SUMMARY)) {
-            aiFeedback = video.getAiSummary();
+            aiSummary = video.getAiSummary();
         } else if (aiType.equals(FEEDBACK)) {
-            aiSummary = video.getAiFeedback();
+            aiFeedback = video.getAiFeedback();
+        } else if (aiType.equals(QUIZ)) {
+            quizInfos = quizRepository.findAllByVideoId(videoId);
         }
-        
+
         boolean isScrapped = false;
         if (scrapRepository.existsByMemberIdAndVideoId(memberId, videoId)) {
             isScrapped = true;
