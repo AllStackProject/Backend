@@ -1,6 +1,6 @@
 package app.allstackproject.privideo.dto.video;
 
-import app.allstackproject.privideo.common.enumStatus.AiResultType;
+import app.allstackproject.privideo.common.enumStatus.AiFunctionType;
 import java.util.List;
 import lombok.Getter;
 
@@ -22,7 +22,7 @@ public class JoinVideoSessionResponse {
 
     private final List<String> categories;
 
-    private final AiResultType aiType;
+    private final AiFunctionType aiType;
 
     private final List<QuizInfo> aiQuizzes;
 
@@ -32,7 +32,7 @@ public class JoinVideoSessionResponse {
 
     private JoinVideoSessionResponse(String sessionId, String playbackUrl, Boolean watchCompleted, VideoInfo video,
                                      List<Long> segViewCnts, Boolean isComment, Boolean isScrapped,
-                                     List<String> categories, AiResultType aiType, List<QuizInfo> aiQuizzes,
+                                     List<String> categories, AiFunctionType aiType, List<QuizInfo> aiQuizzes,
                                      String aiFeedback, String aiSummary) {
         this.sessionId = sessionId;
         this.playbackUrl = playbackUrl;

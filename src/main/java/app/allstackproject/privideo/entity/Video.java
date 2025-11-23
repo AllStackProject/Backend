@@ -1,7 +1,10 @@
 package app.allstackproject.privideo.entity;
 
+import app.allstackproject.privideo.common.enumStatus.AiFunctionType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -59,7 +62,9 @@ public class Video extends BaseEntity {
     private Boolean isComment;
 
     @NotNull
-    private Boolean isAiFunction;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ai_function_type")
+    private AiFunctionType aiFunctionType;
 
     @Column(columnDefinition = "text")
     private String aiFeedback;
@@ -78,8 +83,9 @@ public class Video extends BaseEntity {
 
     @Builder(access = AccessLevel.PRIVATE)
     private Video(Organization organization, Member creator, String title, String description, String videoKey,
-                  String thumbnailKey, String hlsPrefix, Long wholeTime, boolean isComment, boolean isAiFunction,
-                  String aiFeedback, String aiSummary, LocalDate expiredAt, Long watchCnt, Long quitCnt) {
+                  String thumbnailKey, String hlsPrefix, Long wholeTime, boolean isComment,
+                  AiFunctionType aiFunctionType, String aiFeedback, String aiSummary, LocalDate expiredAt,
+                  Long watchCnt, Long quitCnt) {
         this.organization = organization;
         this.creator = creator;
         this.title = title;
@@ -89,7 +95,7 @@ public class Video extends BaseEntity {
         this.hlsPrefix = hlsPrefix;
         this.wholeTime = wholeTime;
         this.isComment = isComment;
-        this.isAiFunction = isAiFunction;
+        this.aiFunctionType = aiFunctionType;
         this.aiFeedback = aiFeedback;
         this.aiSummary = aiSummary;
         this.expiredAt = expiredAt;
@@ -99,7 +105,7 @@ public class Video extends BaseEntity {
 
     public static Video create(Organization organization, Member creator, String title, String description,
                                String videoKey, String thumbnailKey, Long wholeTime, boolean isComment,
-                               boolean isAiFunction, LocalDate expiredAt) {
+                               AiFunctionType aiFunctionType, LocalDate expiredAt) {
         if (expiredAt == null) {
             expiredAt = LocalDate.now().plusYears(100);
         }
@@ -114,7 +120,7 @@ public class Video extends BaseEntity {
                 .hlsPrefix("")
                 .wholeTime(wholeTime)
                 .isComment(isComment)
-                .isAiFunction(isAiFunction)
+                .aiFunctionType(aiFunctionType)
                 .expiredAt(expiredAt)
                 .watchCnt(0L)
                 .quitCnt(0L)

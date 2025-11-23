@@ -1,9 +1,6 @@
 package app.allstackproject.privideo.service.video;
 
-import static app.allstackproject.privideo.common.enumStatus.AiResultType.FEEDBACK;
-import static app.allstackproject.privideo.common.enumStatus.AiResultType.NONE;
-import static app.allstackproject.privideo.common.enumStatus.AiResultType.QUIZ;
-import static app.allstackproject.privideo.common.enumStatus.AiResultType.SUMMARY;
+import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.NONE;
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.HISTORY_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.IS_NOT_IMAGE_FILE;
@@ -17,7 +14,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_IN_ORGANIZATION;
 import static app.allstackproject.privideo.service.video.LogService.SEGMENT_SECONDS;
 
-import app.allstackproject.privideo.common.enumStatus.AiResultType;
+import app.allstackproject.privideo.common.enumStatus.AiFunctionType;
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.common.util.CdnUrlProvider;
@@ -52,10 +49,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -74,6 +73,7 @@ public class VideoService {
     private final CdnUrlProvider cdnUrlProvider;
     private final VideoMemberGroupMappingRepository videoMemberGroupMappingRepository;
     private final VideoCategoryMappingRepository videoCategoryMappingRepository;
+    private final AiFunctionService aiFunctionService;
 
     public JoinVideoSessionResult joinVideoSession(Long memberId, Long orgId, Long videoId) {
         Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
@@ -104,22 +104,9 @@ public class VideoService {
         VideoInfo videoInfo = VideoInfo.from(video);
         List<String> categories = categoryRepository.findAllByVideoId(videoId);
 
-        AiResultType aiType = NONE;
+        AiFunctionType aiType = video.getAiFunctionType();
         List<QuizInfo> quizInfos = new ArrayList<>();
         String aiFeedback = "", aiSummary = "";
-
-        if (video.getIsAiFunction()) {
-            if (video.getAiFeedback() != null) {
-                aiType = FEEDBACK;
-            } else if (video.getAiSummary() != null) {
-                aiType = SUMMARY;
-            } else {
-                quizInfos = quizRepository.findByVideoId(videoId);
-                if (!quizInfos.isEmpty()) {
-                    aiType = QUIZ;
-                }
-            }
-        }
 
         boolean isScrapped = false;
         if (scrapRepository.existsByMemberIdAndVideoId(memberId, videoId)) {
@@ -220,6 +207,8 @@ public class VideoService {
         Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_IN_ORGANIZATION));
 
+        AiFunctionType aiFunction = AiFunctionType.from(request.getAiFunction());
+
         // 1) 원본 비디오 키 생성 (privideo-original 버킷, 업로드는 presigned URL로)
         //    규칙: org-{orgId}/{UUID}/original.mp4
         String originalKey = s3Util.generateVideoKey(orgId);
@@ -244,7 +233,7 @@ public class VideoService {
                 thumbnailKey,
                 request.getWholeTime(),
                 request.getIsComment(),
-                !request.getAiFunction().equals("NONE"),
+                aiFunction,
                 request.getExpiredAt()
         );
         videoRepository.save(video);
@@ -274,11 +263,14 @@ public class VideoService {
             videoRepository.delete(video);
             videoMemberGroupMappingRepository.deleteByVideoId(videoId);
             videoCategoryMappingRepository.deleteByVideoId(videoId);
-            
+
             s3Util.deleteFileByKey(video.getVideoKey(), false);
             s3Util.deleteFileByKey(video.getThumbnailKey(), true);
         } else {
-            // TODO: 업로드 성공 -> AI 결과 생성
+            AiFunctionType aiFunctionType = video.getAiFunctionType();
+            if (!aiFunctionType.equals(NONE)) {
+                log.info("AI 기능 처리 시작: videoId={}, function={}", videoId, aiFunctionType);
+            }
         }
         return SuccessResponse.of(true);
     }
