@@ -3,6 +3,8 @@ package app.allstackproject.privideo.common.util;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MULTIPARTFILE_CONVERT_FAIL_IN_MEMORY;
 
 import app.allstackproject.privideo.common.exception.ApiException;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
@@ -13,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
@@ -123,6 +126,39 @@ public class S3Util {
         String extension = extractExtension(file.getOriginalFilename());
         log.info("Checking image extension: {}", extension);
         return ALLOWED_IMAGE_EXTENSIONS.contains(extension.toLowerCase());
+    }
+
+    // ================== Download ==================
+    
+    public File downloadToTempFile(String bucket, String key) throws IOException {
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .build();
+
+        try (ResponseInputStream<GetObjectResponse> s3Object = s3Client.getObject(getObjectRequest)) {
+
+            String extension = getFileExtension(key);
+            if (extension.isEmpty()) {
+                extension = ".tmp";
+            }
+
+            File tempFile = File.createTempFile("s3_", extension);
+            tempFile.deleteOnExit();
+
+            try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = s3Object.read(buffer)) != -1) {
+                    fos.write(buffer, 0, bytesRead);
+                }
+            }
+
+            log.info("S3 파일 임시 다운로드 완료: bucket={}, key={}, size={}MB",
+                    bucket, key, tempFile.length() / 1024 / 1024);
+
+            return tempFile;
+        }
     }
 
     // ================== Delete ==================

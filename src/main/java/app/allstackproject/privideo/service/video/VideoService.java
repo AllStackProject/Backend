@@ -67,7 +67,6 @@ public class VideoService {
     private final LogService logService;
     private final CategoryRepository categoryRepository;
     private final ScrapRepository scrapRepository;
-    private final QuizRepository quizRepository;
     private final OrganizationRepository organizationRepository;
     private final S3Util s3Util;
     private final CdnUrlProvider cdnUrlProvider;
@@ -267,9 +266,10 @@ public class VideoService {
             s3Util.deleteFileByKey(video.getVideoKey(), false);
             s3Util.deleteFileByKey(video.getThumbnailKey(), true);
         } else {
-            AiFunctionType aiFunctionType = video.getAiFunctionType();
-            if (!aiFunctionType.equals(NONE)) {
-                log.info("AI 기능 처리 시작: videoId={}, function={}", videoId, aiFunctionType);
+            AiFunctionType aiFunction = video.getAiFunctionType();
+            if (!aiFunction.equals(NONE)) {
+                log.info("AI 기능 처리 시작: videoId={}, function={}", videoId, aiFunction);
+                aiFunctionService.processAiFunction(videoId, video.getHlsPrefix(), aiFunction);
             }
         }
         return SuccessResponse.of(true);
