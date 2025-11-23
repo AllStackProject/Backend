@@ -40,6 +40,8 @@ import app.allstackproject.privideo.repository.video.CategoryRepository;
 import app.allstackproject.privideo.repository.history.HistoryRepository;
 import app.allstackproject.privideo.repository.quiz.QuizRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
+import app.allstackproject.privideo.repository.video.VideoCategoryMappingRepository;
+import app.allstackproject.privideo.repository.video.VideoMemberGroupMappingRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
 import java.math.BigInteger;
 import java.net.URL;
@@ -70,6 +72,8 @@ public class VideoService {
     private final OrganizationRepository organizationRepository;
     private final S3Util s3Util;
     private final CdnUrlProvider cdnUrlProvider;
+    private final VideoMemberGroupMappingRepository videoMemberGroupMappingRepository;
+    private final VideoCategoryMappingRepository videoCategoryMappingRepository;
 
     public JoinVideoSessionResult joinVideoSession(Long memberId, Long orgId, Long videoId) {
         Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
@@ -268,6 +272,9 @@ public class VideoService {
 
         if (!isSuccess) {
             videoRepository.delete(video);
+            videoMemberGroupMappingRepository.deleteByVideoId(videoId);
+            videoCategoryMappingRepository.deleteByVideoId(videoId);
+            
             s3Util.deleteFileByKey(video.getVideoKey(), false);
             s3Util.deleteFileByKey(video.getThumbnailKey(), true);
         } else {
