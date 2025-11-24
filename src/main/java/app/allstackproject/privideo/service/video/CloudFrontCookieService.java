@@ -21,8 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class CloudFrontCookieService {
 
-    @Value("${cloud.aws.cloudfront.domain}")
-    private String CDN_BASE_URL;
+    @Value("${cloud.aws.cloudfront.distribution-domain}")
+    private String DISTRIBUTION_DOMAIN;
 
     @Value("${cloud.aws.cloudfront.key-pair-id}")
     private String KEY_PAIR_ID;
@@ -33,16 +33,17 @@ public class CloudFrontCookieService {
     @Value("${cloud.aws.cloudfront.cookie-ttl-seconds}")
     private long COOKIE_TTL_SECONDS;
 
+    @Value("${cloud.aws.cloudfront.cookie-domain}")
+    private String COOKIE_DOMAIN;
+
     private PrivateKey cachedPrivateKey;
 
     public void addSignedCookies(HttpServletResponse response, String videoHlsPrefix) {
         long expirationTime = Instant.now().getEpochSecond() + COOKIE_TTL_SECONDS;
 
-        String domain = CDN_BASE_URL
-                .replace("https://", "")
-                .replace("http://", "");
-
-        String resource = String.format("https://%s/%s/*", domain, videoHlsPrefix);
+        String resource = String.format(
+                "https://%s/%s*", DISTRIBUTION_DOMAIN, videoHlsPrefix
+        );
 
         String policyJson = String.format(
                 "{\"Statement\":[{\"Resource\":\"%s\",\"Condition\":{\"DateLessThan\":{\"AWS:EpochTime\":%d}}}]}",
@@ -52,13 +53,9 @@ public class CloudFrontCookieService {
         String encodedPolicy = urlSafeBase64(policyJson.getBytes(UTF_8));
         String signature = signPolicy(policyJson);
 
-        addCookie(response, "CloudFront-Policy", encodedPolicy, domain);
-        addCookie(response, "CloudFront-Signature", signature, domain);
-        addCookie(response, "CloudFront-Key-Pair-Id", KEY_PAIR_ID, domain);
-
-        log.info("CloudFront signed cookies added for resource: {}", resource);
-        log.info("Cookie domain: {}", domain);
-        log.info("Expiration: {} ({})", expirationTime, Instant.ofEpochSecond(expirationTime));
+        addCookie(response, "CloudFront-Policy", encodedPolicy);
+        addCookie(response, "CloudFront-Signature", signature);
+        addCookie(response, "CloudFront-Key-Pair-Id", KEY_PAIR_ID);
     }
 
     private String signPolicy(String policyJson) {
@@ -98,12 +95,12 @@ public class CloudFrontCookieService {
                 .replace('/', '~');
     }
 
-    private void addCookie(HttpServletResponse response, String name, String value, String domain) {
+    private void addCookie(HttpServletResponse response, String name, String value) {
         String cookieHeader = String.format(
-                "%s=%s; Path=/; Domain=%s; Max-Age=%d; SameSite=None; Secure",
+                "%s=%s; Path=/; Domain=%s; Max-Age=%d;",
                 name,
                 value,
-                domain,
+                COOKIE_DOMAIN,
                 COOKIE_TTL_SECONDS
         );
 
@@ -112,6 +109,6 @@ public class CloudFrontCookieService {
         log.debug("Set-Cookie: {} = {} (domain: {})",
                 name,
                 value.substring(0, Math.min(30, value.length())) + "...",
-                domain);
+                COOKIE_DOMAIN);
     }
 }

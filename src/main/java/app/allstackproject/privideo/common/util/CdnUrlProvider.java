@@ -7,13 +7,13 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class CdnUrlProvider {
-    @Value("${cloud.aws.cloudfront.domain}")
-    private String CDN_BASE_URL;
+    @Value("${cloud.aws.cloudfront.distribution-domain}")
+    private String DISTRIBUTION_DOMAIN;
 
     public String generateImgUrl(String imgKey) {
         if (imgKey == null || imgKey.isBlank()) {
             return null;
         }
-        return CDN_BASE_URL + "/" + imgKey;
+        return DISTRIBUTION_DOMAIN + "/" + imgKey;
     }
 }

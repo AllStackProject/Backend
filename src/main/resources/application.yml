@@ -92,7 +92,8 @@ cloud:
       presign:
         upload-expiration: ${AWS_UPLOAD_EXPIRATION}
     cloudfront:
-      domain: ${CDN_BASE_URL}
+      distribution-domain: ${CDN_BASE_URL}
+      cookie-domain: ${COOKIE_DOMAIN}
       key-pair-id: ${CF_KEY_PAIR_ID}
       cookie-ttl-seconds: ${CF_COOKIE_TTL}
       private-key-base64: ${CF_PRIVATE_KEY_BASE64}

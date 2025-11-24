@@ -42,8 +42,8 @@ public class S3Util {
     @Value("${cloud.aws.s3.presign.upload-expiration}")
     private Duration uploadExpiration;
 
-    @Value("${cloud.aws.cloudfront.domain}")
-    private String CDN_BASE_URL;
+    @Value("${cloud.aws.cloudfront.distribution-domain}")
+    private String DISTRIBUTION_DOMAIN;
 
     private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png");
 
@@ -98,7 +98,7 @@ public class S3Util {
     }
 
     public String generatePlaybackUrl(String hlsPrefix) {
-        return CDN_BASE_URL + "/" + hlsPrefix + "/" + PLAY_FILE;
+        return DISTRIBUTION_DOMAIN + "/" + hlsPrefix + "/" + PLAY_FILE;
     }
 
     // ================== Key 생성 ==================
