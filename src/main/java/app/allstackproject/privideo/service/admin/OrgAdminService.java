@@ -64,7 +64,7 @@ public class OrgAdminService {
         String newImgKey = s3Util.generateImgKey(orgId, img.getOriginalFilename(), ORG);
 
         s3Util.uploadImgWithKey(img, newImgKey);
-        organization.modifyImg(newImgKey);
+        organization.setImgKey(newImgKey);
         s3Util.deleteFileByKey(oldImgKey, true);
 
         return true;

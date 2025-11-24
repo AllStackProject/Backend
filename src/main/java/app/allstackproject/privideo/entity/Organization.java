@@ -14,6 +14,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -33,6 +34,7 @@ public class Organization extends BaseEntity {
     private String name;
 
     @NotNull
+    @Setter
     @Column(name = "img_url")
     private String imgKey;
 
@@ -56,12 +58,9 @@ public class Organization extends BaseEntity {
         return Organization.builder()
                 .creator(creator)
                 .name(name)
+                .imgKey("")
                 .adImgUrl("")
                 .description(description)
                 .build();
-    }
-
-    public void modifyImg(String imgKey) {
-        this.imgKey = imgKey;
     }
 }

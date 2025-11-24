@@ -74,15 +74,15 @@ public class OrganizationService {
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException(USER_NOT_FOUND));
         Organization organization = Organization.create(user, createOrgRequest.getName(), createOrgRequest.getDesc());
 
-        String imgKey = s3Util.generateImgKey(organization.getId(), createOrgRequest.getImg().getName(), ORG);
-        s3Util.uploadImgWithKey(createOrgRequest.getImg(), imgKey);
-        organization.modifyImg(imgKey);
-
         Member member = Member.create(user, organization, createOrgRequest.getNickname(), true, APPROVED);
         member.adminPermissionSet();
 
         organizationRepository.save(organization);
         memberRepository.save(member);
+
+        String imgKey = s3Util.generateImgKey(organization.getId(), createOrgRequest.getImg().getName(), ORG);
+        s3Util.uploadImgWithKey(createOrgRequest.getImg(), imgKey);
+        organization.setImgKey(imgKey);
 
         String code = generateCode(user.getId());
         try {
