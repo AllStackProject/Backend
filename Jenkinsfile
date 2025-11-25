@@ -19,6 +19,11 @@ spec:
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.6.0-debug
       imagePullPolicy: Always
+      args:
+        - "--cache=true"
+        - "--cache-dir=/workspace/cache"
+        - "--compressed-caching=false"
+        - "--use-new-run"
       command:
         - cat
       tty: true
@@ -27,6 +32,10 @@ spec:
           mountPath: /kaniko/.docker
         - name: kaniko-storage
           mountPath: /workspace
+        - name: kaniko-storage
+          mountPath: /tmp
+        - name: kaniko-storage
+          mountPath: /kaniko
   volumes:
     - name: docker-config
       secret:
