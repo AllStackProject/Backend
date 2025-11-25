@@ -5,7 +5,7 @@ import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_
 import app.allstackproject.privideo.common.response.BaseResponse;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.dto.admin.AdminReadAllNoticeResponse;
-import app.allstackproject.privideo.dto.admin.ReadNoticeResponse;
+import app.allstackproject.privideo.dto.admin.AdminReadNoticeResponse;
 import app.allstackproject.privideo.service.admin.NoticeAdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -36,7 +36,7 @@ public class NoticeAdminController {
 
     @GetMapping("/notice/{noticeId}")
     @Operation(summary = "공지사항 조회")
-    public BaseResponse<ReadNoticeResponse> readNotice(@PathVariable Long orgId, @PathVariable Long noticeId) {
+    public BaseResponse<AdminReadNoticeResponse> readNotice(@PathVariable Long orgId, @PathVariable Long noticeId) {
         return new BaseResponse<>(noticeAdminService.readNotice(orgId, noticeId));
     }
 

@@ -6,7 +6,7 @@ import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.dto.admin.MemberGroupItem;
 import app.allstackproject.privideo.dto.admin.NoticeMemberGroupInfo;
 import app.allstackproject.privideo.dto.admin.AdminReadAllNoticeItem;
-import app.allstackproject.privideo.dto.admin.ReadNoticeResponse;
+import app.allstackproject.privideo.dto.admin.AdminReadNoticeResponse;
 import app.allstackproject.privideo.entity.Notice;
 import app.allstackproject.privideo.entity.NoticeMemberGroupMapping;
 import app.allstackproject.privideo.repository.member.MemberGroupRepository;
@@ -34,7 +34,8 @@ public class NoticeAdminService {
     }
 
     @Transactional(readOnly = true)
-    public ReadNoticeResponse readNotice(Long orgId, Long noticeId) {
+    public AdminReadNoticeResponse readNotice(Long orgId, Long noticeId) {
+        // TODO: 조회수 +1
         Notice notice = noticeRepository.findByIdAndOrganizationId(noticeId, orgId)
                 .orElseThrow(() -> new ApiException(NOTICE_NOT_IN_ORGANIZATION));
 
@@ -54,7 +55,7 @@ public class NoticeAdminService {
                 ))
                 .toList();
 
-        return ReadNoticeResponse.of(
+        return AdminReadNoticeResponse.of(
                 notice.getTitle(),
                 notice.getContent(),
                 groupInfos
