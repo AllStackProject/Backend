@@ -11,4 +11,6 @@ public interface VideoRepository extends JpaRepository<Video, Long>, VideoReposi
     boolean existsByIdAndOrganizationId(Long id, Long orgId);
 
     Optional<Video> findByIdAndOrganizationId(Long videoId, Long orgId);
+
+    Optional<Video> findByVideoKey(String videoKey);
 }

@@ -2,6 +2,7 @@ package app.allstackproject.privideo.repository.video.custom;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
+import static app.allstackproject.privideo.common.enumStatus.UploadStatusType.COMPLETE;
 import static app.allstackproject.privideo.entity.QCategory.category;
 import static app.allstackproject.privideo.entity.QHistory.history;
 import static app.allstackproject.privideo.entity.QMember.member;
@@ -47,6 +48,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .where(
                         video.id.eq(videoId),
                         video.organization.id.eq(orgId),
+                        video.uploadStatus.eq(COMPLETE),
                         member.organization.id.eq(orgId),
                         member.status.eq(ACTIVE),
                         member.joinStatus.eq(APPROVED),
@@ -81,6 +83,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .from(video)
                 .where(
                         video.organization.id.eq(orgId),
+                        video.uploadStatus.eq(COMPLETE),
                         video.creator.status.eq(ACTIVE),
                         video.creator.joinStatus.eq(APPROVED)
                 )
@@ -111,6 +114,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .from(video)
                 .where(
                         video.organization.id.eq(orgId),
+                        video.uploadStatus.eq(COMPLETE),
                         video.creator.id.eq(memberId),
                         video.creator.status.eq(ACTIVE),
                         video.creator.joinStatus.eq(APPROVED)
@@ -137,6 +141,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .leftJoin(history).on(history.video.id.eq(video.id))
                 .where(
                         video.organization.id.eq(orgId),
+                        video.uploadStatus.eq(COMPLETE),
                         member.joinStatus.eq(APPROVED),
                         member.status.eq(ACTIVE)
                 )
@@ -164,6 +169,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .leftJoin(history).on(history.video.id.eq(video.id))
                 .where(
                         video.organization.id.eq(orgId),
+                        video.uploadStatus.eq(COMPLETE),
                         video.creator.status.eq(ACTIVE),
                         video.creator.joinStatus.eq(APPROVED)
                 )
@@ -244,6 +250,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 )
                 .where(
                         video.organization.id.eq(orgId),
+                        video.uploadStatus.eq(COMPLETE),
                         videoMemberGroupMapping.id.isNull()
                                 .or(memberGroupMapping.id.isNotNull())
                 )
@@ -284,6 +291,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 )
                 .where(
                         video.id.in(videoIds),
+                        video.uploadStatus.eq(COMPLETE),
                         videoMemberGroupMapping.id.isNotNull(),
                         memberGroupMapping.id.isNotNull()
                 )
@@ -336,6 +344,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .where(
                         video.organization.id.eq(orgId),
                         video.title.containsIgnoreCase(keyword),
+                        video.uploadStatus.eq(COMPLETE),
                         videoMemberGroupMapping.id.isNull()
                                 .or(memberGroupMapping.id.isNotNull())
                 )
@@ -375,7 +384,10 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                                 JPAExpressions
                                         .select(videoMemberGroupMapping.memberGroup.id)
                                         .from(videoMemberGroupMapping)
-                                        .where(videoMemberGroupMapping.video.id.eq(videoId))
+                                        .where(
+                                                videoMemberGroupMapping.video.id.eq(videoId),
+                                                videoMemberGroupMapping.video.uploadStatus.eq(COMPLETE)
+                                        )
                         )
                 )
                 .exists();
@@ -414,6 +426,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .where(
                         video.organization.id.eq(orgId),
                         video.watchCnt.gt(0L),
+                        video.uploadStatus.eq(COMPLETE),
                         video.creator.joinStatus.eq(APPROVED),
                         video.creator.status.eq(ACTIVE),
                         quitRateCondition

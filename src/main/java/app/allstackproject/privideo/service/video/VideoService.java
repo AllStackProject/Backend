@@ -6,7 +6,10 @@ import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.QUIZ
 import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.SUMMARY;
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.S3ImgType.THUMBNAIL;
+import static app.allstackproject.privideo.common.enumStatus.UploadStatusType.COMPLETE;
+import static app.allstackproject.privideo.common.enumStatus.UploadStatusType.FAIL;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.HISTORY_NOT_FOUND;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_AIRFLOW_STATUS;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.IS_NOT_IMAGE_FILE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_IN_ORGANIZATION;
@@ -19,6 +22,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.service.video.LogService.SEGMENT_SECONDS;
 
 import app.allstackproject.privideo.common.enumStatus.AiFunctionType;
+import app.allstackproject.privideo.common.enumStatus.UploadStatusType;
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.common.util.CdnUrlProvider;
@@ -261,7 +265,39 @@ public class VideoService {
         return CreateVideoResponse.of(presignedUrl.toString(), video.getId());
     }
 
-    public SuccessResponse updateVideoEncodingStatus(Long memberId, Long orgId, Long videoId, boolean isSuccess) {
+    public SuccessResponse updateVideoEncodingResult(Long orgId, String videoUuid, String status) {
+        String videoKey = s3Util.composeVideoKey(orgId, videoUuid);
+        Video video = videoRepository.findByVideoKey(videoKey)
+                .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
+        Long videoId = video.getId();
+
+        if (!video.getOrganization().getId().equals(orgId)) {
+            throw new ApiException(VIDEO_NOT_IN_ORGANIZATION);
+        }
+
+        if (status.equals("SUCCESS")) {
+            AiFunctionType aiFunction = video.getAiFunctionType();
+            if (!aiFunction.equals(NONE)) {
+                log.info("AI 기능 처리 시작: videoId={}, function={}", videoId, aiFunction);
+                aiFunctionService.processAiFunction(videoId, video.getHlsPrefix(), aiFunction);
+            }
+
+            video.setUploadStatus(COMPLETE);
+        } else if (status.equals("FAILED")) {
+            videoMemberGroupMappingRepository.deleteByVideoId(videoId);
+            videoCategoryMappingRepository.deleteByVideoId(videoId);
+            video.setUploadStatus(FAIL);
+
+            s3Util.deleteFileByKey(video.getVideoKey(), false);
+            s3Util.deleteFileByKey(video.getThumbnailKey(), true);
+        } else {
+            throw new ApiException(INVALID_AIRFLOW_STATUS);
+        }
+
+        return SuccessResponse.of(true);
+    }
+
+    public SuccessResponse readVideoEncodingResult(Long memberId, Long orgId, Long videoId) {
         Video video = videoRepository.findById(videoId)
                 .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
         if (!video.getOrganization().getId().equals(orgId)) {
@@ -271,20 +307,15 @@ public class VideoService {
             throw new ApiException(VIDEO_CREATE_NOT_FOUND);
         }
 
-        if (!isSuccess) {
-            videoRepository.delete(video);
-            videoMemberGroupMappingRepository.deleteByVideoId(videoId);
-            videoCategoryMappingRepository.deleteByVideoId(videoId);
-
-            s3Util.deleteFileByKey(video.getVideoKey(), false);
-            s3Util.deleteFileByKey(video.getThumbnailKey(), true);
-        } else {
-            AiFunctionType aiFunction = video.getAiFunctionType();
-            if (!aiFunction.equals(NONE)) {
-                log.info("AI 기능 처리 시작: videoId={}, function={}", videoId, aiFunction);
-                aiFunctionService.processAiFunction(videoId, video.getHlsPrefix(), aiFunction);
-            }
+        UploadStatusType uploadStatus = video.getUploadStatus();
+        if (uploadStatus.equals(COMPLETE)) {
+            return SuccessResponse.of(true);
         }
-        return SuccessResponse.of(true);
+
+        if (uploadStatus.equals(FAIL)) {
+            videoRepository.delete(video);
+        }
+
+        return SuccessResponse.of(false);
     }
 }

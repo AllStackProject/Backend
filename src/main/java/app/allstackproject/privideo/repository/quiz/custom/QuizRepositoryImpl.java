@@ -1,6 +1,7 @@
 package app.allstackproject.privideo.repository.quiz.custom;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
+import static app.allstackproject.privideo.common.enumStatus.UploadStatusType.COMPLETE;
 import static app.allstackproject.privideo.entity.QQuiz.quiz;
 import static app.allstackproject.privideo.entity.QVideo.video;
 
@@ -26,7 +27,10 @@ public class QuizRepositoryImpl implements QuizRepositoryCustom {
                 ))
                 .from(quiz)
                 .join(quiz.video, video)
-                .where(video.id.eq(videoId))
+                .where(
+                        video.id.eq(videoId),
+                        video.uploadStatus.eq(COMPLETE)
+                )
                 .fetch();
     }
 
