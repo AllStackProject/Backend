@@ -11,6 +11,7 @@ import app.allstackproject.privideo.dto.admin.ReadGroupWatchCompleteLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadHourWatchCompleteCntResponse;
 import app.allstackproject.privideo.dto.admin.ReadMemberWatchLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadMemberWatchReportResponse;
+import app.allstackproject.privideo.dto.admin.ReadOrgAgeReportResponse;
 import app.allstackproject.privideo.dto.admin.ReadOrgGenderReportResponse;
 import app.allstackproject.privideo.dto.admin.ReadQuitLogResponse;
 import app.allstackproject.privideo.dto.admin.ReadVideoIntervalLogResponse;
@@ -114,6 +115,12 @@ public class StatsAdminController {
     @Operation(summary = "조직 내 성별 분포 조회")
     public BaseResponse<ReadOrgGenderReportResponse> readOrgGenderReport(@PathVariable(value = "orgId") Long orgId) {
         return new BaseResponse<>(ReadOrgGenderReportResponse.of(statsAdminService.readOrgGenderReport(orgId)));
+    }
+
+    @GetMapping("/report/age")
+    @Operation(summary = "조직 내 연령대 분포 조회")
+    public BaseResponse<ReadOrgAgeReportResponse> readOrgAgeReport(@PathVariable(value = "orgId") Long orgId) {
+        return new BaseResponse<>(ReadOrgAgeReportResponse.of(statsAdminService.readOrgAgeReport(orgId)));
     }
 
     @GetMapping("/report/interval")

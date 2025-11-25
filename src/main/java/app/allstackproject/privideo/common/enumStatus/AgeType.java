@@ -1,5 +1,8 @@
 package app.allstackproject.privideo.common.enumStatus;
 
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_AGE_TYPE;
+
+import app.allstackproject.privideo.common.exception.ApiException;
 import lombok.Getter;
 
 @Getter
@@ -15,5 +18,14 @@ public enum AgeType {
 
     AgeType(int value) {
         this.value = value;
+    }
+
+    public static AgeType from(int value) {
+        for (AgeType type : values()) {
+            if (type.value == value) {
+                return type;
+            }
+        }
+        throw new ApiException(INVALID_AGE_TYPE);
     }
 }

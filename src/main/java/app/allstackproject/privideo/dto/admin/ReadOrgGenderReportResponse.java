@@ -19,8 +19,8 @@ public class ReadOrgGenderReportResponse {
     }
 
     public static ReadOrgGenderReportResponse of(Map<GenderType, Long> genderMap) {
-        Long maleNum = genderMap.get(MALE) == null ? 0 : genderMap.get(MALE);
-        Long femaleNum = genderMap.get(FEMALE) == null ? 0 : genderMap.get(FEMALE);
+        Long maleNum = genderMap.getOrDefault(MALE, 0L);
+        Long femaleNum = genderMap.getOrDefault(FEMALE, 0L);
 
         return new ReadOrgGenderReportResponse(maleNum, femaleNum);
     }
