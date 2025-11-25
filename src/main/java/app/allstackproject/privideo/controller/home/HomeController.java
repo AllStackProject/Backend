@@ -3,8 +3,10 @@ package app.allstackproject.privideo.controller.home;
 import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_KEY;
 
 import app.allstackproject.privideo.common.response.BaseResponse;
+import app.allstackproject.privideo.dto.admin.AdminReadNoticeResponse;
 import app.allstackproject.privideo.dto.home.ReadAllNoticeResponse;
 import app.allstackproject.privideo.dto.home.ReadHomeResponse;
+import app.allstackproject.privideo.dto.home.ReadNoticeResponse;
 import app.allstackproject.privideo.dto.home.ReadSearchVideoResponse;
 import app.allstackproject.privideo.service.home.HomeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,5 +54,12 @@ public class HomeController {
     public BaseResponse<ReadAllNoticeResponse> readAllNotice(
             @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable Long orgId) {
         return new BaseResponse<>(ReadAllNoticeResponse.of(homeService.readAllNotice(orgId, memberId)));
+    }
+
+    @GetMapping("/notice/{noticeId}")
+    @Operation(summary = "공지사항 조회")
+    public BaseResponse<ReadNoticeResponse> readNotice(@AuthenticationPrincipal(expression = "memberId") Long memberId,
+                                                       @PathVariable Long orgId, @PathVariable Long noticeId) {
+        return new BaseResponse<>(homeService.readNotice(orgId, memberId, noticeId));
     }
 }

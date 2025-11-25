@@ -128,7 +128,8 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     /**
      * 15000: Notice 오류
      */
-    NOTICE_NOT_IN_ORGANIZATION(15001, HttpStatus.BAD_REQUEST, "해당 조직에서 찾을 수 없는 공지입니다.");
+    NOTICE_NOT_IN_ORGANIZATION(15001, HttpStatus.BAD_REQUEST, "해당 조직에서 찾을 수 없는 공지입니다."),
+    NOTICE_FORBIDDEN(15002, HttpStatus.BAD_REQUEST, "접근 권한이 없는 공지입니다.");
 
     private final int code;
     private final HttpStatus httpStatus;
