@@ -32,8 +32,7 @@ spec:
           mountPath: /workspace
         - name: kaniko-storage
           mountPath: /tmp
-        - name: kaniko-storage
-          mountPath: /kaniko
+          
   volumes:
     - name: docker-config
       secret:
