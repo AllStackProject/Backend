@@ -1,12 +1,20 @@
 package app.allstackproject.privideo.service.admin;
 
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.NOTICE_NOT_IN_ORGANIZATION;
 
 import app.allstackproject.privideo.common.exception.ApiException;
-import app.allstackproject.privideo.dto.admin.ReadAllNotificationItem;
+import app.allstackproject.privideo.dto.admin.MemberGroupItem;
+import app.allstackproject.privideo.dto.admin.NoticeMemberGroupInfo;
+import app.allstackproject.privideo.dto.admin.ReadAllNoticeItem;
+import app.allstackproject.privideo.dto.admin.ReadNoticeResponse;
+import app.allstackproject.privideo.entity.Notice;
+import app.allstackproject.privideo.entity.NoticeMemberGroupMapping;
+import app.allstackproject.privideo.repository.member.MemberGroupRepository;
+import app.allstackproject.privideo.repository.notice.NoticeMemberGroupMappingRepository;
 import app.allstackproject.privideo.repository.notice.NoticeRepository;
-import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,15 +24,38 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class NoticeAdminService {
 
-    private final OrganizationRepository organizationRepository;
     private final NoticeRepository noticeRepository;
+    private final MemberGroupRepository memberGroupRepository;
+    private final NoticeMemberGroupMappingRepository noticeMemberGroupMappingRepository;
 
-    public List<ReadAllNotificationItem> readAllNotification(Long orgId) {
-        if (!organizationRepository.existsById(orgId)) {
-            throw new ApiException(ORGANIZATION_NOT_FOUND);
-        }
-
+    public List<ReadAllNoticeItem> readAllNotice(Long orgId) {
         return noticeRepository.findAllByOrganizationId(orgId);
     }
 
+    public ReadNoticeResponse readNotice(Long orgId, Long noticeId) {
+        Notice notice = noticeRepository.findByIdAndOrganizationId(noticeId, orgId)
+                .orElseThrow(() -> new ApiException(NOTICE_NOT_IN_ORGANIZATION));
+
+        List<MemberGroupItem> allGroups = memberGroupRepository.findAllByOrganizationId(orgId);
+
+        List<NoticeMemberGroupMapping> mappings = noticeMemberGroupMappingRepository.findAllByNoticeId(noticeId);
+
+        Set<Long> selectedGroupIds = mappings.stream()
+                .map(mapping -> mapping.getMemberGroup().getId())
+                .collect(Collectors.toSet());
+
+        List<NoticeMemberGroupInfo> groupInfos = allGroups.stream()
+                .map(g -> new NoticeMemberGroupInfo(
+                        g.getId(),
+                        g.getName(),
+                        selectedGroupIds.contains(g.getId())
+                ))
+                .toList();
+
+        return ReadNoticeResponse.of(
+                notice.getTitle(),
+                notice.getContent(),
+                groupInfos
+        );
+    }
 }

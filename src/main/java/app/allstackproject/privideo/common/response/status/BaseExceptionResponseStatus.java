@@ -124,7 +124,11 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
      * 14000: CloudFront 오류
      */
     CLOUD_FRONT_SIGN_FAIL(14001, HttpStatus.INTERNAL_SERVER_ERROR, "CloudFront 서명 과정에서 문제가 생겼습니다."),
-    ;
+
+    /**
+     * 15000: Notice 오류
+     */
+    NOTICE_NOT_IN_ORGANIZATION(15001, HttpStatus.BAD_REQUEST, "해당 조직에서 찾을 수 없는 공지입니다.");
 
     private final int code;
     private final HttpStatus httpStatus;

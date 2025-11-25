@@ -5,11 +5,9 @@ import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPR
 import static app.allstackproject.privideo.entity.QMember.member;
 import static app.allstackproject.privideo.entity.QNotice.notice;
 import static app.allstackproject.privideo.entity.QNoticeMemberGroupMapping.noticeMemberGroupMapping;
-import static app.allstackproject.privideo.entity.QVideo.video;
-import static app.allstackproject.privideo.entity.QVideoMemberGroupMapping.videoMemberGroupMapping;
 
 import app.allstackproject.privideo.common.enumStatus.OpenScopeType;
-import app.allstackproject.privideo.dto.admin.ReadAllNotificationItem;
+import app.allstackproject.privideo.dto.admin.ReadAllNoticeItem;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.StringExpression;
@@ -24,7 +22,7 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<ReadAllNotificationItem> findAllByOrganizationId(Long orgId) {
+    public List<ReadAllNoticeItem> findAllByOrganizationId(Long orgId) {
         StringExpression openScope = new CaseBuilder()
                 .when(JPAExpressions
                         .selectOne()
@@ -34,7 +32,7 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
                 .then(OpenScopeType.GROUP.name())
                 .otherwise(OpenScopeType.PUBLIC.name());
 
-        return jpaQueryFactory.select(Projections.constructor(ReadAllNotificationItem.class,
+        return jpaQueryFactory.select(Projections.constructor(ReadAllNoticeItem.class,
                         notice.id,
                         notice.title,
                         member.nickname,

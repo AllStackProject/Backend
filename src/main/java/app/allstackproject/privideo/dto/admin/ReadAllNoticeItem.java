@@ -7,7 +7,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ReadAllNotificationItem {
+public class ReadAllNoticeItem {
     private Long id;
 
     private String title;
@@ -20,8 +20,8 @@ public class ReadAllNotificationItem {
 
     private OpenScopeType openScope;
 
-    public ReadAllNotificationItem(Long id, String title, String creator, LocalDateTime createdAt, Long watchCnt,
-                                   String openScope) {
+    public ReadAllNoticeItem(Long id, String title, String creator, LocalDateTime createdAt, Long watchCnt,
+                             String openScope) {
         this.id = id;
         this.title = title;
         this.creator = creator;
