@@ -3,11 +3,13 @@ package app.allstackproject.privideo.repository.notice.custom;
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.entity.QMember.member;
+import static app.allstackproject.privideo.entity.QMemberGroupMapping.memberGroupMapping;
 import static app.allstackproject.privideo.entity.QNotice.notice;
 import static app.allstackproject.privideo.entity.QNoticeMemberGroupMapping.noticeMemberGroupMapping;
 
 import app.allstackproject.privideo.common.enumStatus.OpenScopeType;
-import app.allstackproject.privideo.dto.admin.ReadAllNoticeItem;
+import app.allstackproject.privideo.dto.admin.AdminReadAllNoticeItem;
+import app.allstackproject.privideo.dto.home.ReadAllNoticeItem;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.StringExpression;
@@ -22,7 +24,7 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<ReadAllNoticeItem> findAllByOrganizationId(Long orgId) {
+    public List<AdminReadAllNoticeItem> findAllByOrganizationId(Long orgId) {
         StringExpression openScope = new CaseBuilder()
                 .when(JPAExpressions
                         .selectOne()
@@ -32,7 +34,7 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
                 .then(OpenScopeType.GROUP.name())
                 .otherwise(OpenScopeType.PUBLIC.name());
 
-        return jpaQueryFactory.select(Projections.constructor(ReadAllNoticeItem.class,
+        return jpaQueryFactory.select(Projections.constructor(AdminReadAllNoticeItem.class,
                         notice.id,
                         notice.title,
                         member.nickname,
@@ -47,6 +49,36 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
                         member.joinStatus.eq(APPROVED),
                         member.status.eq(ACTIVE)
                 )
+                .fetch();
+    }
+
+    @Override
+    public List<ReadAllNoticeItem> findAllVisibleByOrgIdAndMemberId(Long orgId, Long memberId) {
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        ReadAllNoticeItem.class,
+                        notice.id,
+                        notice.title,
+                        notice.createdAt,
+                        notice.watchCnt
+                ))
+                .from(notice)
+                .leftJoin(noticeMemberGroupMapping)
+                .on(noticeMemberGroupMapping.notice.eq(notice))
+                .leftJoin(memberGroupMapping)
+                .on(
+                        memberGroupMapping.memberGroup.eq(noticeMemberGroupMapping.memberGroup),
+                        memberGroupMapping.member.id.eq(memberId)
+                )
+                .where(
+                        notice.organization.id.eq(orgId),
+                        noticeMemberGroupMapping.id.isNull()
+                                .or(memberGroupMapping.id.isNotNull()),
+                        memberGroupMapping.member.status.eq(ACTIVE),
+                        memberGroupMapping.member.joinStatus.eq(APPROVED)
+                )
+                .groupBy(notice.id)
+                .orderBy(notice.createdAt.desc())
                 .fetch();
     }
 }

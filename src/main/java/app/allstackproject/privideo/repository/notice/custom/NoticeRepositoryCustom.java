@@ -1,8 +1,11 @@
 package app.allstackproject.privideo.repository.notice.custom;
 
-import app.allstackproject.privideo.dto.admin.ReadAllNoticeItem;
+import app.allstackproject.privideo.dto.admin.AdminReadAllNoticeItem;
+import app.allstackproject.privideo.dto.home.ReadAllNoticeItem;
 import java.util.List;
 
 public interface NoticeRepositoryCustom {
-    List<ReadAllNoticeItem> findAllByOrganizationId(Long orgId);
+    List<AdminReadAllNoticeItem> findAllByOrganizationId(Long orgId);
+
+    List<ReadAllNoticeItem> findAllVisibleByOrgIdAndMemberId(Long orgId, Long memberId);
 }

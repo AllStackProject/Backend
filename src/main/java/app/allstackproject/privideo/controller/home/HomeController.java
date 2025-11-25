@@ -3,6 +3,7 @@ package app.allstackproject.privideo.controller.home;
 import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_KEY;
 
 import app.allstackproject.privideo.common.response.BaseResponse;
+import app.allstackproject.privideo.dto.home.ReadAllNoticeResponse;
 import app.allstackproject.privideo.dto.home.ReadHomeResponse;
 import app.allstackproject.privideo.dto.home.ReadSearchVideoResponse;
 import app.allstackproject.privideo.service.home.HomeService;
@@ -44,5 +45,12 @@ public class HomeController {
             @PathVariable Long orgId,
             @RequestParam String keyword) {
         return new BaseResponse<>(ReadSearchVideoResponse.of(homeService.readSearchVideo(memberId, orgId, keyword)));
+    }
+
+    @GetMapping("/notice")
+    @Operation(summary = "공지사항 목록 조회")
+    public BaseResponse<ReadAllNoticeResponse> readAllNotice(
+            @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable Long orgId) {
+        return new BaseResponse<>(ReadAllNoticeResponse.of(homeService.readAllNotice(orgId, memberId)));
     }
 }

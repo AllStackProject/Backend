@@ -8,10 +8,12 @@ import app.allstackproject.privideo.common.enumStatus.FilterType;
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.util.CdnUrlProvider;
 import app.allstackproject.privideo.dto.home.HomeVideoItem;
+import app.allstackproject.privideo.dto.home.ReadAllNoticeItem;
 import app.allstackproject.privideo.dto.home.ReadHomeResponse;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.repository.member.MemberRepository;
+import app.allstackproject.privideo.repository.notice.NoticeRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
 import java.util.List;
@@ -28,6 +30,7 @@ public class HomeService {
     private final MemberRepository memberRepository;
     private final OrganizationRepository organizationRepository;
     private final VideoRepository videoRepository;
+    private final NoticeRepository noticeRepository;
     private final CdnUrlProvider cdnUrlProvider;
 
     @Transactional(readOnly = true)
@@ -83,5 +86,9 @@ public class HomeService {
         List<HomeVideoItem> result = videoRepository.findSearchVideos(orgId, memberId, keyword);
         result.forEach(item -> item.setThumbnailUrl(cdnUrlProvider.generateImgUrl(item.getThumbnailUrl())));
         return result;
+    }
+
+    public List<ReadAllNoticeItem> readAllNotice(Long orgId, Long memberId) {
+        return noticeRepository.findAllVisibleByOrgIdAndMemberId(orgId, memberId);
     }
 }
