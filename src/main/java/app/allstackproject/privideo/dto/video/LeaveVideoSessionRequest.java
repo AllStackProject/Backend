@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LeaveVideoSessionRequest {
+    private Long memberId;
+
     @NotBlank(message = "세션키는 공백일 수 없습니다.")
     private String sessionId;
 

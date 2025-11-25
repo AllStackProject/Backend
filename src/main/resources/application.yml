@@ -122,6 +122,7 @@ secret:
   jwt:
     secret-key: ${TOKEN_SECRET_KEY}
     expired-in: ${TOKEN_EXPIRED_IN}
+    excluded-patterns: ${JWT_EXCLUDED_PATTERNS:}
 ---
 spring:
   config:
