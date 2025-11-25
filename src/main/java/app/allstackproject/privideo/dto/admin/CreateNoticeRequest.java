@@ -21,5 +21,5 @@ public class CreateNoticeRequest {
     private OpenScopeType openScope;
 
     @NotNull
-    private List<Long> memberGroupIds;
+    private List<Long> memberGroups;
 }

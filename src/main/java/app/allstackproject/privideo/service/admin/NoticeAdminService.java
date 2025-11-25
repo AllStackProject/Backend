@@ -85,20 +85,20 @@ public class NoticeAdminService {
 
         noticeRepository.save(notice);
 
-        List<Long> memberGroupIds = createNoticeRequest.getMemberGroupIds();
+        List<Long> memberGroups = createNoticeRequest.getMemberGroups();
         OpenScopeType openScope = createNoticeRequest.getOpenScope();
 
         if (openScope == PUBLIC) {
             return true;
         }
 
-        if (openScope == OpenScopeType.GROUP && memberGroupIds.isEmpty()) {
+        if (openScope == OpenScopeType.GROUP && memberGroups.isEmpty()) {
             throw new ApiException(INVALID_MEMBER_GROUP_IDS);
         }
 
-        List<MemberGroup> groups = memberGroupRepository.findAllById(memberGroupIds);
+        List<MemberGroup> groups = memberGroupRepository.findAllById(memberGroups);
 
-        if (groups.size() != memberGroupIds.size()) {
+        if (groups.size() != memberGroups.size()) {
             throw new ApiException(INVALID_MEMBER_GROUP_IDS);
         }
 
