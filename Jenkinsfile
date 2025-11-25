@@ -33,13 +33,9 @@ spec:
         mountPath: /tmp               # snapshot, layer temp files
     resources:
       requests:
-        cpu: "1000m"
-        memory: "2Gi"
-        ephemeral-storage: "5Gi"
+        ephemeral-storage: "2Gi"
       limits:
-        cpu: "2000m"
-        memory: "4Gi"
-        ephemeral-storage: "10Gi"
+        ephemeral-storage: "4Gi"
 
   volumes:
   - name: docker-config
