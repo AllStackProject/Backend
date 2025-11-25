@@ -37,7 +37,7 @@ public class SuperAdminController {
     private final SuperAdminService superAdminService;
 
     @GetMapping("/members")
-    @Operation(summary = "조직 내 전체 멤버 조회")
+    @Operation(summary = "조직 내 멤버 목록 조회")
     public BaseResponse<ReadAllMemberResponse> readAllMember(@PathVariable Long orgId) {
         return new BaseResponse<>(ReadAllMemberResponse.of(superAdminService.readAllMember(orgId)));
     }
