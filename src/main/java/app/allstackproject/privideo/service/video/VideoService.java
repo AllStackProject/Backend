@@ -297,7 +297,7 @@ public class VideoService {
         return SuccessResponse.of(true);
     }
 
-    public SuccessResponse readVideoEncodingResult(Long memberId, Long orgId, Long videoId) {
+    public UploadStatusType readVideoEncodingResult(Long memberId, Long orgId, Long videoId) {
         Video video = videoRepository.findById(videoId)
                 .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
         if (!video.getOrganization().getId().equals(orgId)) {
@@ -308,14 +308,11 @@ public class VideoService {
         }
 
         UploadStatusType uploadStatus = video.getUploadStatus();
-        if (uploadStatus.equals(COMPLETE)) {
-            return SuccessResponse.of(true);
-        }
 
         if (uploadStatus.equals(FAIL)) {
             videoRepository.delete(video);
         }
 
-        return SuccessResponse.of(false);
+        return uploadStatus;
     }
 }

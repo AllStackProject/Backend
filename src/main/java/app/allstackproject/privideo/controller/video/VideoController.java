@@ -14,6 +14,7 @@ import app.allstackproject.privideo.dto.video.JoinVideoSessionResult;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionInfo;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionRequest;
 import app.allstackproject.privideo.dto.video.ReadVideoEncodingResultRequest;
+import app.allstackproject.privideo.dto.video.ReadVideoEncodingResultResponse;
 import app.allstackproject.privideo.service.video.CloudFrontCookieService;
 import app.allstackproject.privideo.service.video.VideoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -78,12 +79,13 @@ public class VideoController {
     @GetMapping("/{videoId}/success")
     @PreAuthorize("hasAuthority('org:granted')")
     @Operation(summary = "영상 업로드 성공 여부")
-    public BaseResponse<SuccessResponse> readVideoEncodingResult(
+    public BaseResponse<ReadVideoEncodingResultResponse> readVideoEncodingResult(
             @AuthenticationPrincipal(expression = "memberId") Long memberId,
             @PathVariable("orgId") Long orgId,
             @PathVariable("videoId") Long videoId
     ) {
-        return new BaseResponse<>(videoService.readVideoEncodingResult(memberId, orgId, videoId));
+        return new BaseResponse<>(
+                ReadVideoEncodingResultResponse.of(videoService.readVideoEncodingResult(memberId, orgId, videoId)));
     }
 
     @PostMapping("/{videoId}/join")
