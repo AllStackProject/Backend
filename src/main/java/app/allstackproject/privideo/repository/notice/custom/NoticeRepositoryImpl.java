@@ -55,7 +55,7 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
     @Override
     public List<ReadAllNoticeItem> findAllVisibleByOrgIdAndMemberId(Long orgId, Long memberId) {
         return jpaQueryFactory
-                .select(Projections.constructor(
+                .selectDistinct(Projections.constructor(
                         ReadAllNoticeItem.class,
                         notice.id,
                         notice.title,
@@ -73,11 +73,12 @@ public class NoticeRepositoryImpl implements NoticeRepositoryCustom {
                 .where(
                         notice.organization.id.eq(orgId),
                         noticeMemberGroupMapping.id.isNull()
-                                .or(memberGroupMapping.id.isNotNull()),
-                        memberGroupMapping.member.status.eq(ACTIVE),
-                        memberGroupMapping.member.joinStatus.eq(APPROVED)
+                                .or(
+                                        memberGroupMapping.id.isNotNull()
+                                                .and(memberGroupMapping.member.status.eq(ACTIVE))
+                                                .and(memberGroupMapping.member.joinStatus.eq(APPROVED))
+                                )
                 )
-                .groupBy(notice.id)
                 .orderBy(notice.createdAt.desc())
                 .fetch();
     }
