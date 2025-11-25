@@ -35,10 +35,8 @@ public class LeaveVideoSessionInfo {
         this.isQuit = isQuit;
     }
 
-    public static LeaveVideoSessionInfo create(Long orgId, Long videoId,
+    public static LeaveVideoSessionInfo create(Long memberId, Long orgId, Long videoId,
                                                LeaveVideoSessionRequest leaveVideoSessionRequest) {
-        // TODO: session_id로부터 member_id 가져오기
-        Long memberId = 0L;
         return LeaveVideoSessionInfo.builder()
                 .memberId(memberId)
                 .orgId(orgId)
