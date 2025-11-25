@@ -18,6 +18,11 @@ spec:
   - name: kaniko
     image: gcr.io/kaniko-project/executor:v1.6.0-debug
     imagePullPolicy: Always
+    command:
+      - /busybox/sh
+    args:
+      - -c
+      - sleep 99d          # 그냥 살아만 있게
     tty: true
     volumeMounts:
       - name: docker-config
