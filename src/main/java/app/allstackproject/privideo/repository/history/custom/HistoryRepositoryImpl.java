@@ -13,7 +13,7 @@ import static app.allstackproject.privideo.entity.QVideo.video;
 import static app.allstackproject.privideo.entity.QVideoCategoryMapping.videoCategoryMapping;
 import static app.allstackproject.privideo.entity.QVideoMemberGroupMapping.videoMemberGroupMapping;
 
-import app.allstackproject.privideo.common.enumStatus.VideoOpenScopeType;
+import app.allstackproject.privideo.common.enumStatus.OpenScopeType;
 import app.allstackproject.privideo.dto.admin.AllVideoWatchLogItem;
 import app.allstackproject.privideo.dto.admin.GroupWatchCompleteRate;
 import app.allstackproject.privideo.dto.admin.MemberAvgWatchRateDto;
@@ -122,8 +122,8 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                         .from(videoMemberGroupMapping)
                         .where(videoMemberGroupMapping.video.id.eq(video.id))
                         .exists())
-                .then(VideoOpenScopeType.GROUP.name())
-                .otherwise(VideoOpenScopeType.PUBLIC.name());
+                .then(OpenScopeType.GROUP.name())
+                .otherwise(OpenScopeType.PUBLIC.name());
 
         NumberExpression<Long> completeCount = new CaseBuilder()
                 .when(history.isComplete.eq(true)).then(1L)
