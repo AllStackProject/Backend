@@ -97,7 +97,7 @@ public class CloudFrontCookieService {
 
     private void addCookie(HttpServletResponse response, String name, String value) {
         String cookieHeader = String.format(
-                "%s=%s; Path=/; Domain=%s; Max-Age=%d;",
+                "%s=%s; Path=/; Domain=%s; Max-Age=%d; SameSite=None; Secure",
                 name,
                 value,
                 COOKIE_DOMAIN,
