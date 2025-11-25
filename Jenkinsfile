@@ -24,7 +24,7 @@ spec:
         mountPath: /kaniko/.docker    # DockerHub 인증
       - name: kaniko-storage
         mountPath: /workspace         # build context
-      - name: kaniko-storage
+      - name: kaniko-tmp
         mountPath: /tmp               # snapshot, layer temp files
     resources:
       requests:
@@ -47,6 +47,8 @@ spec:
   - name: kaniko-storage
     persistentVolumeClaim:
       claimName: pvc-hdd-kaniko
+  - name: kaniko-tmp
+    emptyDir: {}
 """)  {
 
   node(POD_LABEL) {
