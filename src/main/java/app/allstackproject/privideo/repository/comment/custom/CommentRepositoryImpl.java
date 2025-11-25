@@ -2,6 +2,7 @@ package app.allstackproject.privideo.repository.comment.custom;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
+import static app.allstackproject.privideo.common.enumStatus.UploadStatusType.COMPLETE;
 import static app.allstackproject.privideo.entity.QComment.comment;
 import static app.allstackproject.privideo.entity.QMember.member;
 import static app.allstackproject.privideo.entity.QUser.user;
@@ -33,6 +34,7 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
                 .join(comment.member, member)
                 .join(member.user, user)
                 .where(video.id.eq(videoId),
+                        video.uploadStatus.eq(COMPLETE),
                         comment.member.status.eq(ACTIVE),
                         comment.member.joinStatus.eq(APPROVED),
                         comment.member.user.status.eq(ACTIVE))

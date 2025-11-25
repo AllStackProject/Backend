@@ -2,6 +2,7 @@ package app.allstackproject.privideo.repository.history.custom;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
+import static app.allstackproject.privideo.common.enumStatus.UploadStatusType.COMPLETE;
 import static app.allstackproject.privideo.entity.QCategory.category;
 import static app.allstackproject.privideo.entity.QHistory.history;
 import static app.allstackproject.privideo.entity.QMember.member;
@@ -65,7 +66,8 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .join(history.video, video)
                 .where(
                         history.member.id.eq(memberId),
-                        history.member.joinStatus.eq(APPROVED)
+                        history.member.joinStatus.eq(APPROVED),
+                        video.uploadStatus.eq(COMPLETE)
                 )
                 .orderBy(history.lastWatchedAt.desc())
                 .fetch();
@@ -85,7 +87,8 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .join(history.video, video)
                 .where(
                         history.member.id.eq(memberId),
-                        history.member.joinStatus.eq(APPROVED)
+                        history.member.joinStatus.eq(APPROVED),
+                        video.uploadStatus.eq(COMPLETE)
                 )
                 .orderBy(history.lastWatchedAt.asc())
                 .fetch();
@@ -104,7 +107,8 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .where(
                         member.organization.id.eq(orgId),
                         history.member.joinStatus.eq(APPROVED),
-                        history.member.status.eq(ACTIVE)
+                        history.member.status.eq(ACTIVE),
+                        history.video.uploadStatus.eq(COMPLETE)
                 )
                 .groupBy(history.member.id)
                 .fetch();
@@ -148,6 +152,7 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .leftJoin(history).on(history.video.id.eq(video.id))
                 .where(
                         video.organization.id.eq(orgId),
+                        video.uploadStatus.eq(COMPLETE),
                         history.member.joinStatus.eq(APPROVED),
                         history.member.status.eq(ACTIVE)
                 )
@@ -174,6 +179,7 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .join(history.member, member)
                 .where(
                         history.video.id.eq(videoId),
+                        history.video.uploadStatus.eq(COMPLETE),
                         history.member.joinStatus.eq(APPROVED),
                         history.member.status.eq(ACTIVE)
                 )
@@ -231,7 +237,8 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                         history.isComplete.isTrue(),
                         history.completedAt.between(startDate, endDate),
                         history.member.joinStatus.eq(APPROVED),
-                        history.member.status.eq(ACTIVE)
+                        history.member.status.eq(ACTIVE),
+                        video.uploadStatus.eq(COMPLETE)
                 )
                 .groupBy(category.id, category.title)
                 .orderBy(category.id.count().desc())
@@ -258,7 +265,8 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                         history.isComplete.isTrue(),
                         history.completedAt.between(startDate, endDate),
                         history.member.joinStatus.eq(APPROVED),
-                        history.member.status.eq(ACTIVE)
+                        history.member.status.eq(ACTIVE),
+                        history.video.uploadStatus.eq(COMPLETE)
                 )
                 .groupBy(yearExpr, monthExpr)
                 .orderBy(yearExpr.asc(), monthExpr.asc())
@@ -301,7 +309,8 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .where(
                         memberGroup.organization.id.eq(orgId),
                         history.member.joinStatus.eq(APPROVED),
-                        history.member.status.eq(ACTIVE)
+                        history.member.status.eq(ACTIVE),
+                        history.video.uploadStatus.eq(COMPLETE)
                 )
                 .groupBy(memberGroup.id, memberGroup.name)
                 .orderBy(memberGroup.name.asc())

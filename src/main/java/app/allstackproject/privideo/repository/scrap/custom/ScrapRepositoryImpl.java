@@ -2,6 +2,7 @@ package app.allstackproject.privideo.repository.scrap.custom;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
+import static app.allstackproject.privideo.common.enumStatus.UploadStatusType.COMPLETE;
 import static app.allstackproject.privideo.entity.QHistory.history;
 import static app.allstackproject.privideo.entity.QMember.member;
 import static app.allstackproject.privideo.entity.QMemberGroupMapping.memberGroupMapping;
@@ -50,6 +51,7 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
                 .where(
                         video.id.eq(videoId),
                         video.organization.id.eq(orgId),
+                        video.uploadStatus.eq(COMPLETE),
                         openToAll.or(memberGroupMatch)
                 )
                 .fetchFirst();
@@ -63,7 +65,8 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
                 .delete(scrap)
                 .where(
                         scrap.member.id.eq(memberId),
-                        scrap.video.id.eq(videoId)
+                        scrap.video.id.eq(videoId),
+                        scrap.video.uploadStatus.eq(COMPLETE)
                 )
                 .execute();
     }
@@ -75,7 +78,9 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
                 .from(scrap)
                 .where(
                         scrap.member.id.eq(memberId),
-                        scrap.video.id.eq(history.video.id))
+                        scrap.video.id.eq(history.video.id),
+                        scrap.video.uploadStatus.eq(COMPLETE)
+                )
                 .exists();
 
         return jpaQueryFactory
