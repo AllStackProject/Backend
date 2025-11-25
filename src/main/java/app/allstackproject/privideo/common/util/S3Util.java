@@ -128,6 +128,10 @@ public class S3Util {
         return "hls/" + basePath;
     }
 
+    public String composeVideoKey(Long orgId, String videoUuid) {
+        return String.format("org-%d/%s/original%s", orgId, videoUuid, VIDEO_EXTENSION);
+    }
+
     public boolean isImageFile(MultipartFile file) {
         String extension = extractExtension(file.getOriginalFilename());
         log.info("Checking image extension: {}", extension);

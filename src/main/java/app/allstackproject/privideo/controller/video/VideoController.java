@@ -13,6 +13,7 @@ import app.allstackproject.privideo.dto.video.JoinVideoSessionResponse;
 import app.allstackproject.privideo.dto.video.JoinVideoSessionResult;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionInfo;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionRequest;
+import app.allstackproject.privideo.dto.video.ReadVideoEncodingResultRequest;
 import app.allstackproject.privideo.service.video.CloudFrontCookieService;
 import app.allstackproject.privideo.service.video.VideoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,9 +26,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -64,16 +65,25 @@ public class VideoController {
         return new BaseResponse<>(videoService.createVideo(memberId, orgId, createVideoRequest));
     }
 
-    @PutMapping("/{videoId}")
+    @PostMapping("/airflow/status")
+    @Operation(summary = "영상 인코딩 성공 여부")
+    public BaseResponse<SuccessResponse> readVideoEncodingResult(
+            @Valid @RequestBody ReadVideoEncodingResultRequest updateVideoEncodingResultRequest,
+            @PathVariable("orgId") Long orgId) {
+        return new BaseResponse<>(
+                videoService.updateVideoEncodingResult(orgId, updateVideoEncodingResultRequest.getVideoUuid(),
+                        updateVideoEncodingResultRequest.getStatus()));
+    }
+
+    @GetMapping("/{videoId}/success")
     @PreAuthorize("hasAuthority('org:granted')")
     @Operation(summary = "영상 업로드 성공 여부")
-    public BaseResponse<SuccessResponse> notifyVideoEncodingResult(
+    public BaseResponse<SuccessResponse> readVideoEncodingResult(
             @AuthenticationPrincipal(expression = "memberId") Long memberId,
             @PathVariable("orgId") Long orgId,
-            @PathVariable("videoId") Long videoId,
-            @RequestParam("is_success") boolean isSuccess
+            @PathVariable("videoId") Long videoId
     ) {
-        return new BaseResponse<>(videoService.updateVideoEncodingStatus(memberId, orgId, videoId, isSuccess));
+        return new BaseResponse<>(videoService.readVideoEncodingResult(memberId, orgId, videoId));
     }
 
     @PostMapping("/{videoId}/join")

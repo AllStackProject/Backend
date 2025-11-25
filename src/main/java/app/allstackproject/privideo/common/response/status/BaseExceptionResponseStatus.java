@@ -86,6 +86,7 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     VIDEO_NOT_SCRAPPED(8008, HttpStatus.NOT_FOUND, "해당 영상은 스크랩되어있지 않습니다."),
     VIDEO_CREATE_NOT_FOUND(8009, HttpStatus.NOT_FOUND, "해당 사용자가 업로드한 영상이 아닙니다."),
     INVALID_AI_FUNCTION_TYPE(8010, HttpStatus.BAD_REQUEST, "AI 기능의 유형은 NONE, QUIZ, FEEDBACK, SUMMARY 중 하나여야 합니다."),
+    INVALID_AIRFLOW_STATUS(8011, HttpStatus.BAD_REQUEST, "Airflow 요청에서 status가 올바르지 않습니다."),
 
     /**
      * 9000: History 오류
