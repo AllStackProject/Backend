@@ -58,4 +58,8 @@ public class Notice extends BaseEntity {
                 .watchCnt(watchCnt)
                 .build();
     }
+
+    public void watch() {
+        this.watchCnt++;
+    }
 }

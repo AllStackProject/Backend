@@ -33,11 +33,10 @@ public class NoticeAdminService {
         return noticeRepository.findAllByOrganizationId(orgId);
     }
 
-    @Transactional(readOnly = true)
     public AdminReadNoticeResponse readNotice(Long orgId, Long noticeId) {
-        // TODO: 조회수 +1
         Notice notice = noticeRepository.findByIdAndOrganizationId(noticeId, orgId)
                 .orElseThrow(() -> new ApiException(NOTICE_NOT_IN_ORGANIZATION));
+        notice.watch();
 
         List<MemberGroupItem> allGroups = memberGroupRepository.findAllByOrganizationId(orgId);
 

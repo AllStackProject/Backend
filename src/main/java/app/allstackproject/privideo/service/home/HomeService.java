@@ -103,10 +103,10 @@ public class HomeService {
         return noticeRepository.findAllVisibleByOrgIdAndMemberId(orgId, memberId);
     }
 
-    @Transactional(readOnly = true)
     public ReadNoticeResponse readNotice(Long orgId, Long memberId, Long noticeId) {
         Notice notice = noticeRepository.findByIdAndOrganizationId(noticeId, orgId)
                 .orElseThrow(() -> new ApiException(NOTICE_NOT_IN_ORGANIZATION));
+        notice.watch();
 
         List<Long> noticeGroupIds = noticeMemberGroupMappingRepository.findAllByNoticeId(noticeId)
                 .stream()
