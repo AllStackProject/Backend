@@ -1,7 +1,10 @@
 package app.allstackproject.privideo.entity;
 
+import app.allstackproject.privideo.common.enumStatus.AiFunctionType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -15,6 +18,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -41,8 +45,15 @@ public class Video extends BaseEntity {
     @Column(length = 1000)
     private String description;
 
-    @NotBlank
-    private String thumbnailUrl;
+    @NotNull
+    private String videoKey;
+
+    @NotNull
+    private String thumbnailKey;
+
+    @Setter
+    @NotNull
+    private String hlsPrefix;
 
     @NotNull
     private Long wholeTime;
@@ -51,11 +62,15 @@ public class Video extends BaseEntity {
     private Boolean isComment;
 
     @NotNull
-    private Boolean isAiFunction;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ai_function_type")
+    private AiFunctionType aiFunctionType;
 
+    @Setter
     @Column(columnDefinition = "text")
     private String aiFeedback;
 
+    @Setter
     @Column(columnDefinition = "text")
     private String aiSummary;
 
@@ -69,17 +84,20 @@ public class Video extends BaseEntity {
     private Long quitCnt;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Video(Organization organization, Member creator, String title, String description, String thumbnailUrl,
-                  Long wholeTime, boolean isComment, boolean isAiFunction, String aiFeedback, String aiSummary,
-                  LocalDate expiredAt, Long watchCnt, Long quitCnt) {
+    private Video(Organization organization, Member creator, String title, String description, String videoKey,
+                  String thumbnailKey, String hlsPrefix, Long wholeTime, boolean isComment,
+                  AiFunctionType aiFunctionType, String aiFeedback, String aiSummary, LocalDate expiredAt,
+                  Long watchCnt, Long quitCnt) {
         this.organization = organization;
         this.creator = creator;
         this.title = title;
         this.description = description;
-        this.thumbnailUrl = thumbnailUrl;
+        this.videoKey = videoKey;
+        this.thumbnailKey = thumbnailKey;
+        this.hlsPrefix = hlsPrefix;
         this.wholeTime = wholeTime;
         this.isComment = isComment;
-        this.isAiFunction = isAiFunction;
+        this.aiFunctionType = aiFunctionType;
         this.aiFeedback = aiFeedback;
         this.aiSummary = aiSummary;
         this.expiredAt = expiredAt;
@@ -88,17 +106,10 @@ public class Video extends BaseEntity {
     }
 
     public static Video create(Organization organization, Member creator, String title, String description,
-                               String thumbnailUrl, Long wholeTime, boolean isComment, boolean isAiFunction,
-                               String aiFeedback, String aiSummary,
-                               LocalDate expiredAt, Long watchCnt, Long quitCnt) {
+                               String videoKey, String thumbnailKey, Long wholeTime, boolean isComment,
+                               AiFunctionType aiFunctionType, LocalDate expiredAt) {
         if (expiredAt == null) {
             expiredAt = LocalDate.now().plusYears(100);
-        }
-        if (watchCnt == null) {
-            watchCnt = 0L;
-        }
-        if (quitCnt == null) {
-            quitCnt = 0L;
         }
 
         return Video.builder()
@@ -106,15 +117,15 @@ public class Video extends BaseEntity {
                 .creator(creator)
                 .title(title)
                 .description(description)
-                .thumbnailUrl(thumbnailUrl)
+                .videoKey(videoKey)
+                .thumbnailKey(thumbnailKey)
+                .hlsPrefix("")
                 .wholeTime(wholeTime)
                 .isComment(isComment)
-                .isAiFunction(isAiFunction)
-                .aiFeedback(aiFeedback)
-                .aiSummary(aiSummary)
+                .aiFunctionType(aiFunctionType)
                 .expiredAt(expiredAt)
-                .watchCnt(watchCnt)
-                .quitCnt(quitCnt)
+                .watchCnt(0L)
+                .quitCnt(0L)
                 .build();
     }
 

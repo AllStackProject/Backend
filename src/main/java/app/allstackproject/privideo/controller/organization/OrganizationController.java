@@ -70,11 +70,7 @@ public class OrganizationController {
             throw new ApiException(INVALID_ORG_CREATE, getErrorMessage(bindingResult));
         }
 
-        String bucketName = "bucketName";
-        String imgUrl = "imgUrl";
-        // TODO: S3에 이미지 업로드
-
-        CreatOrgResult result = organizationService.createOrg(userId, createOrgRequest, imgUrl);
+        CreatOrgResult result = organizationService.createOrg(userId, createOrgRequest);
         response.setHeader(ACCESS_TOKEN_HEADER, TOKEN_PREFIX + result.getToken());
         return new BaseResponse<>(CreateOrgResponse.of(result.getId()));
     }

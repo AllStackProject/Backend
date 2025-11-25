@@ -1,6 +1,5 @@
 package app.allstackproject.privideo.service;
 
-import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.COMMENT_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.COMMENT_UNAUTHORIZED_DELETE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_COMMENT_REQUEST;
@@ -8,6 +7,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_COMMENT_NOT_ALLOWED;
 
 import app.allstackproject.privideo.common.exception.ApiException;
+import app.allstackproject.privideo.common.util.CdnUrlProvider;
 import app.allstackproject.privideo.dto.comment.CommentResponse;
 import app.allstackproject.privideo.dto.comment.CommentsResult;
 import app.allstackproject.privideo.dto.comment.CreateCommentRequest;
@@ -31,11 +31,12 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final VideoRepository videoRepository;
     private final MemberRepository memberRepository;
+    private final CdnUrlProvider cdnUrlProvider;
 
     @Transactional(readOnly = true)
     public CommentResponse getUserComments(Long memberId, Long orgId) {
         List<Comment> commentList = commentRepository.findByMemberIdAndVideoOrganizationId(memberId, orgId);
-        return CommentResponse.of(commentList);
+        return CommentResponse.of(commentList, cdnUrlProvider);
     }
 
     public boolean deleteComment(Long memberId, Long orgId, Long commentId) {

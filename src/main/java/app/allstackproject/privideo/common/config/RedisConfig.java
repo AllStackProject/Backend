@@ -1,12 +1,13 @@
 package app.allstackproject.privideo.common.config;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.RedisSentinelConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -17,23 +18,34 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 @RequiredArgsConstructor
 @EnableRedisRepositories
+@Profile("!localRedis")
 public class RedisConfig {
 
-    private final RedisProperties redisProperties;
-    
+    @Value("${redis.sentinel.master}")
+    private String sentinelMaster;
+
+    @Value("${redis.sentinel.host}")
+    private String sentinelHost;
+
+    @Value("${redis.sentinel.port}")
+    private int sentinelPort;
+
+    @Value("${redis.password}")
+    private String redisPassword;
+
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
+        RedisSentinelConfiguration sentinelConfiguration = new RedisSentinelConfiguration()
+                .master(sentinelMaster)
+                .sentinel(sentinelHost, sentinelPort);
 
-        RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration();
-        redisConfig.setHostName(redisProperties.getHost());
-        redisConfig.setPort(redisProperties.getPort());
-        redisConfig.setDatabase(redisProperties.getDatabase());
-
-        if (redisProperties.getPassword() != null && !redisProperties.getPassword().isEmpty()) {
-            redisConfig.setPassword(redisProperties.getPassword());
+        if (redisPassword != null && !redisPassword.isEmpty()) {
+            sentinelConfiguration.setPassword(redisPassword);
         }
 
-        return new LettuceConnectionFactory(redisConfig);
+        LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(sentinelConfiguration);
+        lettuceConnectionFactory.afterPropertiesSet();
+        return lettuceConnectionFactory;
     }
 
     @Bean

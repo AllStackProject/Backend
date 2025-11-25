@@ -52,6 +52,7 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     ALREADY_REJECTED_MEMBER(5011, HttpStatus.BAD_REQUEST, "이미 해당 조직에 가입 거절 처리된 멤버입니다."),
     ALREADY_REQUESTED_MEMBER(5012, HttpStatus.BAD_REQUEST, "이미 가입 요청을 보낸 멤버입니다. 관리자 승인을 기다려주세요."),
     MEMBER_NOT_IN_ORGANIZATION(5013, HttpStatus.NOT_FOUND, "해당 조직에서 찾을 수 없는 멤버입니다."),
+    DUPLICATE_NICKNAME(5014, HttpStatus.BAD_REQUEST, "이미 존재하는 닉네임입니다."),
 
     /**
      * 6000: Comment 오류
@@ -83,6 +84,8 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     INVALID_SCRAP_REQUEST(8006, HttpStatus.BAD_REQUEST, "영상 스크랩 요청에서 올바르지 않은 값이 존재합니다."),
     VIDEO_ALREADY_SCRAPPED(8007, HttpStatus.BAD_REQUEST, "해당 영상은 이미 스크랩되었습니다."),
     VIDEO_NOT_SCRAPPED(8008, HttpStatus.NOT_FOUND, "해당 영상은 스크랩되어있지 않습니다."),
+    VIDEO_CREATE_NOT_FOUND(8009, HttpStatus.NOT_FOUND, "해당 사용자가 업로드한 영상이 아닙니다."),
+    INVALID_AI_FUNCTION_TYPE(8010, HttpStatus.BAD_REQUEST, "AI 기능의 유형은 NONE, QUIZ, FEEDBACK, SUMMARY 중 하나여야 합니다."),
 
     /**
      * 9000: History 오류
@@ -90,8 +93,9 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     HISTORY_NOT_FOUND(9001, HttpStatus.NOT_FOUND, "시청 내역을 찾을 수 없습니다."),
 
     /**
-     * 10000: Quiz 오류
+     * 10000: Home 오류
      */
+    INVALID_HOME_FILTER(10001, HttpStatus.BAD_REQUEST, "영상 조회 필터는 recommend, recent, popular 중 하나여야 합니다."),
 
     /***
      * 11000: MultipartFile 오류
@@ -112,7 +116,13 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
      */
     CATEGORY_NOT_FOUND(13001, HttpStatus.NOT_FOUND, "해당 멤버 그룹 내에서 존재하지 않는 카테고리입니다."),
     CATEGORY_ALREADY_EXIST(13001, HttpStatus.BAD_REQUEST, "해당 멤버 그룹 내에서 이미 존재하는 카테고리입니다."),
-    DUPLICATE_CATEGORY_NAME(13002, HttpStatus.BAD_REQUEST, "해당 멤버 그룹 내에서 중복되는 카테고리 이름이 존재합니다.");
+    DUPLICATE_CATEGORY_NAME(13002, HttpStatus.BAD_REQUEST, "해당 멤버 그룹 내에서 중복되는 카테고리 이름이 존재합니다."),
+
+    /**
+     * 14000: CloudFront 오류
+     */
+    CLOUD_FRONT_SIGN_FAIL(14001, HttpStatus.INTERNAL_SERVER_ERROR, "CloudFront 서명 과정에서 문제가 생겼습니다."),
+    ;
 
     private final int code;
     private final HttpStatus httpStatus;

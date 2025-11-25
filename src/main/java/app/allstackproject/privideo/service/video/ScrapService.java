@@ -1,11 +1,11 @@
 package app.allstackproject.privideo.service.video;
 
-import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_SCRAP_REQUEST;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_ALREADY_SCRAPPED;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_SCRAPPED;
 
 import app.allstackproject.privideo.common.exception.ApiException;
+import app.allstackproject.privideo.common.util.CdnUrlProvider;
 import app.allstackproject.privideo.dto.history.HistoryItem;
 import app.allstackproject.privideo.dto.scrap.ScrapResponse;
 import app.allstackproject.privideo.entity.Scrap;
@@ -26,10 +26,12 @@ public class ScrapService {
     private final ScrapRepository scrapRepository;
     private final MemberRepository memberRepository;
     private final VideoRepository videoRepository;
+    private final CdnUrlProvider cdnUrlProvider;
 
     @Transactional(readOnly = true)
     public ScrapResponse getUserScraps(Long memberId, Long orgId) {
         List<HistoryItem> scrapList = scrapRepository.findByMemberIdAndOrganizationId(memberId, orgId);
+        scrapList.forEach(scrap -> scrap.setImg(cdnUrlProvider.generateImgUrl(scrap.getImg())));
         return ScrapResponse.of(scrapList);
     }
 

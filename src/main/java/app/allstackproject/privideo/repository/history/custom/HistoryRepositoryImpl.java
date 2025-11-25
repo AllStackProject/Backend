@@ -55,7 +55,7 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                         VideoHistory.class,
                         video.id,
                         video.title,
-                        video.thumbnailUrl,
+                        video.thumbnailKey,
                         history.watchRate,
                         history.lastWatchedAt,
                         video.wholeTime,
@@ -116,10 +116,7 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .when(JPAExpressions
                         .selectOne()
                         .from(videoMemberGroupMapping)
-                        .where(
-                                videoMemberGroupMapping.video.id.eq(video.id),
-                                videoMemberGroupMapping.status.eq(ACTIVE)
-                        )
+                        .where(videoMemberGroupMapping.video.id.eq(video.id))
                         .exists())
                 .then(VideoOpenScopeType.GROUP.name())
                 .otherwise(VideoOpenScopeType.PUBLIC.name());
@@ -196,10 +193,7 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                 .select(memberGroupMapping.member.id, memberGroup.name)
                 .from(memberGroupMapping)
                 .join(memberGroupMapping.memberGroup, memberGroup)
-                .where(
-                        memberGroupMapping.member.id.in(memberIds),
-                        memberGroupMapping.status.eq(ACTIVE)
-                )
+                .where(memberGroupMapping.member.id.in(memberIds))
                 .fetch()
                 .stream()
                 .collect(Collectors.groupingBy(
@@ -297,10 +291,7 @@ public class HistoryRepositoryImpl implements HistoryRepositoryCustom {
                         completeRate
                 ))
                 .from(memberGroup)
-                .leftJoin(memberGroupMapping).on(
-                        memberGroupMapping.memberGroup.id.eq(memberGroup.id),
-                        memberGroupMapping.status.eq(ACTIVE)
-                )
+                .leftJoin(memberGroupMapping).on(memberGroupMapping.memberGroup.id.eq(memberGroup.id))
                 .leftJoin(memberGroupMapping.member, member)
                 .leftJoin(history).on(
                         history.member.id.eq(member.id),

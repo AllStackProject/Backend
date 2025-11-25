@@ -2,17 +2,22 @@ package app.allstackproject.privideo.repository.video.custom;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
+import static app.allstackproject.privideo.entity.QCategory.category;
 import static app.allstackproject.privideo.entity.QHistory.history;
 import static app.allstackproject.privideo.entity.QMember.member;
 import static app.allstackproject.privideo.entity.QMemberGroupMapping.memberGroupMapping;
+import static app.allstackproject.privideo.entity.QScrap.scrap;
 import static app.allstackproject.privideo.entity.QVideo.video;
+import static app.allstackproject.privideo.entity.QVideoCategoryMapping.videoCategoryMapping;
 import static app.allstackproject.privideo.entity.QVideoMemberGroupMapping.videoMemberGroupMapping;
 
+import app.allstackproject.privideo.common.enumStatus.FilterType;
 import app.allstackproject.privideo.common.enumStatus.VideoOpenScopeType;
 import app.allstackproject.privideo.dto.admin.QuitLogItem;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoIntervalLogItem;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoItem;
 import app.allstackproject.privideo.dto.admin.VideoRankItem;
+import app.allstackproject.privideo.dto.home.HomeVideoItem;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -24,6 +29,7 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 
@@ -66,14 +72,49 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .select(Projections.constructor(ReadAllVideoItem.class,
                         video.id,
                         video.title,
-                        video.thumbnailUrl,
+                        video.thumbnailKey,
                         video.createdAt,
                         video.expiredAt,
                         openScope,
                         video.watchCnt
                 ))
                 .from(video)
-                .where(video.organization.id.eq(orgId))
+                .where(
+                        video.organization.id.eq(orgId),
+                        video.creator.status.eq(ACTIVE),
+                        video.creator.joinStatus.eq(APPROVED)
+                )
+                .fetch();
+    }
+
+    @Override
+    public List<ReadAllVideoItem> findByOrgIdAndCreatorId(Long orgId, Long memberId) {
+        StringExpression openScope = new CaseBuilder()
+                .when(JPAExpressions
+                        .selectOne()
+                        .from(videoMemberGroupMapping)
+                        .where(videoMemberGroupMapping.video.id.eq(video.id))
+                        .exists())
+                .then(VideoOpenScopeType.GROUP.name())
+                .otherwise(VideoOpenScopeType.PUBLIC.name());
+
+        return jpaQueryFactory
+                .select(Projections.constructor(ReadAllVideoItem.class,
+                        video.id,
+                        video.title,
+                        video.thumbnailKey,
+                        video.createdAt,
+                        video.expiredAt,
+                        openScope,
+                        video.watchCnt
+                ))
+                .from(video)
+                .where(
+                        video.organization.id.eq(orgId),
+                        video.creator.id.eq(memberId),
+                        video.creator.status.eq(ACTIVE),
+                        video.creator.joinStatus.eq(APPROVED)
+                )
                 .fetch();
     }
 
@@ -123,8 +164,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .leftJoin(history).on(history.video.id.eq(video.id))
                 .where(
                         video.organization.id.eq(orgId),
-                        history.member.status.eq(ACTIVE),
-                        history.member.joinStatus.eq(APPROVED)
+                        video.creator.status.eq(ACTIVE),
+                        video.creator.joinStatus.eq(APPROVED)
                 )
                 .groupBy(video.id, video.title, video.createdAt)
                 .orderBy(
@@ -158,6 +199,157 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     @Override
     public List<QuitLogItem> findLowQuitRateVideosByOrgId(Long orgId, int limit) {
         return findQuitRateVideosByOrgId(orgId, limit, false);
+    }
+
+    @Override
+    public List<HomeVideoItem> findHomeVideos(Long orgId, Long memberId, FilterType filter) {
+        BooleanExpression scrappedExists = JPAExpressions
+                .selectOne()
+                .from(scrap)
+                .where(
+                        scrap.member.id.eq(memberId),
+                        scrap.video.id.eq(video.id)
+                )
+                .exists();
+
+        OrderSpecifier<?> orderBy;
+        switch (filter) {
+            case RECENT -> orderBy = video.createdAt.desc();
+            case POPULAR -> orderBy = video.watchCnt.desc();
+            case RECOMMEND -> orderBy = video.watchCnt.asc();
+            default -> orderBy = video.createdAt.desc();
+        }
+
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        HomeVideoItem.class,
+                        video.id,
+                        video.title,
+                        video.thumbnailKey,
+                        video.creator.nickname,
+                        video.wholeTime,
+                        video.watchCnt,
+                        video.createdAt,
+                        scrappedExists
+                ))
+                .from(video)
+                .leftJoin(videoMemberGroupMapping)
+                .on(videoMemberGroupMapping.video.eq(video))
+                .leftJoin(memberGroupMapping)
+                .on(
+                        memberGroupMapping.memberGroup.eq(videoMemberGroupMapping.memberGroup),
+                        memberGroupMapping.member.id.eq(memberId),
+                        video.creator.joinStatus.eq(APPROVED),
+                        video.creator.status.eq(ACTIVE)
+                )
+                .where(
+                        video.organization.id.eq(orgId),
+                        videoMemberGroupMapping.id.isNull()
+                                .or(memberGroupMapping.id.isNotNull())
+                )
+                .groupBy(
+                        video.id,
+                        video.title,
+                        video.thumbnailKey,
+                        video.creator.nickname,
+                        video.watchCnt,
+                        video.createdAt
+                )
+                .orderBy(orderBy)
+                .fetch();
+    }
+
+    @Override
+    public Map<Long, List<String>> findCategoriesForHomeVideos(Long memberId, List<Long> videoIds) {
+        if (videoIds.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Tuple> rows = jpaQueryFactory
+                .select(
+                        video.id,
+                        category.title
+                )
+                .from(video)
+                .join(videoCategoryMapping).on(videoCategoryMapping.video.eq(video))
+                .join(category).on(videoCategoryMapping.category.eq(category))
+                .leftJoin(videoMemberGroupMapping)
+                .on(videoMemberGroupMapping.video.eq(video))
+                .leftJoin(memberGroupMapping)
+                .on(
+                        memberGroupMapping.memberGroup.eq(videoMemberGroupMapping.memberGroup),
+                        memberGroupMapping.member.id.eq(memberId),
+                        video.creator.joinStatus.eq(APPROVED),
+                        video.creator.status.eq(ACTIVE)
+                )
+                .where(
+                        video.id.in(videoIds),
+                        videoMemberGroupMapping.id.isNotNull(),
+                        memberGroupMapping.id.isNotNull()
+                )
+                .fetch();
+
+        return rows.stream()
+                .collect(Collectors.groupingBy(
+                        t -> t.get(video.id),
+                        Collectors.mapping(
+                                t -> t.get(category.title),
+                                Collectors.toList()
+                        )
+                ));
+    }
+
+    @Override
+    public List<HomeVideoItem> findSearchVideos(Long orgId, Long memberId, String keyword) {
+        BooleanExpression scrappedExists = JPAExpressions
+                .selectOne()
+                .from(scrap)
+                .where(
+                        scrap.member.id.eq(memberId),
+                        scrap.video.id.eq(video.id)
+                )
+                .exists();
+
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        HomeVideoItem.class,
+                        video.id,
+                        video.title,
+                        video.thumbnailKey,
+                        video.creator.nickname,
+                        video.wholeTime,
+                        video.watchCnt,
+                        video.createdAt,
+                        scrappedExists
+                ))
+                .from(video)
+                .leftJoin(videoMemberGroupMapping)
+                .on(
+                        videoMemberGroupMapping.video.eq(video),
+                        video.creator.joinStatus.eq(APPROVED)
+                )
+                .leftJoin(memberGroupMapping)
+                .on(
+                        memberGroupMapping.memberGroup.eq(videoMemberGroupMapping.memberGroup),
+                        memberGroupMapping.member.id.eq(memberId)
+                )
+                .where(
+                        video.organization.id.eq(orgId),
+                        video.title.containsIgnoreCase(keyword),
+                        videoMemberGroupMapping.id.isNull()
+                                .or(memberGroupMapping.id.isNotNull())
+                )
+                .groupBy(
+                        video.id,
+                        video.title,
+                        video.thumbnailKey,
+                        video.creator.nickname,
+                        video.wholeTime,
+                        video.watchCnt,
+                        video.createdAt
+                )
+                .orderBy(video.createdAt.desc())
+                .fetch();
     }
 
     /**
@@ -222,8 +414,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 .where(
                         video.organization.id.eq(orgId),
                         video.watchCnt.gt(0L),
-                        history.member.joinStatus.eq(APPROVED),
-                        history.member.status.eq(ACTIVE),
+                        video.creator.joinStatus.eq(APPROVED),
+                        video.creator.status.eq(ACTIVE),
                         quitRateCondition
                 )
                 .groupBy(

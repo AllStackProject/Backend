@@ -1,36 +1,51 @@
 package app.allstackproject.privideo.service.video;
 
-import static app.allstackproject.privideo.common.enumStatus.AiResultType.FEEDBACK;
-import static app.allstackproject.privideo.common.enumStatus.AiResultType.NONE;
-import static app.allstackproject.privideo.common.enumStatus.AiResultType.QUIZ;
-import static app.allstackproject.privideo.common.enumStatus.AiResultType.SUMMARY;
+import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.FEEDBACK;
+import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.NONE;
+import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.QUIZ;
+import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.SUMMARY;
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
+import static app.allstackproject.privideo.common.enumStatus.S3ImgType.THUMBNAIL;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.HISTORY_NOT_FOUND;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.IS_NOT_IMAGE_FILE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_IN_ORGANIZATION;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_ALREADY_WATCHED;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_CREATE_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_ACCESSIBLE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_IN_ORGANIZATION;
 import static app.allstackproject.privideo.service.video.LogService.SEGMENT_SECONDS;
 
-import app.allstackproject.privideo.common.enumStatus.AiResultType;
+import app.allstackproject.privideo.common.enumStatus.AiFunctionType;
 import app.allstackproject.privideo.common.exception.ApiException;
+import app.allstackproject.privideo.common.response.SuccessResponse;
+import app.allstackproject.privideo.common.util.CdnUrlProvider;
+import app.allstackproject.privideo.common.util.S3Util;
+import app.allstackproject.privideo.dto.admin.ReadAllVideoItem;
+import app.allstackproject.privideo.dto.video.CreateVideoRequest;
+import app.allstackproject.privideo.dto.video.CreateVideoResponse;
 import app.allstackproject.privideo.dto.video.JoinVideoSessionResult;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionInfo;
 import app.allstackproject.privideo.dto.video.QuizInfo;
 import app.allstackproject.privideo.dto.video.VideoInfo;
 import app.allstackproject.privideo.entity.History;
 import app.allstackproject.privideo.entity.Member;
+import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.entity.Video;
+import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.scrap.ScrapRepository;
 import app.allstackproject.privideo.repository.member.MemberGroupRepository;
 import app.allstackproject.privideo.repository.video.CategoryRepository;
 import app.allstackproject.privideo.repository.history.HistoryRepository;
 import app.allstackproject.privideo.repository.quiz.QuizRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
+import app.allstackproject.privideo.repository.video.VideoCategoryMappingRepository;
+import app.allstackproject.privideo.repository.video.VideoMemberGroupMappingRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
 import java.math.BigInteger;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -38,9 +53,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -53,7 +71,13 @@ public class VideoService {
     private final LogService logService;
     private final CategoryRepository categoryRepository;
     private final ScrapRepository scrapRepository;
+    private final OrganizationRepository organizationRepository;
+    private final S3Util s3Util;
+    private final CdnUrlProvider cdnUrlProvider;
+    private final VideoMemberGroupMappingRepository videoMemberGroupMappingRepository;
+    private final VideoCategoryMappingRepository videoCategoryMappingRepository;
     private final QuizRepository quizRepository;
+    private final AiFunctionService aiFunctionService;
 
     public JoinVideoSessionResult joinVideoSession(Long memberId, Long orgId, Long videoId) {
         Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
@@ -77,26 +101,23 @@ public class VideoService {
             throw new ApiException(VIDEO_NOT_ACCESSIBLE);
         }
 
+        String playbackUrl = s3Util.generatePlaybackUrl(video.getHlsPrefix());
+
         video.watch();
 
         VideoInfo videoInfo = VideoInfo.from(video);
         List<String> categories = categoryRepository.findAllByVideoId(videoId);
 
-        AiResultType aiType = NONE;
+        AiFunctionType aiType = video.getAiFunctionType();
         List<QuizInfo> quizInfos = new ArrayList<>();
         String aiFeedback = "", aiSummary = "";
 
-        if (video.getIsAiFunction()) {
-            if (video.getAiFeedback() != null) {
-                aiType = FEEDBACK;
-            } else if (video.getAiSummary() != null) {
-                aiType = SUMMARY;
-            } else {
-                quizInfos = quizRepository.findByVideoId(videoId);
-                if (!quizInfos.isEmpty()) {
-                    aiType = QUIZ;
-                }
-            }
+        if (aiType.equals(SUMMARY)) {
+            aiSummary = video.getAiSummary();
+        } else if (aiType.equals(FEEDBACK)) {
+            aiFeedback = video.getAiFeedback();
+        } else if (aiType.equals(QUIZ)) {
+            quizInfos = quizRepository.findAllByVideoId(videoId);
         }
 
         boolean isScrapped = false;
@@ -113,8 +134,8 @@ public class VideoService {
         if (history.isPresent()) {
             if (history.get().isComplete()) {
                 isFirstWatch = false;
-                return JoinVideoSessionResult.completed(sessionId, videoInfo, segViewCnts, video.getIsComment(),
-                        isScrapped, categories, aiType, quizInfos, aiFeedback, aiSummary);
+                return JoinVideoSessionResult.completed(sessionId, playbackUrl, videoInfo, segViewCnts,
+                        video.getIsComment(), isScrapped, categories, aiType, quizInfos, aiFeedback, aiSummary);
             }
             logService.incOrgViewBucket(orgId, Instant.now());
         } else {
@@ -127,8 +148,8 @@ public class VideoService {
             // TODO: Redis에 해당 멤버 + 재시청 여부 + 영상 아이디에 대해 세션 키 저장
         }
 
-        return JoinVideoSessionResult.create(sessionId, videoInfo, segViewCnts, video.getIsComment(), isScrapped,
-                categories, aiType, quizInfos, aiFeedback, aiSummary);
+        return JoinVideoSessionResult.create(sessionId, playbackUrl, videoInfo, segViewCnts, video.getIsComment(),
+                isScrapped, categories, aiType, quizInfos, aiFeedback, aiSummary);
     }
 
     public boolean leaveVideoSession(LeaveVideoSessionInfo leaveVideoSessionInfo) {
@@ -180,5 +201,90 @@ public class VideoService {
         }
 
         return true;
+    }
+
+    public List<ReadAllVideoItem> getMemberVideos(Long memberId, Long orgId) {
+        if (!memberRepository.existsByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)) {
+            throw new ApiException(MEMBER_NOT_IN_ORGANIZATION);
+        }
+
+        List<ReadAllVideoItem> allVideoItems = videoRepository.findByOrgIdAndCreatorId(orgId, memberId);
+        allVideoItems.forEach(item -> item.setThumbnailUrl(cdnUrlProvider.generateImgUrl(item.getThumbnailUrl())));
+        return allVideoItems;
+    }
+
+    public CreateVideoResponse createVideo(Long memberId, Long orgId, CreateVideoRequest request) {
+        Organization organization = organizationRepository.findById(orgId)
+                .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
+        Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
+                .orElseThrow(() -> new ApiException(MEMBER_NOT_IN_ORGANIZATION));
+
+        AiFunctionType aiFunction = AiFunctionType.from(request.getAiFunction());
+
+        // 1) 원본 비디오 키 생성 (privideo-original 버킷, 업로드는 presigned URL로)
+        //    규칙: org-{orgId}/{UUID}/original.mp4
+        String originalKey = s3Util.generateVideoKey(orgId);
+
+        // 2) 썸네일 키 생성 + 업로드 (privideo-img 버킷)
+        //    규칙: images/org-{orgId}/thumbnail/{UUID}.{ext}
+        MultipartFile thumbnailImg = request.getThumbnailImg();
+        if (!s3Util.isImageFile(thumbnailImg)) {
+            throw new ApiException(IS_NOT_IMAGE_FILE);
+        }
+
+        String thumbnailKey = s3Util.generateImgKey(orgId, thumbnailImg.getOriginalFilename(), THUMBNAIL);
+        s3Util.uploadImgWithKey(thumbnailImg, thumbnailKey);
+
+        // 3) Video 엔티티 저장
+        Video video = Video.create(
+                organization,
+                member,
+                request.getTitle(),
+                request.getDescription(),
+                originalKey,
+                thumbnailKey,
+                request.getWholeTime(),
+                request.getIsComment(),
+                aiFunction,
+                request.getExpiredAt()
+        );
+        videoRepository.save(video);
+
+        // 4) HLS Prefix 계산해서 엔티티에 반영
+        //    규칙: hls/{originalKey}
+        String hlsPrefix = s3Util.generateHlsPrefix(originalKey);
+        video.setHlsPrefix(hlsPrefix);
+
+        // 5) 업로드용 URL 생성
+        URL presignedUrl = s3Util.generatePresignedUploadUrl(originalKey);
+
+        return CreateVideoResponse.of(presignedUrl.toString(), video.getId());
+    }
+
+    public SuccessResponse updateVideoEncodingStatus(Long memberId, Long orgId, Long videoId, boolean isSuccess) {
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
+        if (!video.getOrganization().getId().equals(orgId)) {
+            throw new ApiException(VIDEO_NOT_IN_ORGANIZATION);
+        }
+        if (!video.getCreator().getId().equals(memberId)) {
+            throw new ApiException(VIDEO_CREATE_NOT_FOUND);
+        }
+
+        if (!isSuccess) {
+            videoRepository.delete(video);
+            videoMemberGroupMappingRepository.deleteByVideoId(videoId);
+            videoCategoryMappingRepository.deleteByVideoId(videoId);
+
+            s3Util.deleteFileByKey(video.getVideoKey(), false);
+            s3Util.deleteFileByKey(video.getThumbnailKey(), true);
+        } else {
+            AiFunctionType aiFunction = video.getAiFunctionType();
+            if (!aiFunction.equals(NONE)) {
+                log.info("AI 기능 처리 시작: videoId={}, function={}", videoId, aiFunction);
+                aiFunctionService.processAiFunction(videoId, video.getHlsPrefix(), aiFunction);
+            }
+        }
+        return SuccessResponse.of(true);
     }
 }

@@ -1,6 +1,7 @@
 package app.allstackproject.privideo.repository.member;
 
 import app.allstackproject.privideo.common.enumStatus.BaseStatusType;
+import app.allstackproject.privideo.common.enumStatus.JoinStatusType;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.repository.member.custom.MemberRepositoryCustom;
 import java.util.List;
@@ -19,8 +20,9 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
 
     Optional<Member> findByUserIdAndOrganizationIdAndStatus(Long userId, Long orgId, BaseStatusType status);
 
-    Optional<Member> findByOrganizationIdAndNicknameAndStatus(Long orgId, String nickname,
-                                                              BaseStatusType baseStatusType);
+    Optional<Member> findByOrganizationIdAndNicknameAndStatus(Long orgId, String nickname, BaseStatusType status);
 
     boolean existsByIdAndOrganizationIdAndStatus(Long id, Long orgId, BaseStatusType status);
+
+    Long countByOrganizationIdAndJoinStatusAndStatus(Long orgId, JoinStatusType joinStatus, BaseStatusType status);
 }
