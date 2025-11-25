@@ -73,6 +73,7 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     ORGANIZATION_NOT_FOUND(7003, HttpStatus.NOT_FOUND, "존재하지 않는 조직입니다."),
     ORGANIZATION_CODE_IN_USE(7004, HttpStatus.CONFLICT, "조직 코드가 이미 사용중입니다."),
     ORG_CODE_NOT_AVAILABLE(7005, HttpStatus.NOT_FOUND, "조직 코드를 찾을 수 없습니다. 잠시 후 다시 시도해주세요."),
+    INVALID_OPEN_SCOPE_TYPE(7006, HttpStatus.BAD_REQUEST, "공개 범위는 PUBLIC, GROUP, PRIVATE 중 하나여야 합니다."),
 
     /**
      * 8000: Video 오류
@@ -129,7 +130,8 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
      * 15000: Notice 오류
      */
     NOTICE_NOT_IN_ORGANIZATION(15001, HttpStatus.BAD_REQUEST, "해당 조직에서 찾을 수 없는 공지입니다."),
-    NOTICE_FORBIDDEN(15002, HttpStatus.BAD_REQUEST, "접근 권한이 없는 공지입니다.");
+    NOTICE_FORBIDDEN(15002, HttpStatus.BAD_REQUEST, "접근 권한이 없는 공지입니다."),
+    INVALID_MEMBER_GROUP_IDS(15003, HttpStatus.BAD_REQUEST, "멤버 그룹 아이디 중 유효하지 않은 값이 존재합니다.");
 
     private final int code;
     private final HttpStatus httpStatus;

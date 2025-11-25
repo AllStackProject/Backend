@@ -48,14 +48,13 @@ public class Notice extends BaseEntity {
         this.watchCnt = watchCnt;
     }
 
-    public static Notice create(Organization organization, Member creator, String title, String content,
-                                Long watchCnt) {
+    public static Notice create(Organization organization, Member creator, String title, String content) {
         return Notice.builder()
                 .organization(organization)
                 .creator(creator)
                 .title(title)
                 .content(content)
-                .watchCnt(watchCnt)
+                .watchCnt(0L)
                 .build();
     }
 
