@@ -27,7 +27,7 @@ spec:
     volumeMounts:
       - name: docker-config
         mountPath: /kaniko/.docker    # DockerHub 인증
-      - name: kaniko-storage
+      - name: kaniko-build
         mountPath: /workspace         # build context
       - name: kaniko-tmp
         mountPath: /tmp               # snapshot, layer temp files
@@ -45,11 +45,12 @@ spec:
       - key: .dockerconfigjson
         path: config.json
 
-  - name: kaniko-storage
+  - name: kaniko-build
     persistentVolumeClaim:
-      claimName: pvc-hdd-kaniko
+      claimName: pvc-kaniko-build-60
   - name: kaniko-tmp
-    emptyDir: {}
+    persistentVolumeClaim:
+      claimName: pvc-kaniko-tmp-30
 """)  {
 
   node(POD_LABEL) {
@@ -84,6 +85,8 @@ spec:
             --context ${WORKSPACE} \
             --dockerfile ${WORKSPACE}/Dockerfile \
             --destination ${IMAGE} \
+            --cache=true \
+            --cache-dir=/tmp \
             --cleanup \
             --force
           """
