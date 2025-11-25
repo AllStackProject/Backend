@@ -1,6 +1,6 @@
 package app.allstackproject.privideo.dto.admin;
 
-import app.allstackproject.privideo.common.enumStatus.VideoOpenScopeType;
+import app.allstackproject.privideo.common.enumStatus.OpenScopeType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Getter;
@@ -19,7 +19,7 @@ public class ReadAllVideoItem {
 
     private LocalDate expiredAt;
 
-    private VideoOpenScopeType openScope;
+    private OpenScopeType openScope;
 
     private Long viewCnt;
 
@@ -30,7 +30,7 @@ public class ReadAllVideoItem {
         this.thumbnailUrl = thumbnailUrl;
         this.createdAt = createdAt;
         this.expiredAt = expiredAt;
-        this.openScope = VideoOpenScopeType.valueOf(openScope);
+        this.openScope = OpenScopeType.valueOf(openScope);
         this.viewCnt = viewCnt;
     }
 }

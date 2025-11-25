@@ -23,6 +23,10 @@ public class Notice extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "organization_id")
+    private Organization organization;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "member_id")
     private Member creator;
 
@@ -36,19 +40,25 @@ public class Notice extends BaseEntity {
     private Long watchCnt;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private Notice(Member creator, String title, String content, Long watchCnt) {
+    private Notice(Organization organization, Member creator, String title, String content, Long watchCnt) {
+        this.organization = organization;
         this.creator = creator;
         this.title = title;
         this.content = content;
         this.watchCnt = watchCnt;
     }
 
-    public static Notice create(Member creator, String title, String content, Long watchCnt) {
+    public static Notice create(Organization organization, Member creator, String title, String content) {
         return Notice.builder()
+                .organization(organization)
                 .creator(creator)
                 .title(title)
                 .content(content)
-                .watchCnt(watchCnt)
+                .watchCnt(0L)
                 .build();
+    }
+
+    public void watch() {
+        this.watchCnt++;
     }
 }

@@ -78,7 +78,7 @@ public class OrgAdminController {
     }
 
     @GetMapping("/group/{groupId}/category")
-    @Operation(summary = "카테고리 전체 조회")
+    @Operation(summary = "카테고리 목록 조회")
     public BaseResponse<ReadAllCategoryResponse> readAllCategory(@PathVariable("orgId") Long orgId,
                                                                  @PathVariable("groupId") Long groupId) {
         return new BaseResponse<>(ReadAllCategoryResponse.of(orgAdminService.readAllCategory(orgId, groupId)));

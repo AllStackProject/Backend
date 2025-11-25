@@ -13,7 +13,7 @@ import static app.allstackproject.privideo.entity.QVideoCategoryMapping.videoCat
 import static app.allstackproject.privideo.entity.QVideoMemberGroupMapping.videoMemberGroupMapping;
 
 import app.allstackproject.privideo.common.enumStatus.FilterType;
-import app.allstackproject.privideo.common.enumStatus.VideoOpenScopeType;
+import app.allstackproject.privideo.common.enumStatus.OpenScopeType;
 import app.allstackproject.privideo.dto.admin.QuitLogItem;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoIntervalLogItem;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoItem;
@@ -67,8 +67,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                         .from(videoMemberGroupMapping)
                         .where(videoMemberGroupMapping.video.id.eq(video.id))
                         .exists())
-                .then(VideoOpenScopeType.GROUP.name())
-                .otherwise(VideoOpenScopeType.PUBLIC.name());
+                .then(OpenScopeType.GROUP.name())
+                .otherwise(OpenScopeType.PUBLIC.name());
 
         return jpaQueryFactory
                 .select(Projections.constructor(ReadAllVideoItem.class,
@@ -98,8 +98,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                         .from(videoMemberGroupMapping)
                         .where(videoMemberGroupMapping.video.id.eq(video.id))
                         .exists())
-                .then(VideoOpenScopeType.GROUP.name())
-                .otherwise(VideoOpenScopeType.PUBLIC.name());
+                .then(OpenScopeType.GROUP.name())
+                .otherwise(OpenScopeType.PUBLIC.name());
 
         return jpaQueryFactory
                 .select(Projections.constructor(ReadAllVideoItem.class,

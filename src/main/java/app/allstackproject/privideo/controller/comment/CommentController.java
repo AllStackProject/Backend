@@ -37,7 +37,7 @@ public class CommentController {
     private final CommentService commentService;
 
     @GetMapping("/comments")
-    @Operation(summary = "댓글 전체 조회")
+    @Operation(summary = "댓글 목록 조회")
     public BaseResponse<ReadCommentsResponse> readComments(
             @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId,
             @PathVariable("videoId") Long videoId) {
