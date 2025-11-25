@@ -5,6 +5,8 @@ import app.allstackproject.privideo.common.exception.handler.CustomAuthEntryPoin
 import app.allstackproject.privideo.common.filter.JwtAuthFilter;
 import app.allstackproject.privideo.common.jwt.JwtProvider;
 import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +31,7 @@ public class SecurityConfig {
     private final CustomAuthEntryPoint customAuthEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final OrgRedisRepository orgRedisRepository;
+    private final JwtSecurityProperties jwtSecurityProperties;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -37,6 +40,10 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        System.out.println("=== SecurityFilterChain 생성 시작 ===");
+        String[] permitPatterns = buildPermitPatterns();
+        System.out.println("permitPatterns 개수: " + permitPatterns.length);
+
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers((headerConfig) ->
@@ -45,9 +52,7 @@ public class SecurityConfig {
                 )
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/error", "/favicon.ico",
-                                "/user/signup", "/user/login",
-                                "/h2-console/**", "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**")
+                        .requestMatchers(permitPatterns)
                         .permitAll()
                         .anyRequest().authenticated()
                 )
@@ -62,5 +67,25 @@ public class SecurityConfig {
         ;
 
         return http.build();
+    }
+
+    private String[] buildPermitPatterns() {
+        System.out.println("=== buildPermitPatterns 호출됨 ===");
+        List<String> staticPatterns = List.of(
+                "/error", "/favicon.ico",
+                "/h2-console/**", "/v3/api-docs/**",
+                "/swagger-ui.html", "/swagger-ui/**"
+        );
+
+        List<String> combined = new ArrayList<>(staticPatterns);
+
+        List<String> excludedPatterns = jwtSecurityProperties.getExcludedPatterns();
+        System.out.println("excludedPatterns: " + excludedPatterns);
+
+        if (excludedPatterns != null && !excludedPatterns.isEmpty()) {
+            combined.addAll(excludedPatterns);
+        }
+
+        return combined.toArray(new String[0]);
     }
 }
