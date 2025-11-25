@@ -28,10 +28,12 @@ public class NoticeAdminService {
     private final MemberGroupRepository memberGroupRepository;
     private final NoticeMemberGroupMappingRepository noticeMemberGroupMappingRepository;
 
+    @Transactional(readOnly = true)
     public List<ReadAllNoticeItem> readAllNotice(Long orgId) {
         return noticeRepository.findAllByOrganizationId(orgId);
     }
 
+    @Transactional(readOnly = true)
     public ReadNoticeResponse readNotice(Long orgId, Long noticeId) {
         Notice notice = noticeRepository.findByIdAndOrganizationId(noticeId, orgId)
                 .orElseThrow(() -> new ApiException(NOTICE_NOT_IN_ORGANIZATION));
@@ -57,5 +59,12 @@ public class NoticeAdminService {
                 notice.getContent(),
                 groupInfos
         );
+    }
+
+    public boolean deleteNotice(Long orgId, Long noticeId) {
+        Notice notice = noticeRepository.findByIdAndOrganizationId(noticeId, orgId)
+                .orElseThrow(() -> new ApiException(NOTICE_NOT_IN_ORGANIZATION));
+        noticeRepository.delete(notice);
+        return true;
     }
 }
