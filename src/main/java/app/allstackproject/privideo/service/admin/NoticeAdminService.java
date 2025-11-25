@@ -5,7 +5,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.dto.admin.MemberGroupItem;
 import app.allstackproject.privideo.dto.admin.NoticeMemberGroupInfo;
-import app.allstackproject.privideo.dto.admin.ReadAllNoticeItem;
+import app.allstackproject.privideo.dto.admin.AdminReadAllNoticeItem;
 import app.allstackproject.privideo.dto.admin.ReadNoticeResponse;
 import app.allstackproject.privideo.entity.Notice;
 import app.allstackproject.privideo.entity.NoticeMemberGroupMapping;
@@ -29,7 +29,7 @@ public class NoticeAdminService {
     private final NoticeMemberGroupMappingRepository noticeMemberGroupMappingRepository;
 
     @Transactional(readOnly = true)
-    public List<ReadAllNoticeItem> readAllNotice(Long orgId) {
+    public List<AdminReadAllNoticeItem> readAllNotice(Long orgId) {
         return noticeRepository.findAllByOrganizationId(orgId);
     }
 
