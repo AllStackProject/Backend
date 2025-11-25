@@ -19,20 +19,15 @@ spec:
     - name: kaniko
       image: gcr.io/kaniko-project/executor:v1.6.0-debug
       imagePullPolicy: Always
-      args:
-        - "--cache=true"
-        - "--cache-dir=/workspace/cache"
-        - "--compressed-caching=false"
-        - "--use-new-run"
+      resources:
+        requests:
+          ephemeral-storage: "5Gi"
+        limits:
+          ephemeral-storage: "10Gi"
       tty: true
       volumeMounts:
         - name: docker-config
           mountPath: /kaniko/.docker
-        - name: kaniko-storage
-          mountPath: /workspace
-        - name: kaniko-storage
-          mountPath: /tmp
-          
   volumes:
     - name: docker-config
       secret:
