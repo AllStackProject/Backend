@@ -22,6 +22,7 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.service.video.LogService.SEGMENT_SECONDS;
 
 import app.allstackproject.privideo.common.enumStatus.AiFunctionType;
+import app.allstackproject.privideo.common.enumStatus.UploadStatusType;
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.common.util.CdnUrlProvider;
@@ -283,7 +284,6 @@ public class VideoService {
 
             video.setUploadStatus(COMPLETE);
         } else if (status.equals("FAILED")) {
-            videoRepository.delete(video);
             videoMemberGroupMappingRepository.deleteByVideoId(videoId);
             videoCategoryMappingRepository.deleteByVideoId(videoId);
             video.setUploadStatus(FAIL);
@@ -307,8 +307,13 @@ public class VideoService {
             throw new ApiException(VIDEO_CREATE_NOT_FOUND);
         }
 
-        if (video.getUploadStatus().equals(COMPLETE)) {
+        UploadStatusType uploadStatus = video.getUploadStatus();
+        if (uploadStatus.equals(COMPLETE)) {
             return SuccessResponse.of(true);
+        }
+
+        if (uploadStatus.equals(FAIL)) {
+            videoRepository.delete(video);
         }
 
         return SuccessResponse.of(false);
