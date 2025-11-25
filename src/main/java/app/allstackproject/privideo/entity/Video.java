@@ -1,6 +1,9 @@
 package app.allstackproject.privideo.entity;
 
+import static app.allstackproject.privideo.common.enumStatus.UploadStatusType.IN_PROGRESS;
+
 import app.allstackproject.privideo.common.enumStatus.AiFunctionType;
+import app.allstackproject.privideo.common.enumStatus.UploadStatusType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -83,11 +86,16 @@ public class Video extends BaseEntity {
     @NotNull
     private Long quitCnt;
 
+    @Setter
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private UploadStatusType uploadStatus;
+
     @Builder(access = AccessLevel.PRIVATE)
     private Video(Organization organization, Member creator, String title, String description, String videoKey,
                   String thumbnailKey, String hlsPrefix, Long wholeTime, boolean isComment,
                   AiFunctionType aiFunctionType, String aiFeedback, String aiSummary, LocalDate expiredAt,
-                  Long watchCnt, Long quitCnt) {
+                  Long watchCnt, Long quitCnt, UploadStatusType uploadStatus) {
         this.organization = organization;
         this.creator = creator;
         this.title = title;
@@ -103,6 +111,7 @@ public class Video extends BaseEntity {
         this.expiredAt = expiredAt;
         this.watchCnt = watchCnt;
         this.quitCnt = quitCnt;
+        this.uploadStatus = uploadStatus;
     }
 
     public static Video create(Organization organization, Member creator, String title, String description,
@@ -126,6 +135,7 @@ public class Video extends BaseEntity {
                 .expiredAt(expiredAt)
                 .watchCnt(0L)
                 .quitCnt(0L)
+                .uploadStatus(IN_PROGRESS)
                 .build();
     }
 
