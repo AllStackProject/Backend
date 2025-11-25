@@ -37,7 +37,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/{orgId}/video")
-@PreAuthorize("hasAuthority('org:granted')")
 @Tag(name = "Video", description = "영상 관련 API")
 @SecurityRequirement(name = ORG_AUTH_KEY)
 public class VideoController {
@@ -46,6 +45,7 @@ public class VideoController {
     private final CloudFrontCookieService cloudFrontCookieService;
 
     @PostMapping("")
+    @PreAuthorize("hasAuthority('org:granted')")
     @Operation(summary = "영상 업로드")
     public BaseResponse<CreateVideoResponse> createVideo(
             @AuthenticationPrincipal(expression = "memberId") Long memberId,
@@ -65,6 +65,7 @@ public class VideoController {
     }
 
     @PutMapping("/{videoId}")
+    @PreAuthorize("hasAuthority('org:granted')")
     @Operation(summary = "영상 업로드 성공 여부")
     public BaseResponse<SuccessResponse> notifyVideoEncodingResult(
             @AuthenticationPrincipal(expression = "memberId") Long memberId,
@@ -76,6 +77,7 @@ public class VideoController {
     }
 
     @PostMapping("/{videoId}/join")
+    @PreAuthorize("hasAuthority('org:granted')")
     @Operation(summary = "영상 시청 세션 시작")
     public BaseResponse<JoinVideoSessionResponse> joinVideoSession(
             @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId,
@@ -88,15 +90,15 @@ public class VideoController {
 
     @PostMapping("/{videoId}/leave")
     @Operation(summary = "영상 시청 세션 종료")
-    public BaseResponse<SuccessResponse> leaveVideoSession(
-            @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId,
-            @PathVariable("videoId") Long videoId,
-            @Valid @RequestBody LeaveVideoSessionRequest leaveVideoSessionRequest, BindingResult bindingResult) {
+    public BaseResponse<SuccessResponse> leaveVideoSession(@PathVariable("orgId") Long orgId,
+                                                           @PathVariable("videoId") Long videoId,
+                                                           @Valid @RequestBody LeaveVideoSessionRequest leaveVideoSessionRequest,
+                                                           BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             throw new ApiException(INVALID_VIDEO_LEAVE, getErrorMessage(bindingResult));
         }
 
-        LeaveVideoSessionInfo leaveVideoSessionInfo = LeaveVideoSessionInfo.create(memberId, orgId, videoId,
+        LeaveVideoSessionInfo leaveVideoSessionInfo = LeaveVideoSessionInfo.create(orgId, videoId,
                 leaveVideoSessionRequest);
         boolean result = videoService.leaveVideoSession(leaveVideoSessionInfo);
         return new BaseResponse<>(SuccessResponse.of(result));
