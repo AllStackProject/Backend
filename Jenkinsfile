@@ -1,4 +1,3 @@
-//test
 podTemplate(yaml: """
 apiVersion: v1
 kind: Pod
@@ -14,31 +13,41 @@ spec:
     operator: "Equal"
     value: "cicd"
     effect: "NoSchedule"
-    
+
   containers:
-    - name: kaniko
-      image: gcr.io/kaniko-project/executor:v1.6.0-debug
-      imagePullPolicy: Always
-      resources:
-        requests:
-          ephemeral-storage: "5Gi"
-        limits:
-          ephemeral-storage: "10Gi"
-      tty: true
-      volumeMounts:
-        - name: docker-config
-          mountPath: /kaniko/.docker
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:v1.6.0-debug
+    imagePullPolicy: Always
+    tty: true
+    volumeMounts:
+      - name: docker-config
+        mountPath: /kaniko/.docker    # DockerHub 인증
+      - name: kaniko-storage
+        mountPath: /workspace         # build context
+      - name: kaniko-storage
+        mountPath: /tmp               # snapshot, layer temp files
+    resources:
+      requests:
+        cpu: "1000m"
+        memory: "2Gi"
+        ephemeral-storage: "5Gi"
+      limits:
+        cpu: "2000m"
+        memory: "4Gi"
+        ephemeral-storage: "10Gi"
+
   volumes:
-    - name: docker-config
-      secret:
-        secretName: docker-config-dockerhub
-        items:
-          - key: .dockerconfigjson
-            path: config.json
-    - name: kaniko-storage
-      persistentVolumeClaim:
-        claimName: pvc-hdd-kaniko
-""") {
+  - name: docker-config
+    secret:
+      secretName: docker-config-dockerhub
+      items:
+      - key: .dockerconfigjson
+        path: config.json
+
+  - name: kaniko-storage
+    persistentVolumeClaim:
+      claimName: pvc-hdd-kaniko
+""")  {
 
   node(POD_LABEL) {
 
