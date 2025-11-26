@@ -27,12 +27,19 @@ spec:
     volumeMounts:
       - name: docker-config
         mountPath: /kaniko/.docker    # DockerHub 인증
-      - name: kaniko-root
-        mountPath: /kaniko
+      
+      - name: kaniko-cache
+        mountPath: /kaniko/.cache
+
+      - name: kaniko-snap
+        mountPath: /kaniko/snapshots
+      
       - name: kaniko-build
         mountPath: /workspace         # build context
+      
       - name: kaniko-tmp
         mountPath: /tmp               # snapshot, layer temp files
+    
     resources:
       requests:
         ephemeral-storage: "2Gi"
@@ -47,12 +54,18 @@ spec:
       - key: .dockerconfigjson
         path: config.json
   
-  - name: kaniko-root
+  - name: kaniko-snap
     persistentVolumeClaim:
       claimName: pvc-kaniko-root-60
+  
+  - name: kaniko-cache
+    persistentVolumeClaim:
+      claimName: pvc-kaniko-root-60    
+  
   - name: kaniko-build
     persistentVolumeClaim:
       claimName: pvc-kaniko-build-20
+      
   - name: kaniko-tmp
     persistentVolumeClaim:
       claimName: pvc-kaniko-tmp-20
