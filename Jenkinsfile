@@ -30,7 +30,9 @@ spec:
       
       - name: kaniko-build
         mountPath: /workspace         # build context
-    
+      
+      - name: kaniko-tmp
+        mountPath: /tmp
     resources:
       requests:
         cpu: "500m"
@@ -46,8 +48,10 @@ spec:
 
   - name: kaniko-build
     persistentVolumeClaim:
-      claimName: pvc-kaniko-build-20
-      
+      claimName: pvc-kaniko-build-60
+  - name: kaniko-tmp
+    persistentVolumeClaim:
+      claimName: pvc-kaniko-build-30
 """)  {
 
   node(POD_LABEL) {
