@@ -116,8 +116,7 @@ public class VideoController {
             throw new ApiException(INVALID_VIDEO_LEAVE, getErrorMessage(bindingResult));
         }
 
-        LeaveVideoSessionInfo leaveVideoSessionInfo = LeaveVideoSessionInfo.create(
-                leaveVideoSessionRequest.getMemberId(), orgId, videoId,
+        LeaveVideoSessionInfo leaveVideoSessionInfo = LeaveVideoSessionInfo.create(orgId, videoId,
                 leaveVideoSessionRequest);
         boolean result = videoService.leaveVideoSession(leaveVideoSessionInfo);
         return new BaseResponse<>(SuccessResponse.of(result));

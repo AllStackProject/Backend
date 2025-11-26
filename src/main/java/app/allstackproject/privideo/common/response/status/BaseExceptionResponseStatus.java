@@ -80,7 +80,7 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
      */
     VIDEO_NOT_FOUND(8001, HttpStatus.NOT_FOUND, "존재하지 않는 영상입니다."),
     VIDEO_NOT_IN_ORGANIZATION(8002, HttpStatus.NOT_FOUND, "해당 조직에서 찾을 수 없는 영상입니다."),
-    VIDEO_ALREADY_WATCHED(8003, HttpStatus.CONFLICT, "해당 영상은 이미 시청 중입니다."),
+    VIDEO_ALREADY_WATCHING(8003, HttpStatus.CONFLICT, "해당 영상은 이미 시청 중입니다."),
     VIDEO_NOT_ACCESSIBLE(8004, HttpStatus.BAD_REQUEST, "해당 영상에 접근 권한이 없습니다."),
     INVALID_VIDEO_LEAVE(8005, HttpStatus.BAD_REQUEST, "영상 시청 종료 요청에서 유효하지 않은 값이 존재합니다."),
     INVALID_SCRAP_REQUEST(8006, HttpStatus.BAD_REQUEST, "영상 스크랩 요청에서 올바르지 않은 값이 존재합니다."),
@@ -89,6 +89,8 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     VIDEO_CREATE_NOT_FOUND(8009, HttpStatus.NOT_FOUND, "해당 사용자가 업로드한 영상이 아닙니다."),
     INVALID_AI_FUNCTION_TYPE(8010, HttpStatus.BAD_REQUEST, "AI 기능의 유형은 NONE, QUIZ, FEEDBACK, SUMMARY 중 하나여야 합니다."),
     INVALID_AIRFLOW_STATUS(8011, HttpStatus.BAD_REQUEST, "Airflow 요청에서 status가 올바르지 않습니다."),
+    PLAY_SESSION_NOT_FOUND(8012, HttpStatus.NOT_FOUND, "영상 재생 세션을 찾을 수 없습니다."),
+    INVALID_PLAY_SESSION(8013, HttpStatus.BAD_REQUEST, "유효하지 않은 영상 재생 세션입니다."),
 
     /**
      * 9000: History 오류

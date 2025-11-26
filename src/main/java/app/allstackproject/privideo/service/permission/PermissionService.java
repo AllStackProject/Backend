@@ -41,7 +41,7 @@ public class PermissionService {
         long dbPermission = member.getPermissionCode();
 
         try {
-            orgRedisRepository.saveMemberPermission(memberId, orgId, dbPermission);
+            orgRedisRepository.saveMemberPermission(orgId, memberId, dbPermission);
         } catch (Exception e) {
             log.error("Redis 동기화 실패 - memberId: {}, error: {}",
                     memberId, e.getMessage());

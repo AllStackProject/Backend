@@ -98,7 +98,7 @@ public class OrgAdminService {
         String orgName = organization.getName();
         String imgUrl = cdnUrlProvider.generateImgUrl(organization.getImgKey());
         Long memberCnt = memberRepository.countByOrganizationIdAndJoinStatusAndStatus(orgId, APPROVED, ACTIVE);
-        String orgCode = orgRedisRepository.getOrgcodeById(orgId);
+        String orgCode = orgRedisRepository.getOrgCodeById(orgId);
 
         List<MemberGroupItem> memberGroups = memberGroupRepository.findAllByOrganizationId(orgId);
 
