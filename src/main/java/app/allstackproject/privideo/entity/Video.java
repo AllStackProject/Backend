@@ -146,4 +146,14 @@ public class Video extends BaseEntity {
     public void quit() {
         this.quitCnt++;
     }
+
+    public void modify(String description, boolean isComment, LocalDate expiredAt) {
+        if (expiredAt == null) {
+            expiredAt = LocalDate.now().plusYears(100);
+        }
+
+        this.description = description;
+        this.isComment = isComment;
+        this.expiredAt = expiredAt;
+    }
 }

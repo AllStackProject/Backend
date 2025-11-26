@@ -79,7 +79,7 @@ public class SuperAdminController {
     }
 
     @DeleteMapping("/member/{memberId}")
-    @Operation(summary = "조직 멤버 탈퇴시키기")
+    @Operation(summary = "조직 멤버 내보내기")
     public BaseResponse<SuccessResponse> withdrawMember(@PathVariable Long orgId, @PathVariable Long memberId) {
         return new BaseResponse<>(SuccessResponse.of(superAdminService.withdrawMember(orgId, memberId)));
     }

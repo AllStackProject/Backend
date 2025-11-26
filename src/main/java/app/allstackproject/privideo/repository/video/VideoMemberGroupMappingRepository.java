@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface VideoMemberGroupMappingRepository extends JpaRepository<VideoMemberGroupMapping, Long> {
-    void deleteByMemberGroupId(Long groupId);
+    void deleteAllByMemberGroupId(Long groupId);
 
-    void deleteByVideoId(Long videoId);
+    void deleteAllByVideoId(Long videoId);
 }

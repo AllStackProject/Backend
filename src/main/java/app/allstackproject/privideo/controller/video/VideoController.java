@@ -13,6 +13,7 @@ import app.allstackproject.privideo.dto.video.JoinVideoSessionResponse;
 import app.allstackproject.privideo.dto.video.JoinVideoSessionResult;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionInfo;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionRequest;
+import app.allstackproject.privideo.dto.video.ModifyVideoRequest;
 import app.allstackproject.privideo.dto.video.ReadVideoEncodingResultRequest;
 import app.allstackproject.privideo.dto.video.ReadVideoEncodingResultResponse;
 import app.allstackproject.privideo.service.video.CloudFrontCookieService;
@@ -23,11 +24,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -58,10 +62,12 @@ public class VideoController {
             @RequestParam("whole_time") Long wholeTime,
             @RequestParam("is_comment") Boolean isComment,
             @RequestParam("ai_function") String aiFunction,
-            @RequestParam(value = "expired_at", required = false) LocalDate expiredAt) {
+            @RequestParam(value = "expired_at", required = false) LocalDate expiredAt,
+            @RequestParam(value = "member_groups") List<Long> memberGroups,
+            @RequestParam(value = "categories") List<Long> categories) {
         CreateVideoRequest createVideoRequest = new CreateVideoRequest(
                 title, description, thumbnailImg, wholeTime,
-                isComment, aiFunction, expiredAt
+                isComment, aiFunction, expiredAt, memberGroups, categories
         );
         return new BaseResponse<>(videoService.createVideo(memberId, orgId, createVideoRequest));
     }
@@ -115,5 +121,25 @@ public class VideoController {
                 leaveVideoSessionRequest);
         boolean result = videoService.leaveVideoSession(leaveVideoSessionInfo);
         return new BaseResponse<>(SuccessResponse.of(result));
+    }
+
+    @PatchMapping("/{videoId}")
+    @PreAuthorize("hasAuthority('org:granted')")
+    @Operation(summary = "영상 수정")
+    public BaseResponse<SuccessResponse> modifyVideo(@AuthenticationPrincipal(expression = "memberId") Long memberId,
+                                                     @PathVariable("orgId") Long orgId,
+                                                     @PathVariable("videoId") Long videoId,
+                                                     @Valid @RequestBody ModifyVideoRequest modifyVideoRequest) {
+        return new BaseResponse<>(
+                SuccessResponse.of(videoService.modifyVideo(orgId, memberId, videoId, modifyVideoRequest)));
+    }
+
+    @DeleteMapping("/{videoId}")
+    @PreAuthorize("hasAuthority('org:granted')")
+    @Operation(summary = "업로드한 영상 삭제")
+    public BaseResponse<SuccessResponse> deleteVideo(@AuthenticationPrincipal(expression = "memberId") Long memberId,
+                                                     @PathVariable("orgId") Long orgId,
+                                                     @PathVariable("videoId") Long videoId) {
+        return new BaseResponse<>(SuccessResponse.of(videoService.deleteVideo(orgId, memberId, videoId)));
     }
 }

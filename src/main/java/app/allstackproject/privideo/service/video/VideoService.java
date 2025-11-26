@@ -8,11 +8,15 @@ import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTI
 import static app.allstackproject.privideo.common.enumStatus.S3ImgType.THUMBNAIL;
 import static app.allstackproject.privideo.common.enumStatus.UploadStatusType.COMPLETE;
 import static app.allstackproject.privideo.common.enumStatus.UploadStatusType.FAIL;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.CATEGORY_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.HISTORY_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_AIRFLOW_STATUS;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_MEMBER_GROUP_IDS;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.IS_NOT_IMAGE_FILE;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_GROUP_NOT_IN_ORGANIZATION;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_IN_ORGANIZATION;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.NOT_ALLOWED_MEMBER_GROUP_ACCESS;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_ALREADY_WATCHED;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_CREATE_NOT_FOUND;
@@ -32,12 +36,19 @@ import app.allstackproject.privideo.dto.video.CreateVideoRequest;
 import app.allstackproject.privideo.dto.video.CreateVideoResponse;
 import app.allstackproject.privideo.dto.video.JoinVideoSessionResult;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionInfo;
+import app.allstackproject.privideo.dto.video.ModifyVideoRequest;
 import app.allstackproject.privideo.dto.video.QuizInfo;
 import app.allstackproject.privideo.dto.video.VideoInfo;
+import app.allstackproject.privideo.entity.Category;
 import app.allstackproject.privideo.entity.History;
 import app.allstackproject.privideo.entity.Member;
+import app.allstackproject.privideo.entity.MemberGroup;
 import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.entity.Video;
+import app.allstackproject.privideo.entity.VideoCategoryMapping;
+import app.allstackproject.privideo.entity.VideoMemberGroupMapping;
+import app.allstackproject.privideo.repository.comment.CommentRepository;
+import app.allstackproject.privideo.repository.member.MemberGroupMappingRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.scrap.ScrapRepository;
 import app.allstackproject.privideo.repository.member.MemberGroupRepository;
@@ -55,7 +66,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -81,7 +94,9 @@ public class VideoService {
     private final VideoMemberGroupMappingRepository videoMemberGroupMappingRepository;
     private final VideoCategoryMappingRepository videoCategoryMappingRepository;
     private final QuizRepository quizRepository;
+    private final CommentRepository commentRepository;
     private final AiFunctionService aiFunctionService;
+    private final MemberGroupMappingRepository memberGroupMappingRepository;
 
     public JoinVideoSessionResult joinVideoSession(Long memberId, Long orgId, Long videoId) {
         Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
@@ -254,6 +269,50 @@ public class VideoService {
         );
         videoRepository.save(video);
 
+        List<Long> reqMemberGroups = request.getMemberGroups();
+        List<Long> reqCategories = request.getCategories();
+
+        Set<Long> myGroupIds = memberGroupMappingRepository.findAllByMemberId(memberId)
+                .stream()
+                .map(mapping -> mapping.getMemberGroup().getId())
+                .collect(Collectors.toSet());
+
+        List<MemberGroup> groups = memberGroupRepository.findAllById(reqMemberGroups);
+        if (groups.size() != reqMemberGroups.size()) {
+            throw new ApiException(INVALID_MEMBER_GROUP_IDS);
+        }
+
+        for (MemberGroup group : groups) {
+            if (!group.getOrganization().getId().equals(orgId)) {
+                throw new ApiException(MEMBER_GROUP_NOT_IN_ORGANIZATION);
+            }
+            if (!myGroupIds.contains(group.getId())) {
+                throw new ApiException(NOT_ALLOWED_MEMBER_GROUP_ACCESS);
+            }
+        }
+
+        List<Category> categories = categoryRepository.findAllById(reqCategories);
+        if (categories.size() != reqCategories.size()) {
+            throw new ApiException(CATEGORY_NOT_FOUND);
+        }
+
+        for (Category category : categories) {
+            Long categoryGroupId = category.getMemberGroupId();
+            if (categoryGroupId != null && !reqMemberGroups.contains(categoryGroupId)) {
+                throw new ApiException(CATEGORY_NOT_FOUND);
+            }
+        }
+
+        List<VideoMemberGroupMapping> groupMappings = groups.stream()
+                .map(group -> VideoMemberGroupMapping.create(video, group))
+                .toList();
+        videoMemberGroupMappingRepository.saveAll(groupMappings);
+
+        List<VideoCategoryMapping> categoryMappings = categories.stream()
+                .map(category -> VideoCategoryMapping.create(video, category))
+                .toList();
+        videoCategoryMappingRepository.saveAll(categoryMappings);
+
         // 4) HLS Prefix 계산해서 엔티티에 반영
         //    규칙: hls/{originalKey}
         String hlsPrefix = s3Util.generateHlsPrefix(originalKey);
@@ -284,8 +343,8 @@ public class VideoService {
 
             video.setUploadStatus(COMPLETE);
         } else if (status.equals("FAILED")) {
-            videoMemberGroupMappingRepository.deleteByVideoId(videoId);
-            videoCategoryMappingRepository.deleteByVideoId(videoId);
+            videoMemberGroupMappingRepository.deleteAllByVideoId(videoId);
+            videoCategoryMappingRepository.deleteAllByVideoId(videoId);
             video.setUploadStatus(FAIL);
 
             s3Util.deleteFileByKey(video.getVideoKey(), false);
@@ -314,5 +373,91 @@ public class VideoService {
         }
 
         return uploadStatus;
+    }
+
+    public boolean modifyVideo(Long orgId, Long memberId, Long videoId, ModifyVideoRequest modifyVideoRequest) {
+        Video video = videoRepository.findByIdAndOrganizationId(videoId, orgId)
+                .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
+        if (!video.getCreator().getId().equals(memberId)) {
+            throw new ApiException(VIDEO_CREATE_NOT_FOUND);
+        }
+
+        List<Long> reqMemberGroups = modifyVideoRequest.getMemberGroups();
+        List<Long> reqCategories = modifyVideoRequest.getCategories();
+
+        Set<Long> myGroupIds = memberGroupMappingRepository.findAllByMemberId(memberId)
+                .stream()
+                .map(mapping -> mapping.getMemberGroup().getId())
+                .collect(Collectors.toSet());
+
+        List<MemberGroup> groups = memberGroupRepository.findAllById(reqMemberGroups);
+        if (groups.size() != reqMemberGroups.size()) {
+            throw new ApiException(INVALID_MEMBER_GROUP_IDS);
+        }
+
+        for (MemberGroup group : groups) {
+            if (!group.getOrganization().getId().equals(orgId)) {
+                throw new ApiException(MEMBER_GROUP_NOT_IN_ORGANIZATION);
+            }
+
+            if (!myGroupIds.contains(group.getId())) {
+                throw new ApiException(NOT_ALLOWED_MEMBER_GROUP_ACCESS);
+            }
+        }
+
+        List<Category> categories = categoryRepository.findAllById(reqCategories);
+        if (categories.size() != reqCategories.size()) {
+            throw new ApiException(CATEGORY_NOT_FOUND);
+        }
+
+        for (Category category : categories) {
+            Long categoryGroupId = category.getMemberGroupId();
+            if (categoryGroupId != null && !reqMemberGroups.contains(categoryGroupId)) {
+                throw new ApiException(CATEGORY_NOT_FOUND);
+            }
+        }
+
+        video.modify(
+                modifyVideoRequest.getDescription(),
+                modifyVideoRequest.getIsComment(),
+                modifyVideoRequest.getExpiredAt()
+        );
+
+        videoMemberGroupMappingRepository.deleteAllByVideoId(videoId);
+        videoCategoryMappingRepository.deleteAllByVideoId(videoId);
+
+        List<VideoMemberGroupMapping> groupMappings = groups.stream()
+                .map(group -> VideoMemberGroupMapping.create(video, group))
+                .toList();
+        videoMemberGroupMappingRepository.saveAll(groupMappings);
+
+        List<VideoCategoryMapping> categoryMappings = categories.stream()
+                .map(category -> VideoCategoryMapping.create(video, category))
+                .toList();
+        videoCategoryMappingRepository.saveAll(categoryMappings);
+
+        return true;
+    }
+
+    public boolean deleteVideo(Long orgId, Long memberId, Long videoId) {
+        Video video = videoRepository.findByIdAndOrganizationId(videoId, orgId)
+                .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
+        if (!video.getCreator().getId().equals(memberId)) {
+            throw new ApiException(VIDEO_CREATE_NOT_FOUND);
+        }
+
+        s3Util.deleteFileByKey(video.getThumbnailKey(), true);
+        s3Util.deleteFileByKey(video.getVideoKey(), false);
+
+        commentRepository.deleteAllByVideoId(videoId);
+        historyRepository.deleteAllByVideoId(videoId);
+        quizRepository.deleteAllByVideoId(videoId);
+        scrapRepository.deleteAllByVideoId(videoId);
+
+        videoMemberGroupMappingRepository.deleteAllByVideoId(videoId);
+        videoCategoryMappingRepository.deleteAllByVideoId(videoId);
+        videoRepository.delete(video);
+
+        return true;
     }
 }

@@ -5,9 +5,15 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.util.CdnUrlProvider;
+import app.allstackproject.privideo.common.util.S3Util;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoItem;
 import app.allstackproject.privideo.entity.Video;
+import app.allstackproject.privideo.repository.comment.CommentRepository;
+import app.allstackproject.privideo.repository.history.HistoryRepository;
+import app.allstackproject.privideo.repository.quiz.QuizRepository;
+import app.allstackproject.privideo.repository.scrap.ScrapRepository;
 import app.allstackproject.privideo.repository.video.VideoCategoryMappingRepository;
+import app.allstackproject.privideo.repository.video.VideoMemberGroupMappingRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +28,12 @@ public class VideoAdminService {
     private final VideoRepository videoRepository;
     private final VideoCategoryMappingRepository videoCategoryMappingRepository;
     private final CdnUrlProvider cdnUrlProvider;
+    private final S3Util s3Util;
+    private final VideoMemberGroupMappingRepository videoMemberGroupMappingRepository;
+    private final CommentRepository commentRepository;
+    private final ScrapRepository scrapRepository;
+    private final HistoryRepository historyRepository;
+    private final QuizRepository quizRepository;
 
     @Transactional(readOnly = true)
     public List<ReadAllVideoItem> readAllVideos(Long orgId) {
@@ -36,10 +48,18 @@ public class VideoAdminService {
             throw new ApiException(VIDEO_NOT_IN_ORGANIZATION);
         }
 
-        videoRepository.delete(video);
-        videoCategoryMappingRepository.deleteByVideoId(videoId);
+        s3Util.deleteFileByKey(video.getThumbnailKey(), true);
+        s3Util.deleteFileByKey(video.getVideoKey(), false);
 
-        // TODO: S3에 저장된 파일도 지워야 함
+        commentRepository.deleteAllByVideoId(videoId);
+        historyRepository.deleteAllByVideoId(videoId);
+        quizRepository.deleteAllByVideoId(videoId);
+        scrapRepository.deleteAllByVideoId(videoId);
+
+        videoMemberGroupMappingRepository.deleteAllByVideoId(videoId);
+        videoCategoryMappingRepository.deleteAllByVideoId(videoId);
+        videoRepository.delete(video);
+
         return true;
     }
 }

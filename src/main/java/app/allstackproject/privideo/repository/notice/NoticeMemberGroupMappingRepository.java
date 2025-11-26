@@ -6,4 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface NoticeMemberGroupMappingRepository extends JpaRepository<NoticeMemberGroupMapping, Long> {
     List<NoticeMemberGroupMapping> findAllByNoticeId(Long noticeId);
+
+    void deleteAllByNoticeId(Long noticeId);
+
+    void deleteAllByMemberGroupId(Long memberGroupId);
 }

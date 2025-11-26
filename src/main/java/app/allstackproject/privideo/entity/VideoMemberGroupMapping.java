@@ -35,10 +35,10 @@ public class VideoMemberGroupMapping extends BaseEntity {
         this.video = video;
     }
 
-    public static VideoMemberGroupMapping create(MemberGroup memberGroup, Video video) {
+    public static VideoMemberGroupMapping create(Video video, MemberGroup memberGroup) {
         return VideoMemberGroupMapping.builder()
-                .memberGroup(memberGroup)
                 .video(video)
+                .memberGroup(memberGroup)
                 .build();
     }
 }
