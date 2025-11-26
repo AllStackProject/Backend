@@ -51,7 +51,7 @@ spec:
       claimName: pvc-kaniko-build-60
   - name: kaniko-tmp
     persistentVolumeClaim:
-      claimName: pvc-kaniko-build-30
+      claimName: pvc-kaniko-tmp-30
 """)  {
 
   node(POD_LABEL) {
