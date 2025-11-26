@@ -40,9 +40,7 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        System.out.println("=== SecurityFilterChain 생성 시작 ===");
         String[] permitPatterns = buildPermitPatterns();
-        System.out.println("permitPatterns 개수: " + permitPatterns.length);
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -70,7 +68,6 @@ public class SecurityConfig {
     }
 
     private String[] buildPermitPatterns() {
-        System.out.println("=== buildPermitPatterns 호출됨 ===");
         List<String> staticPatterns = List.of(
                 "/error", "/favicon.ico",
                 "/h2-console/**", "/v3/api-docs/**",
@@ -80,7 +77,6 @@ public class SecurityConfig {
         List<String> combined = new ArrayList<>(staticPatterns);
 
         List<String> excludedPatterns = jwtSecurityProperties.getExcludedPatterns();
-        System.out.println("excludedPatterns: " + excludedPatterns);
 
         if (excludedPatterns != null && !excludedPatterns.isEmpty()) {
             combined.addAll(excludedPatterns);
