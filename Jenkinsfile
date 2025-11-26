@@ -87,8 +87,8 @@ spec:
           // 빌드 및 DockerHub 푸시
           sh """
           /kaniko/executor \
-            --context /WORKSPACE \
-            --dockerfile /WORKSPACE/Dockerfile \
+            --context /workspace \
+            --dockerfile /workspace/Dockerfile \
             --destination ${IMAGE} \
             --cache=true \
             --cache-repo=docker.io/dockdock150/backend-cache \
