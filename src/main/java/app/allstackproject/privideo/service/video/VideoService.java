@@ -36,6 +36,7 @@ import app.allstackproject.privideo.dto.video.CreateVideoRequest;
 import app.allstackproject.privideo.dto.video.CreateVideoResponse;
 import app.allstackproject.privideo.dto.video.JoinVideoSessionResult;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionInfo;
+import app.allstackproject.privideo.dto.video.ModifyVideoRequest;
 import app.allstackproject.privideo.dto.video.QuizInfo;
 import app.allstackproject.privideo.dto.video.VideoInfo;
 import app.allstackproject.privideo.entity.Category;
@@ -61,6 +62,7 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -269,13 +271,11 @@ public class VideoService {
         List<Long> reqMemberGroups = request.getMemberGroups();
         List<Long> reqCategories = request.getCategories();
 
-        // 1-1. 내가 속한 그룹들 (member_group_mapping 기준)
         Set<Long> myGroupIds = memberGroupMappingRepository.findAllByMemberId(memberId)
                 .stream()
                 .map(mapping -> mapping.getMemberGroup().getId())
                 .collect(Collectors.toSet());
 
-        // 1-2. 요청 그룹이 전부 내가 속한 그룹인지 + 해당 org 소속인지
         List<MemberGroup> groups = memberGroupRepository.findAllById(reqMemberGroups);
         if (groups.size() != reqMemberGroups.size()) {
             throw new ApiException(INVALID_MEMBER_GROUP_IDS);
@@ -342,7 +342,7 @@ public class VideoService {
 
             video.setUploadStatus(COMPLETE);
         } else if (status.equals("FAILED")) {
-            videoMemberGroupMappingRepository.deleteByVideoId(videoId);
+            videoMemberGroupMappingRepository.deleteAllByVideoId(videoId);
             videoCategoryMappingRepository.deleteByVideoId(videoId);
             video.setUploadStatus(FAIL);
 
@@ -372,5 +372,69 @@ public class VideoService {
         }
 
         return uploadStatus;
+    }
+
+    public boolean modifyVideo(Long orgId, Long memberId, Long videoId, ModifyVideoRequest modifyVideoRequest) {
+        Video video = videoRepository.findByIdAndOrganizationId(videoId, orgId)
+                .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
+        if (!video.getCreator().getId().equals(memberId)) {
+            throw new ApiException(VIDEO_CREATE_NOT_FOUND);
+        }
+
+        List<Long> reqMemberGroups = modifyVideoRequest.getMemberGroups();
+        List<Long> reqCategories = modifyVideoRequest.getCategories();
+
+        Set<Long> myGroupIds = memberGroupMappingRepository.findAllByMemberId(memberId)
+                .stream()
+                .map(mapping -> mapping.getMemberGroup().getId())
+                .collect(Collectors.toSet());
+
+        List<MemberGroup> groups = memberGroupRepository.findAllById(reqMemberGroups);
+        if (groups.size() != reqMemberGroups.size()) {
+            throw new ApiException(INVALID_MEMBER_GROUP_IDS);
+        }
+
+        for (MemberGroup group : groups) {
+            if (!group.getOrganization().getId().equals(orgId)) {
+                throw new ApiException(MEMBER_GROUP_NOT_IN_ORGANIZATION);
+            }
+
+            if (!myGroupIds.contains(group.getId())) {
+                throw new ApiException(NOT_ALLOWED_MEMBER_GROUP_ACCESS);
+            }
+        }
+
+        List<Category> categories = categoryRepository.findAllById(reqCategories);
+        if (categories.size() != reqCategories.size()) {
+            throw new ApiException(CATEGORY_NOT_FOUND);
+        }
+
+        for (Category category : categories) {
+            Long categoryGroupId = category.getMemberGroupId();
+            if (categoryGroupId != null && !reqMemberGroups.contains(categoryGroupId)) {
+                throw new ApiException(CATEGORY_NOT_FOUND);
+            }
+        }
+
+        video.modify(
+                modifyVideoRequest.getDescription(),
+                modifyVideoRequest.getIsComment(),
+                LocalDate.from(modifyVideoRequest.getExpiredAt())
+        );
+
+        videoMemberGroupMappingRepository.deleteAllByVideoId(videoId);
+        videoCategoryMappingRepository.deleteByVideoId(videoId);
+
+        List<VideoMemberGroupMapping> groupMappings = groups.stream()
+                .map(group -> VideoMemberGroupMapping.create(video, group))
+                .toList();
+        videoMemberGroupMappingRepository.saveAll(groupMappings);
+
+        List<VideoCategoryMapping> categoryMappings = categories.stream()
+                .map(category -> VideoCategoryMapping.create(video, category))
+                .toList();
+        videoCategoryMappingRepository.saveAll(categoryMappings);
+
+        return true;
     }
 }

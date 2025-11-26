@@ -13,6 +13,7 @@ import app.allstackproject.privideo.dto.video.JoinVideoSessionResponse;
 import app.allstackproject.privideo.dto.video.JoinVideoSessionResult;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionInfo;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionRequest;
+import app.allstackproject.privideo.dto.video.ModifyVideoRequest;
 import app.allstackproject.privideo.dto.video.ReadVideoEncodingResultRequest;
 import app.allstackproject.privideo.dto.video.ReadVideoEncodingResultResponse;
 import app.allstackproject.privideo.service.video.CloudFrontCookieService;
@@ -29,6 +30,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -118,5 +120,15 @@ public class VideoController {
                 leaveVideoSessionRequest);
         boolean result = videoService.leaveVideoSession(leaveVideoSessionInfo);
         return new BaseResponse<>(SuccessResponse.of(result));
+    }
+
+    @PatchMapping("/{videoId}")
+    @Operation(summary = "영상 수정")
+    public BaseResponse<SuccessResponse> modifyVideo(@AuthenticationPrincipal(expression = "memberId") Long memberId,
+                                                     @PathVariable("orgId") Long orgId,
+                                                     @PathVariable("videoId") Long videoId,
+                                                     @Valid @RequestBody ModifyVideoRequest modifyVideoRequest) {
+        return new BaseResponse<>(
+                SuccessResponse.of(videoService.modifyVideo(orgId, memberId, videoId, modifyVideoRequest)));
     }
 }

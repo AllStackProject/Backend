@@ -146,7 +146,7 @@ public class OrgAdminService {
         MemberGroup memberGroup = memberGroupRepository.findByIdAndOrganizationId(groupId, orgId)
                 .orElseThrow(() -> new ApiException(MEMBER_GROUP_NOT_FOUND));
         memberGroupMappingRepository.deleteByMemberGroupId(groupId);
-        videoMemberGroupMappingRepository.deleteByMemberGroupId(groupId);
+        videoMemberGroupMappingRepository.deleteAllByMemberGroupId(groupId);
         memberGroupRepository.delete(memberGroup);
         return true;
     }
