@@ -419,7 +419,7 @@ public class VideoService {
         video.modify(
                 modifyVideoRequest.getDescription(),
                 modifyVideoRequest.getIsComment(),
-                LocalDate.from(modifyVideoRequest.getExpiredAt())
+                modifyVideoRequest.getExpiredAt()
         );
 
         videoMemberGroupMappingRepository.deleteAllByVideoId(videoId);
@@ -445,9 +445,13 @@ public class VideoService {
             throw new ApiException(VIDEO_CREATE_NOT_FOUND);
         }
 
+        s3Util.deleteFileByKey(video.getThumbnailKey(), true);
+        s3Util.deleteFileByKey(video.getVideoKey(), false);
+
         videoMemberGroupMappingRepository.deleteAllByVideoId(videoId);
         videoCategoryMappingRepository.deleteAllByVideoId(videoId);
         videoRepository.delete(video);
+        
         return true;
     }
 }
