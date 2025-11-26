@@ -28,16 +28,8 @@ spec:
       - name: docker-config
         mountPath: /kaniko/.docker    # DockerHub 인증
       
-      - name: kaniko-cache
-        mountPath: /kaniko/.cache
-      - name: kaniko-snap
-        mountPath: /kaniko/snapshots
-      
       - name: kaniko-build
         mountPath: /workspace         # build context
-      
-      - name: kaniko-tmp
-        mountPath: /tmp               # snapshot, layer temp files
     
     resources:
       requests:
@@ -52,21 +44,10 @@ spec:
       - key: .dockerconfigjson
         path: config.json
 
-  - name: kaniko-cache
-    persistentVolumeClaim:
-      claimName: pvc-kaniko-root-60
-  
-  - name: kaniko-snap
-    persistentVolumeClaim:
-      claimName: pvc-kaniko-root-60
-  
   - name: kaniko-build
     persistentVolumeClaim:
       claimName: pvc-kaniko-build-20
       
-  - name: kaniko-tmp
-    persistentVolumeClaim:
-      claimName: pvc-kaniko-tmp-20
 """)  {
 
   node(POD_LABEL) {
@@ -76,13 +57,6 @@ spec:
       checkout scm
     }
     
-    stage('Copy to Kaniko Context') {
-      // Kaniko 컨테이너를 사용하여 PVC 마운트 경로로 복사
-      container('kaniko') {
-        // $WORKSPACE의 모든 내용을 kaniko-build PVC 마운트 경로인 /workspace로 복사
-        sh "cp -r ${WORKSPACE}/* /workspace/"
-      }
-    }
 //    stage('SonarQube Analysis') {
 //        withSonarQubeEnv('sonarQube') {
 //            withCredentials([string(credentialsId: 'sonarQubeToken', variable: 'SONAR_TOKEN')]) {
@@ -105,11 +79,11 @@ spec:
           // 빌드 및 DockerHub 푸시
           sh """
           /kaniko/executor \
-            --context /workspace \
-            --dockerfile /workspace/Dockerfile \
+            --context ${WORKSPACE} \
+            --dockerfile ${WORKSPACE}/Dockerfile \
             --destination ${IMAGE} \
             --cache=true \
-            --cache-dir=/tmp \
+            --cache-repo=docker.io/dockdock150/backend-cache \
             --cleanup \
             --force
           """
