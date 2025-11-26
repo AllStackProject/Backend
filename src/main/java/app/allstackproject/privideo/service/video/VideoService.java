@@ -437,4 +437,16 @@ public class VideoService {
 
         return true;
     }
+
+    public boolean deleteVideo(Long orgId, Long memberId, Long videoId) {
+        Video video = videoRepository.findByIdAndOrganizationId(videoId, orgId)
+                .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
+        if (!video.getCreator().getId().equals(memberId)) {
+            throw new ApiException(VIDEO_CREATE_NOT_FOUND);
+        }
+
+        // TODO: 다대다 매핑 테이블도 삭제
+        videoRepository.delete(video);
+        return true;
+    }
 }

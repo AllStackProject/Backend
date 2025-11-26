@@ -29,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -130,5 +131,13 @@ public class VideoController {
                                                      @Valid @RequestBody ModifyVideoRequest modifyVideoRequest) {
         return new BaseResponse<>(
                 SuccessResponse.of(videoService.modifyVideo(orgId, memberId, videoId, modifyVideoRequest)));
+    }
+
+    @DeleteMapping("/{videoId}")
+    @Operation(summary = "업로드한 영상 삭제")
+    public BaseResponse<SuccessResponse> deleteVideo(@AuthenticationPrincipal(expression = "memberId") Long memberId,
+                                                     @PathVariable("orgId") Long orgId,
+                                                     @PathVariable("videoId") Long videoId) {
+        return new BaseResponse<>(SuccessResponse.of(videoService.deleteVideo(orgId, memberId, videoId)));
     }
 }
