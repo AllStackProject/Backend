@@ -87,14 +87,11 @@ public class OrganizationService {
         String code = generateCode(user.getId());
         try {
             orgRedisRepository.createOrgCode(organization.getId(), code);
-            log.info("조직 코드 Redis 저장 완료 - orgId: {}, code: {}", organization.getId(), code);
-
             orgRedisRepository.saveMemberPermission(
                     organization.getId(),
                     member.getId(),
                     member.getPermissionCode()
             );
-
         } catch (Exception e) {
             log.info("Redis 저장 실패 - orgId: {}", organization.getId());
         }
@@ -259,7 +256,7 @@ public class OrganizationService {
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_IN_ORGANIZATION));
 
         String orgName = organization.getName();
-        String orgCode = orgRedisRepository.getOrgcodeById(orgId);
+        String orgCode = orgRedisRepository.getOrgCodeById(orgId);
         String nickname = member.getNickname();
         Boolean isAdmin = member.getPermissionCode() != 0L;
         LocalDateTime joinedAt = member.getCreatedAt();

@@ -7,18 +7,19 @@ public class RedisUtil {
 
     private static final String ORG_PREFIX = "org:";
     private static final String ORG_CODE_PREFIX = "orgcode:";
+    private static final String MEMBER_PREFIX = "member:";
     private static final String WATCH = "watch:";
 
-    public static String org(Long orgId) {
+    public static String getOrgKey(Long orgId) {
         return ORG_PREFIX + orgId;
     }
 
-    public static String orgCode(String code) {
+    public static String getOrgCodeKey(String code) {
         return ORG_CODE_PREFIX + code;
     }
 
-    public static String memberPermission(Long orgId, Long memberId) {
-        return String.format("org:%d:member:%d", orgId, memberId);
+    public static String getMemberPermissionKey(Long orgId, Long memberId) {
+        return String.format(ORG_PREFIX + "%d:" + MEMBER_PREFIX + "%d", orgId, memberId);
     }
 
     public static final class Fields {
