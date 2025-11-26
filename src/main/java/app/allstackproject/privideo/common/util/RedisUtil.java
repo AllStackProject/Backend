@@ -6,7 +6,7 @@ public class RedisUtil {
     }
 
     private static final String ORG_PREFIX = "org:";
-    private static final String ORG_CODE_PREFIX = "orgcode:";
+    private static final String ORG_CODE_PREFIX = "orgCode:";
     private static final String MEMBER_PREFIX = "member:";
     private static final String WATCH_PREFIX = "watch:";
 
@@ -30,7 +30,7 @@ public class RedisUtil {
         private Fields() {
         }
 
-        public static final String CODE = "code";
+        public static final String CODE = "orgCode";
 
         public static final String PERMISSION_CODE = "permissionCode";
 

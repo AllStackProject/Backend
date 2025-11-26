@@ -17,7 +17,7 @@ public class LeaveVideoSessionRequest {
     @NotNull(message = "시청률은 필수입니다.")
     private Long watchRate;
 
-    @Pattern(regexp = "^[01]+$", message = "watchSegments는 0과 1로만 구성되어야 합니다.")
+    @Pattern(regexp = "^[01]+$", message = "watch_segments는 0과 1로만 구성되어야 합니다.")
     @NotBlank(message = "시청 구간별 시청 여부는 필수입니다.")
     private String watchSegments;
 
