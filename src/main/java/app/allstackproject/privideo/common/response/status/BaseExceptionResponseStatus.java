@@ -113,6 +113,9 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     MEMBER_GROUP_ALREADY_EXIST(12001, HttpStatus.BAD_REQUEST, "이미 존재하는 멤버 그룹입니다."),
     MEMBER_GROUP_NOT_FOUND(12002, HttpStatus.NOT_FOUND, "존재하지 않는 멤버 그룹입니다."),
     INVALID_MEMBER_GROUP(12003, HttpStatus.BAD_REQUEST, "유효하지 않은 멤버 그룹입니다."),
+    NOT_ALLOWED_MEMBER_GROUP_ACCESS(12004, HttpStatus.BAD_REQUEST, "해당 멤버 그룹에 대해 접근 권한이 없습니다."),
+    INVALID_MEMBER_GROUP_IDS(12005, HttpStatus.BAD_REQUEST, "멤버 그룹 아이디 중 유효하지 않은 값이 존재합니다."),
+    MEMBER_GROUP_NOT_IN_ORGANIZATION(12006, HttpStatus.BAD_REQUEST, "해당 조직에서 찾을 수 없는 멤버 그룹입니다."),
 
     /**
      * 13000: Category 오류
@@ -131,7 +134,7 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
      */
     NOTICE_NOT_IN_ORGANIZATION(15001, HttpStatus.BAD_REQUEST, "해당 조직에서 찾을 수 없는 공지입니다."),
     NOTICE_FORBIDDEN(15002, HttpStatus.BAD_REQUEST, "접근 권한이 없는 공지입니다."),
-    INVALID_MEMBER_GROUP_IDS(15003, HttpStatus.BAD_REQUEST, "멤버 그룹 아이디 중 유효하지 않은 값이 존재합니다.");
+    ;
 
     private final int code;
     private final HttpStatus httpStatus;

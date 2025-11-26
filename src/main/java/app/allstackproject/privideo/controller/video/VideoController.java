@@ -23,6 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -58,10 +59,12 @@ public class VideoController {
             @RequestParam("whole_time") Long wholeTime,
             @RequestParam("is_comment") Boolean isComment,
             @RequestParam("ai_function") String aiFunction,
-            @RequestParam(value = "expired_at", required = false) LocalDate expiredAt) {
+            @RequestParam(value = "expired_at", required = false) LocalDate expiredAt,
+            @RequestParam(value = "member_groups") List<Long> memberGroups,
+            @RequestParam(value = "categories") List<Long> categories) {
         CreateVideoRequest createVideoRequest = new CreateVideoRequest(
                 title, description, thumbnailImg, wholeTime,
-                isComment, aiFunction, expiredAt
+                isComment, aiFunction, expiredAt, memberGroups, categories
         );
         return new BaseResponse<>(videoService.createVideo(memberId, orgId, createVideoRequest));
     }

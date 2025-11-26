@@ -6,6 +6,7 @@ import app.allstackproject.privideo.common.enumStatus.GenderType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,4 +37,8 @@ public class CreateVideoRequest {
     private String aiFunction;
 
     private LocalDate expiredAt;
+
+    private List<Long> memberGroups;
+
+    private List<Long> categories;
 }
