@@ -56,7 +56,15 @@ spec:
       // Webhook으로 받은 SCM 정보로 자동 checkout
       checkout scm
     }
-    
+    stage('Copy to Kaniko Context') {
+      container('kaniko') {
+      sh """
+      rm -rf /workspace/*
+      cp -r ${WORKSPACE}/* /workspace/
+      """
+  }
+}
+
 //    stage('SonarQube Analysis') {
 //        withSonarQubeEnv('sonarQube') {
 //            withCredentials([string(credentialsId: 'sonarQubeToken', variable: 'SONAR_TOKEN')]) {
@@ -79,8 +87,8 @@ spec:
           // 빌드 및 DockerHub 푸시
           sh """
           /kaniko/executor \
-            --context ${WORKSPACE} \
-            --dockerfile ${WORKSPACE}/Dockerfile \
+            --context /WORKSPACE \
+            --dockerfile /WORKSPACE/Dockerfile \
             --destination ${IMAGE} \
             --cache=true \
             --cache-repo=docker.io/dockdock150/backend-cache \
