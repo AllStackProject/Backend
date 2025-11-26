@@ -70,7 +70,7 @@ public class OrgAdminController {
                 orgAdminService.createMemberGroup(orgId, createMemberGroupRequest.getName())));
     }
 
-    @DeleteMapping("/group/{groupId}") // 끗
+    @DeleteMapping("/group/{groupId}")
     @Operation(summary = "멤버 그룹 삭제")
     public BaseResponse<SuccessResponse> deleteMemberGroup(@PathVariable("orgId") Long orgId,
                                                            @PathVariable("groupId") Long groupId) {
@@ -103,7 +103,7 @@ public class OrgAdminController {
                 orgAdminService.modifyCategory(orgId, groupId, categoryId, modifyCategoryRequest.getTitle())));
     }
 
-    @DeleteMapping("/group/{groupId}/category/{categoryId}") // 끗
+    @DeleteMapping("/group/{groupId}/category/{categoryId}")
     @Operation(summary = "카테고리 삭제")
     public BaseResponse<SuccessResponse> deleteCategory(@PathVariable("orgId") Long orgId,
                                                         @PathVariable("groupId") Long groupId,

@@ -54,7 +54,7 @@ public class NoticeAdminController {
                 SuccessResponse.of(noticeAdminService.createNotice(orgId, memberId, createNoticeRequest)));
     }
 
-    @DeleteMapping("/notice/{noticeId}") // 끗
+    @DeleteMapping("/notice/{noticeId}")
     @Operation(summary = "공지사항 삭제")
     public BaseResponse<SuccessResponse> deleteNotice(@PathVariable Long orgId, @PathVariable Long noticeId) {
         return new BaseResponse<>(SuccessResponse.of(noticeAdminService.deleteNotice(orgId, noticeId)));

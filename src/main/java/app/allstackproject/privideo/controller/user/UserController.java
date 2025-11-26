@@ -95,7 +95,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")
-    @DeleteMapping("") // 끗
+    @DeleteMapping("")
     @Operation(summary = "유저 탈퇴")
     public BaseResponse<SuccessResponse> deleteUser(@AuthenticationPrincipal(expression = "userId") Long userId) {
         return new BaseResponse<>(SuccessResponse.of(userService.deleteUser(userId)));
