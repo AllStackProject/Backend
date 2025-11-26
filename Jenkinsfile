@@ -30,7 +30,6 @@ spec:
       
       - name: kaniko-cache
         mountPath: /kaniko/.cache
-
       - name: kaniko-snap
         mountPath: /kaniko/snapshots
       
@@ -42,9 +41,8 @@ spec:
     
     resources:
       requests:
-        ephemeral-storage: "2Gi"
-      limits:
-        ephemeral-storage: "4Gi"
+        cpu: "500m"
+        memory: "1Gi"
 
   volumes:
   - name: docker-config
@@ -53,14 +51,14 @@ spec:
       items:
       - key: .dockerconfigjson
         path: config.json
+
+  - name: kaniko-cache
+    persistentVolumeClaim:
+      claimName: pvc-kaniko-root-60
   
   - name: kaniko-snap
     persistentVolumeClaim:
       claimName: pvc-kaniko-root-60
-  
-  - name: kaniko-cache
-    persistentVolumeClaim:
-      claimName: pvc-kaniko-root-60    
   
   - name: kaniko-build
     persistentVolumeClaim:
@@ -77,19 +75,26 @@ spec:
       // Webhook으로 받은 SCM 정보로 자동 checkout
       checkout scm
     }
-
-    stage('SonarQube Analysis') {
-        withSonarQubeEnv('sonarQube') {
-            withCredentials([string(credentialsId: 'sonarQubeToken', variable: 'SONAR_TOKEN')]) {
-                sh """
-                    ./gradlew sonarqube \
-                      -Dsonar.projectKey=backend \
-                      -Dsonar.host.url=$SONAR_HOST_URL \
-                      -Dsonar.login=$SONAR_TOKEN
-                """
-            }
-        }
-   }
+    
+    stage('Copy to Kaniko Context') {
+      // Kaniko 컨테이너를 사용하여 PVC 마운트 경로로 복사
+      container('kaniko') {
+        // $WORKSPACE의 모든 내용을 kaniko-build PVC 마운트 경로인 /workspace로 복사
+        sh "cp -r ${WORKSPACE}/* /workspace/"
+      }
+    }
+//    stage('SonarQube Analysis') {
+//        withSonarQubeEnv('sonarQube') {
+//            withCredentials([string(credentialsId: 'sonarQubeToken', variable: 'SONAR_TOKEN')]) {
+//                sh """
+//                    ./gradlew sonarqube \
+//                      -Dsonar.projectKey=backend \
+//                      -Dsonar.host.url=$SONAR_HOST_URL \
+//                      -Dsonar.login=$SONAR_TOKEN
+//               """
+//            }
+//        }
+//   }
 
     
     stage('Build & Push with Kaniko') {
@@ -100,8 +105,8 @@ spec:
           // 빌드 및 DockerHub 푸시
           sh """
           /kaniko/executor \
-            --context ${WORKSPACE} \
-            --dockerfile ${WORKSPACE}/Dockerfile \
+            --context /workspace \
+            --dockerfile /workspace/Dockerfile \
             --destination ${IMAGE} \
             --cache=true \
             --cache-dir=/tmp \
