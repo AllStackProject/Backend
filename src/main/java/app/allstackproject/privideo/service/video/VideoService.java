@@ -47,6 +47,7 @@ import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.entity.Video;
 import app.allstackproject.privideo.entity.VideoCategoryMapping;
 import app.allstackproject.privideo.entity.VideoMemberGroupMapping;
+import app.allstackproject.privideo.repository.comment.CommentRepository;
 import app.allstackproject.privideo.repository.member.MemberGroupMappingRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.scrap.ScrapRepository;
@@ -62,7 +63,6 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -94,6 +94,7 @@ public class VideoService {
     private final VideoMemberGroupMappingRepository videoMemberGroupMappingRepository;
     private final VideoCategoryMappingRepository videoCategoryMappingRepository;
     private final QuizRepository quizRepository;
+    private final CommentRepository commentRepository;
     private final AiFunctionService aiFunctionService;
     private final MemberGroupMappingRepository memberGroupMappingRepository;
 
@@ -448,10 +449,15 @@ public class VideoService {
         s3Util.deleteFileByKey(video.getThumbnailKey(), true);
         s3Util.deleteFileByKey(video.getVideoKey(), false);
 
+        commentRepository.deleteAllByVideoId(videoId);
+        historyRepository.deleteAllByVideoId(videoId);
+        quizRepository.deleteAllByVideoId(videoId);
+        scrapRepository.deleteAllByVideoId(videoId);
+
         videoMemberGroupMappingRepository.deleteAllByVideoId(videoId);
         videoCategoryMappingRepository.deleteAllByVideoId(videoId);
         videoRepository.delete(video);
-        
+
         return true;
     }
 }

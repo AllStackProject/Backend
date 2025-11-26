@@ -8,6 +8,10 @@ import app.allstackproject.privideo.common.util.CdnUrlProvider;
 import app.allstackproject.privideo.common.util.S3Util;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoItem;
 import app.allstackproject.privideo.entity.Video;
+import app.allstackproject.privideo.repository.comment.CommentRepository;
+import app.allstackproject.privideo.repository.history.HistoryRepository;
+import app.allstackproject.privideo.repository.quiz.QuizRepository;
+import app.allstackproject.privideo.repository.scrap.ScrapRepository;
 import app.allstackproject.privideo.repository.video.VideoCategoryMappingRepository;
 import app.allstackproject.privideo.repository.video.VideoMemberGroupMappingRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
@@ -26,6 +30,10 @@ public class VideoAdminService {
     private final CdnUrlProvider cdnUrlProvider;
     private final S3Util s3Util;
     private final VideoMemberGroupMappingRepository videoMemberGroupMappingRepository;
+    private final CommentRepository commentRepository;
+    private final ScrapRepository scrapRepository;
+    private final HistoryRepository historyRepository;
+    private final QuizRepository quizRepository;
 
     @Transactional(readOnly = true)
     public List<ReadAllVideoItem> readAllVideos(Long orgId) {
@@ -42,6 +50,11 @@ public class VideoAdminService {
 
         s3Util.deleteFileByKey(video.getThumbnailKey(), true);
         s3Util.deleteFileByKey(video.getVideoKey(), false);
+
+        commentRepository.deleteAllByVideoId(videoId);
+        historyRepository.deleteAllByVideoId(videoId);
+        quizRepository.deleteAllByVideoId(videoId);
+        scrapRepository.deleteAllByVideoId(videoId);
 
         videoMemberGroupMappingRepository.deleteAllByVideoId(videoId);
         videoCategoryMappingRepository.deleteAllByVideoId(videoId);
