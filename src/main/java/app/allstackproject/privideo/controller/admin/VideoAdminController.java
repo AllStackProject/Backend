@@ -33,7 +33,7 @@ public class VideoAdminController {
         return new BaseResponse<>(ReadAllVideosResponse.of(videoAdminService.readAllVideos(orgId)));
     }
 
-    @DeleteMapping("/video/{videoId}")
+    @DeleteMapping("/video/{videoId}") // 끗
     @Operation(summary = "조직 내 특정 영상 삭제")
     public BaseResponse<SuccessResponse> deleteVideo(@PathVariable("orgId") Long orgId,
                                                      @PathVariable("videoId") Long videoId) {

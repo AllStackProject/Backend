@@ -114,6 +114,8 @@ public class NoticeAdminService {
     public boolean deleteNotice(Long orgId, Long noticeId) {
         Notice notice = noticeRepository.findByIdAndOrganizationId(noticeId, orgId)
                 .orElseThrow(() -> new ApiException(NOTICE_NOT_IN_ORGANIZATION));
+
+        noticeMemberGroupMappingRepository.deleteAllByNoticeId(noticeId);
         noticeRepository.delete(notice);
         return true;
     }

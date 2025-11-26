@@ -12,4 +12,6 @@ import java.util.List;
 public interface CommentRepository extends JpaRepository<Comment, Long>, CommentRepositoryCustom {
     @EntityGraph(attributePaths = {"video"})
     List<Comment> findByMemberIdAndVideoOrganizationId(Long memberId, Long orgId);
+
+    void deleteAllByParentCommentId(Long parentCommentId);
 }

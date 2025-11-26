@@ -133,7 +133,7 @@ public class VideoController {
                 SuccessResponse.of(videoService.modifyVideo(orgId, memberId, videoId, modifyVideoRequest)));
     }
 
-    @DeleteMapping("/{videoId}")
+    @DeleteMapping("/{videoId}") // 끗
     @Operation(summary = "업로드한 영상 삭제")
     public BaseResponse<SuccessResponse> deleteVideo(@AuthenticationPrincipal(expression = "memberId") Long memberId,
                                                      @PathVariable("orgId") Long orgId,

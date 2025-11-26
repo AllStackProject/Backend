@@ -36,7 +36,7 @@ public class ScrapController {
         return new BaseResponse<>(SuccessResponse.of(result));
     }
 
-    @DeleteMapping("")
+    @DeleteMapping("") // 끗
     @Operation(summary = "영상 스크랩 취소")
     public BaseResponse<SuccessResponse> deleteVideoScrap(
             @AuthenticationPrincipal(expression = "memberId") Long memberId,

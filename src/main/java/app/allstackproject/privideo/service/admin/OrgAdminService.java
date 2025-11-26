@@ -27,6 +27,7 @@ import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.repository.member.MemberGroupMappingRepository;
 import app.allstackproject.privideo.repository.member.MemberGroupRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
+import app.allstackproject.privideo.repository.notice.NoticeMemberGroupMappingRepository;
 import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.video.CategoryRepository;
@@ -55,6 +56,7 @@ public class OrgAdminService {
     private final VideoCategoryMappingRepository videoCategoryMappingRepository;
     private final S3Util s3Util;
     private final CdnUrlProvider cdnUrlProvider;
+    private final NoticeMemberGroupMappingRepository noticeMemberGroupMappingRepository;
 
     public boolean modifyOrgInfo(Long orgId, MultipartFile img) {
         Organization organization = organizationRepository.findById(orgId)
@@ -147,6 +149,7 @@ public class OrgAdminService {
                 .orElseThrow(() -> new ApiException(MEMBER_GROUP_NOT_FOUND));
         memberGroupMappingRepository.deleteByMemberGroupId(groupId);
         videoMemberGroupMappingRepository.deleteAllByMemberGroupId(groupId);
+        noticeMemberGroupMappingRepository.deleteAllByMemberGroupId(groupId);
         memberGroupRepository.delete(memberGroup);
         return true;
     }
@@ -198,7 +201,7 @@ public class OrgAdminService {
 
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ApiException(CATEGORY_NOT_FOUND));
-        videoCategoryMappingRepository.deleteByCategoryId(categoryId);
+        videoCategoryMappingRepository.deleteAllByCategoryId(categoryId);
         categoryRepository.delete(category);
 
         return true;

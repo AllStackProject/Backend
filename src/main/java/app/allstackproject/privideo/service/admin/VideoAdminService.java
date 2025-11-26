@@ -8,6 +8,7 @@ import app.allstackproject.privideo.common.util.CdnUrlProvider;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoItem;
 import app.allstackproject.privideo.entity.Video;
 import app.allstackproject.privideo.repository.video.VideoCategoryMappingRepository;
+import app.allstackproject.privideo.repository.video.VideoMemberGroupMappingRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class VideoAdminService {
     private final VideoRepository videoRepository;
     private final VideoCategoryMappingRepository videoCategoryMappingRepository;
     private final CdnUrlProvider cdnUrlProvider;
+    private final VideoMemberGroupMappingRepository videoMemberGroupMappingRepository;
 
     @Transactional(readOnly = true)
     public List<ReadAllVideoItem> readAllVideos(Long orgId) {
@@ -36,8 +38,9 @@ public class VideoAdminService {
             throw new ApiException(VIDEO_NOT_IN_ORGANIZATION);
         }
 
+        videoMemberGroupMappingRepository.deleteAllByVideoId(videoId);
+        videoCategoryMappingRepository.deleteAllByVideoId(videoId);
         videoRepository.delete(video);
-        videoCategoryMappingRepository.deleteByVideoId(videoId);
 
         // TODO: S3에 저장된 파일도 지워야 함
         return true;

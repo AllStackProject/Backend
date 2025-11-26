@@ -343,7 +343,7 @@ public class VideoService {
             video.setUploadStatus(COMPLETE);
         } else if (status.equals("FAILED")) {
             videoMemberGroupMappingRepository.deleteAllByVideoId(videoId);
-            videoCategoryMappingRepository.deleteByVideoId(videoId);
+            videoCategoryMappingRepository.deleteAllByVideoId(videoId);
             video.setUploadStatus(FAIL);
 
             s3Util.deleteFileByKey(video.getVideoKey(), false);
@@ -423,7 +423,7 @@ public class VideoService {
         );
 
         videoMemberGroupMappingRepository.deleteAllByVideoId(videoId);
-        videoCategoryMappingRepository.deleteByVideoId(videoId);
+        videoCategoryMappingRepository.deleteAllByVideoId(videoId);
 
         List<VideoMemberGroupMapping> groupMappings = groups.stream()
                 .map(group -> VideoMemberGroupMapping.create(video, group))
@@ -445,7 +445,8 @@ public class VideoService {
             throw new ApiException(VIDEO_CREATE_NOT_FOUND);
         }
 
-        // TODO: 다대다 매핑 테이블도 삭제
+        videoMemberGroupMappingRepository.deleteAllByVideoId(videoId);
+        videoCategoryMappingRepository.deleteAllByVideoId(videoId);
         videoRepository.delete(video);
         return true;
     }
