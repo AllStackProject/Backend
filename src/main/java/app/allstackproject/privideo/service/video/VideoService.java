@@ -12,13 +12,15 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.HISTORY_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_AIRFLOW_STATUS;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_MEMBER_GROUP_IDS;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_PLAY_SESSION;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.IS_NOT_IMAGE_FILE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_GROUP_NOT_IN_ORGANIZATION;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_IN_ORGANIZATION;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.NOT_ALLOWED_MEMBER_GROUP_ACCESS;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_ALREADY_WATCHED;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.PLAY_SESSION_NOT_FOUND;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_ALREADY_WATCHING;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_CREATE_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_ACCESSIBLE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.VIDEO_NOT_FOUND;
@@ -58,6 +60,7 @@ import app.allstackproject.privideo.repository.quiz.QuizRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.video.VideoCategoryMappingRepository;
 import app.allstackproject.privideo.repository.video.VideoMemberGroupMappingRepository;
+import app.allstackproject.privideo.repository.video.VideoRedisRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
 import java.math.BigInteger;
 import java.net.URL;
@@ -97,6 +100,7 @@ public class VideoService {
     private final CommentRepository commentRepository;
     private final AiFunctionService aiFunctionService;
     private final MemberGroupMappingRepository memberGroupMappingRepository;
+    private final VideoRedisRepository videoRedisRepository;
 
     public JoinVideoSessionResult joinVideoSession(Long memberId, Long orgId, Long videoId) {
         Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
@@ -108,23 +112,28 @@ public class VideoService {
             throw new ApiException(VIDEO_NOT_IN_ORGANIZATION);
         }
 
-        String sessionId = UUID.nameUUIDFromBytes((memberId.toString()).getBytes(StandardCharsets.UTF_8)).toString();
+        String sessionId = UUID.nameUUIDFromBytes(
+                (memberId.toString() + videoId.toString()).getBytes(StandardCharsets.UTF_8)).toString();
 
-        // TODO: Redis에서 해당 member에 대해 열려있는 세션이 있는지 확인
-        boolean sessionExists = false;
-        if (sessionExists) {
-            throw new ApiException(VIDEO_ALREADY_WATCHED);
+        if (videoRedisRepository.existsWatchSession(sessionId)) {
+            throw new ApiException(VIDEO_ALREADY_WATCHING);
         }
 
         if (!memberGroupRepository.isAccessibleToVideo(memberId, videoId)) {
             throw new ApiException(VIDEO_NOT_ACCESSIBLE);
         }
 
-        String playbackUrl = s3Util.generatePlaybackUrl(video.getHlsPrefix());
-
+        videoRedisRepository.createWatchSession(sessionId, memberId);
         video.watch();
 
+        String playbackUrl = s3Util.generatePlaybackUrl(video.getHlsPrefix());
+
         VideoInfo videoInfo = VideoInfo.from(video);
+
+        List<Long> segViewCnts = logService.getSegViewCounts(videoId,
+                (int) Math.ceil((double) video.getWholeTime() / SEGMENT_SECONDS));
+
+        boolean isScrapped = scrapRepository.existsByMemberIdAndVideoId(memberId, videoId);
         List<String> categories = categoryRepository.findAllByVideoId(videoId);
 
         AiFunctionType aiType = video.getAiFunctionType();
@@ -139,42 +148,39 @@ public class VideoService {
             quizInfos = quizRepository.findAllByVideoId(videoId);
         }
 
-        boolean isScrapped = false;
-        if (scrapRepository.existsByMemberIdAndVideoId(memberId, videoId)) {
-            isScrapped = true;
-        }
-
-        List<Long> segViewCnts = logService.getSegViewCounts(videoId,
-                (int) Math.ceil((double) video.getWholeTime() / SEGMENT_SECONDS));
-
-        boolean isFirstWatch = true;
         Optional<History> history = historyRepository.findByMemberIdAndVideoId(memberId, videoId);
-        // 시청 기록 있는지 확인
         if (history.isPresent()) {
             if (history.get().isComplete()) {
-                isFirstWatch = false;
                 return JoinVideoSessionResult.completed(sessionId, playbackUrl, videoInfo, segViewCnts,
                         video.getIsComment(), isScrapped, categories, aiType, quizInfos, aiFeedback, aiSummary);
             }
-            logService.incOrgViewBucket(orgId, Instant.now());
         } else {
-            // 시청 기록 없다면(=최초 시청) 새로 생성
             History newHistory = History.create(member, video);
             historyRepository.save(newHistory);
-
-            logService.incOrgViewBucket(orgId, Instant.now());
-
-            // TODO: Redis에 해당 멤버 + 재시청 여부 + 영상 아이디에 대해 세션 키 저장
         }
+
+        logService.incOrgViewBucket(orgId, Instant.now());
 
         return JoinVideoSessionResult.create(sessionId, playbackUrl, videoInfo, segViewCnts, video.getIsComment(),
                 isScrapped, categories, aiType, quizInfos, aiFeedback, aiSummary);
     }
 
     public boolean leaveVideoSession(LeaveVideoSessionInfo leaveVideoSessionInfo) {
-        Long memberId = leaveVideoSessionInfo.getMemberId();
+        String sessionId = leaveVideoSessionInfo.getSessionId();
+        Long memberId = videoRedisRepository.getMemberIdByWatchSession(sessionId);
         Long orgId = leaveVideoSessionInfo.getOrgId();
         Long videoId = leaveVideoSessionInfo.getVideoId();
+
+        if (!videoRedisRepository.existsWatchSession(sessionId)) {
+            throw new ApiException(PLAY_SESSION_NOT_FOUND);
+        }
+
+        String sessionIdForValidate = UUID.nameUUIDFromBytes(
+                (memberId.toString() + videoId.toString()).getBytes(StandardCharsets.UTF_8)).toString();
+
+        if (!sessionId.equals(sessionIdForValidate)) {
+            throw new ApiException(INVALID_PLAY_SESSION);
+        }
 
         Member member = memberRepository.findByIdAndStatus(memberId, ACTIVE)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
@@ -188,25 +194,17 @@ public class VideoService {
             throw new ApiException(VIDEO_NOT_IN_ORGANIZATION);
         }
 
-        /**
-         * TODO: Redis에서 기존 재생 정보 확인
-         * 1. 해당 member에 대해 열려있는 세션이 없다면 SESSION_NOT_FOUND 예외 발생
-         * 2. 시청 join했던 영상과 다르면 INVALID_REQUEST 예외 발생 (=시청 시작한 적 없는 영상에 대해 종료 요청)
-         * 3. 위 경우들에 해당하지 않는다면 올바른 요청
-         */
-
-        // TODO: Redis에서 재시청인지 확인
-        boolean isFirstWatch = true;
-        BigInteger watchedSegments = new BigInteger(leaveVideoSessionInfo.getWatchSegments(), 2);
-        int totalSegCnt = (int) Math.ceil((double) video.getWholeTime() / SEGMENT_SECONDS);
+        videoRedisRepository.deleteWatchSession(sessionId);
 
         History history = historyRepository.findByMemberIdAndVideoId(memberId, videoId)
                 .orElseThrow(() -> new ApiException(HISTORY_NOT_FOUND));
 
-        // TODO: Redis에서 세션 키 삭제
-        if (isFirstWatch) {
-            boolean watchEnd = watchedSegments.testBit(totalSegCnt - 1);
-            history.update(leaveVideoSessionInfo.getWatchRate(), leaveVideoSessionInfo.getRecentPosition(), watchEnd);
+        BigInteger watchedSegments = new BigInteger(leaveVideoSessionInfo.getWatchSegments(), 2);
+        int totalSegCnt = (int) Math.ceil((double) video.getWholeTime() / SEGMENT_SECONDS);
+
+        if (!history.isComplete()) {
+            boolean hadEnd = watchedSegments.testBit(totalSegCnt - 1);
+            history.update(leaveVideoSessionInfo.getWatchRate(), leaveVideoSessionInfo.getRecentPosition(), hadEnd);
         }
 
         history.updateLastWatchedAt();
@@ -214,7 +212,6 @@ public class VideoService {
         logService.incSegViewBucket(videoId, watchedSegments, totalSegCnt);
 
         if (leaveVideoSessionInfo.getIsQuit()) {
-            // recentPositionSec 기준으로만 이탈 판단
             logService.incSegQuitBucket(videoId, leaveVideoSessionInfo.getRecentPosition(), totalSegCnt);
             video.quit();
         }

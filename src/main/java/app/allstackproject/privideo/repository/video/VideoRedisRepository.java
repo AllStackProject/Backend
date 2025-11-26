@@ -51,7 +51,7 @@ public class VideoRedisRepository {
         );
     }
 
-    public Map<String, String> getWatchSession(String sessionId) {
+    public Long getMemberIdByWatchSession(String sessionId) {
         String key = RedisUtil.getWatchSessionKey(sessionId);
         String logContext = String.format("시청 세션 조회 = [session:%s]", sessionId);
 
@@ -63,16 +63,27 @@ public class VideoRedisRepository {
                         return null;
                     }
 
-                    Map<String, String> sessionData = new HashMap<>();
-                    rawHash.forEach((k, v) -> sessionData.put((String) k, (String) v));
+                    Object memberIdObj = rawHash.get(MEMBER_ID);
+                    if (memberIdObj == null) {
+                        log.debug("시청 세션 조회 실패 : memberId 없음 [sessionId: {}]", sessionId);
+                        return null;
+                    }
 
-                    log.debug("시청 세션 조회 성공 [sessionId: {}, memberId: {}]", sessionId, sessionData.get(MEMBER_ID));
-                    return sessionData;
+                    String memberIdStr = memberIdObj.toString();
+                    log.debug("시청 세션 조회 성공 [sessionId: {}, memberId: {}]", sessionId, memberIdStr);
+
+                    try {
+                        return Long.valueOf(memberIdStr);
+                    } catch (NumberFormatException e) {
+                        log.warn("시청 세션 memberId 형식 오류 [sessionId: {}, memberId: {}]", sessionId, memberIdStr, e);
+                        return null;
+                    }
                 },
                 logContext
         );
     }
-    
+
+
     public void deleteWatchSession(String sessionId) {
         String key = RedisUtil.getWatchSessionKey(sessionId);
         String logContext = String.format("시청 세션 삭제 = [session:%s]", sessionId);
