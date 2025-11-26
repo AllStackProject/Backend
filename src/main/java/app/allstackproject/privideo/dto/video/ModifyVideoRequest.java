@@ -1,7 +1,7 @@
 package app.allstackproject.privideo.dto.video;
 
 import jakarta.validation.constraints.NotNull;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,7 +18,7 @@ public class ModifyVideoRequest {
     private Boolean isComment;
 
     @NotNull
-    private LocalDateTime expiredAt;
+    private LocalDate expiredAt;
 
     @NotNull
     private List<Long> memberGroups;
