@@ -167,21 +167,20 @@ public class VideoService {
 
     public boolean leaveVideoSession(LeaveVideoSessionInfo leaveVideoSessionInfo) {
         String sessionId = leaveVideoSessionInfo.getSessionId();
-        Long memberId = videoRedisRepository.getMemberIdByWatchSession(sessionId);
-        Long orgId = leaveVideoSessionInfo.getOrgId();
-        Long videoId = leaveVideoSessionInfo.getVideoId();
-
         if (!videoRedisRepository.existsWatchSession(sessionId)) {
             throw new ApiException(PLAY_SESSION_NOT_FOUND);
         }
 
+        Long memberId = videoRedisRepository.getMemberIdByWatchSession(sessionId);
+        Long videoId = leaveVideoSessionInfo.getVideoId();
+
         String sessionIdForValidate = UUID.nameUUIDFromBytes(
                 (memberId.toString() + videoId.toString()).getBytes(StandardCharsets.UTF_8)).toString();
-
         if (!sessionId.equals(sessionIdForValidate)) {
             throw new ApiException(INVALID_PLAY_SESSION);
         }
 
+        Long orgId = leaveVideoSessionInfo.getOrgId();
         Member member = memberRepository.findByIdAndStatus(memberId, ACTIVE)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_FOUND));
         if (!member.getOrganization().getId().equals(orgId)) {
