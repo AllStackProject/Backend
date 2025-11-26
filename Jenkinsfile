@@ -27,6 +27,8 @@ spec:
     volumeMounts:
       - name: docker-config
         mountPath: /kaniko/.docker    # DockerHub 인증
+      - name: kaniko-root
+        mountPath: /kaniko
       - name: kaniko-build
         mountPath: /workspace         # build context
       - name: kaniko-tmp
@@ -44,13 +46,16 @@ spec:
       items:
       - key: .dockerconfigjson
         path: config.json
-
+  
+  - name: kaniko-root
+    persistentVolumeClaim:
+      claimName: pvc-kaniko-root-60
   - name: kaniko-build
     persistentVolumeClaim:
-      claimName: pvc-kaniko-build-60
+      claimName: pvc-kaniko-build-20
   - name: kaniko-tmp
     persistentVolumeClaim:
-      claimName: pvc-kaniko-tmp-30
+      claimName: pvc-kaniko-tmp-20
 """)  {
 
   node(POD_LABEL) {
