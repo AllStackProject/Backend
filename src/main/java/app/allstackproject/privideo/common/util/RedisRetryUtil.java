@@ -35,10 +35,10 @@ public class RedisRetryUtil {
         return null;
     }
 
-    public static boolean executeVoidWithRetry(Runnable redisCall, String logContext) {
-        return executeWithRetry(() -> {
+    public static void executeVoidWithRetry(Runnable redisCall, String logContext) {
+        executeWithRetry(() -> {
             redisCall.run();
             return true;
-        }, logContext) != null;
+        }, logContext);
     }
 }
