@@ -36,7 +36,6 @@ public class OrgRedisRepository {
         RedisRetryUtil.executeWithRetry(
                 () -> {
                     String orgKey = RedisUtil.getOrgKey(orgId);
-
                     String existingCode = (String) redisTemplate.opsForHash().get(orgKey, CODE);
                     if (existingCode != null) {
                         log.warn("조직 코드 생성 실패 : 이미 사용 중인 코드 [orgId: {}, existingCode: {}]", orgId, existingCode);
