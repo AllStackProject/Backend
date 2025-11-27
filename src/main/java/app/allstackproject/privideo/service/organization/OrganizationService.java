@@ -139,7 +139,10 @@ public class OrganizationService {
                         cdnUrlProvider.generateImgUrl(r.getImgUrl()),
                         r.getJoinAt(),
                         r.getIsSuperAdmin(),
-                        r.getIsAdmin(),
+                        r.getVideoManage(),
+                        r.getStatsReportManage(),
+                        r.getNoticeManage(),
+                        r.getOrgSettingManage(),
                         r.getJoinStatus(),
                         codeMap.get(r.getId())
                 ))
