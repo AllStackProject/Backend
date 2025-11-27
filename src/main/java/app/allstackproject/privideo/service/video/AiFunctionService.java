@@ -31,16 +31,16 @@ public class AiFunctionService {
     private final QuizRepository quizRepository;
     private final S3Util s3Util;
 
-    @Value("${cloud.aws.s3.buckets.output}")
-    private String outputBucket;
+    @Value("${cloud.aws.s3.buckets.original}")
+    private String originalBucket;
 
     @Async
-    public void processAiFunction(Long videoId, String hlsPrefix, AiFunctionType aiFunction) {
+    public void processAiFunction(Long videoId, String videoKey, AiFunctionType aiFunction) {
         File tempAudioFile = null;
         try {
-            // 1단계: S3에서 음성 파일 다운로드
-            log.info("S3에서 음성 파일 다운로드 시작: videoId={}, audioKey={}", videoId, hlsPrefix + "/voice.mp3");
-            tempAudioFile = s3Util.downloadToTempFile(outputBucket, hlsPrefix + "/voice.mp3");
+            // 1단계: S3에서 원본 파일 다운로드
+            log.info("S3에서 원본 파일 다운로드 시작: videoKey={}", videoId);
+            tempAudioFile = s3Util.downloadToTempFile(originalBucket, videoKey);
             log.info("S3 다운로드 완료: videoId={}, size={}MB", videoId, tempAudioFile.length() / 1024 / 1024);
 
             // 2단계: STT 요청
