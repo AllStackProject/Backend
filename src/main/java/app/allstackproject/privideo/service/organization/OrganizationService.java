@@ -45,6 +45,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -80,7 +81,8 @@ public class OrganizationService {
         organizationRepository.save(organization);
         memberRepository.save(member);
 
-        String imgKey = s3Util.generateImgKey(organization.getId(), createOrgRequest.getImg().getName(), ORG);
+        String uuid = UUID.randomUUID().toString();
+        String imgKey = s3Util.generateImgKey(organization.getId(), createOrgRequest.getImg().getName(), uuid, ORG);
         s3Util.uploadImgWithKey(createOrgRequest.getImg(), imgKey);
         organization.setImgKey(imgKey);
 

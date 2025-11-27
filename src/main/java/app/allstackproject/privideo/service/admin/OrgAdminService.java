@@ -35,6 +35,7 @@ import app.allstackproject.privideo.repository.video.VideoCategoryMappingReposit
 import app.allstackproject.privideo.repository.video.VideoMemberGroupMappingRepository;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -62,8 +63,9 @@ public class OrgAdminService {
         Organization organization = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
 
+        String uuid = UUID.randomUUID().toString();
         String oldImgKey = organization.getImgKey();
-        String newImgKey = s3Util.generateImgKey(orgId, img.getOriginalFilename(), ORG);
+        String newImgKey = s3Util.generateImgKey(orgId, img.getOriginalFilename(), uuid, ORG);
 
         s3Util.uploadImgWithKey(img, newImgKey);
         organization.setImgKey(newImgKey);
