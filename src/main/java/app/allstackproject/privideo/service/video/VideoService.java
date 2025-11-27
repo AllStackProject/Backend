@@ -425,7 +425,7 @@ public class VideoService {
             );
         }
 
-        List<Category> categories = categoryRepository.findAllByMemberGroupIdIn(myGroupIds);
+        List<Category> categories = categoryRepository.findByMemberGroupIdIn(myGroupIds);
         Map<Long, List<Category>> categoriesByGroupId = categories.stream()
                 .collect(Collectors.groupingBy(Category::getMemberGroupId));
 
