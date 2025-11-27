@@ -24,7 +24,7 @@ public class OrganizationRepositoryImpl implements OrganizationRepositoryCustom 
                         organization.imgKey,
                         member.createdAt,
                         member.isAdmin,
-                        member.permissionCode.gt(0L),
+                        member.permissionCode,
                         member.joinStatus
                 ))
                 .from(member)
