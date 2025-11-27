@@ -52,7 +52,7 @@ public class S3Util {
     private static final String HLS_NAME = "hls";
     private static final String VIDEO_EXTENSION = ".mp4";
     private static final String VIDEO_CONTENT_TYPE = "video/mp4";
-    private static final String PLAY_FILE = "master.m3u8";
+    private static final String PLAY_FILE = "video.m3u8";
 
     // ================== Upload ==================
 
