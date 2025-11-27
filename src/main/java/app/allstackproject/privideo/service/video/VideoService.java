@@ -36,8 +36,6 @@ import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.common.util.CdnUrlProvider;
 import app.allstackproject.privideo.common.util.S3Util;
-import app.allstackproject.privideo.dto.admin.ReadAllCategoryItem;
-import app.allstackproject.privideo.dto.admin.ReadAllMemberGroupItem;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoItem;
 import app.allstackproject.privideo.dto.video.CreateVideoRequest;
 import app.allstackproject.privideo.dto.video.CreateVideoResponse;
@@ -59,14 +57,14 @@ import app.allstackproject.privideo.entity.Video;
 import app.allstackproject.privideo.entity.VideoCategoryMapping;
 import app.allstackproject.privideo.entity.VideoMemberGroupMapping;
 import app.allstackproject.privideo.repository.comment.CommentRepository;
-import app.allstackproject.privideo.repository.member.MemberGroupMappingRepository;
-import app.allstackproject.privideo.repository.organization.OrganizationRepository;
-import app.allstackproject.privideo.repository.scrap.ScrapRepository;
-import app.allstackproject.privideo.repository.member.MemberGroupRepository;
-import app.allstackproject.privideo.repository.video.CategoryRepository;
 import app.allstackproject.privideo.repository.history.HistoryRepository;
-import app.allstackproject.privideo.repository.quiz.QuizRepository;
+import app.allstackproject.privideo.repository.member.MemberGroupMappingRepository;
+import app.allstackproject.privideo.repository.member.MemberGroupRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
+import app.allstackproject.privideo.repository.organization.OrganizationRepository;
+import app.allstackproject.privideo.repository.quiz.QuizRepository;
+import app.allstackproject.privideo.repository.scrap.ScrapRepository;
+import app.allstackproject.privideo.repository.video.CategoryRepository;
 import app.allstackproject.privideo.repository.video.VideoCategoryMappingRepository;
 import app.allstackproject.privideo.repository.video.VideoMemberGroupMappingRepository;
 import app.allstackproject.privideo.repository.video.VideoRedisRepository;
@@ -246,9 +244,10 @@ public class VideoService {
 
         AiFunctionType aiFunction = AiFunctionType.from(request.getAiFunction());
 
+        String uuid = UUID.randomUUID().toString();
         // 1) 원본 비디오 키 생성 (privideo-original 버킷, 업로드는 presigned URL로)
-        //    규칙: org-{orgId}/{UUID}/original.mp4
-        String originalKey = s3Util.generateVideoKey(orgId);
+        //    규칙: hls/org-{orgId}/{UUID}/video.mp4
+        String originalKey = s3Util.generateVideoKey(orgId, uuid);
 
         // 2) 썸네일 키 생성 + 업로드 (privideo-img 버킷)
         //    규칙: images/org-{orgId}/thumbnail/{UUID}.{ext}
@@ -257,10 +256,14 @@ public class VideoService {
             throw new ApiException(IS_NOT_IMAGE_FILE);
         }
 
-        String thumbnailKey = s3Util.generateImgKey(orgId, thumbnailImg.getOriginalFilename(), THUMBNAIL);
+        String thumbnailKey = s3Util.generateImgKey(orgId, thumbnailImg.getOriginalFilename(), uuid, THUMBNAIL);
         s3Util.uploadImgWithKey(thumbnailImg, thumbnailKey);
 
-        // 3) Video 엔티티 저장
+        // 3) HLS Prefix 계산
+        //    규칙: hls/org-{orgId}/{UUID}
+        String hlsPrefix = s3Util.generateHlsPrefix(originalKey);
+
+        // 4) Video 엔티티 저장
         Video video = Video.create(
                 organization,
                 member,
@@ -268,6 +271,7 @@ public class VideoService {
                 request.getDescription(),
                 originalKey,
                 thumbnailKey,
+                hlsPrefix,
                 request.getWholeTime(),
                 request.getIsComment(),
                 aiFunction,
@@ -319,11 +323,6 @@ public class VideoService {
                 .toList();
         videoCategoryMappingRepository.saveAll(categoryMappings);
 
-        // 4) HLS Prefix 계산해서 엔티티에 반영
-        //    규칙: hls/{originalKey}
-        String hlsPrefix = s3Util.generateHlsPrefix(originalKey);
-        video.setHlsPrefix(hlsPrefix);
-
         // 5) 업로드용 URL 생성
         URL presignedUrl = s3Util.generatePresignedUploadUrl(originalKey);
 
@@ -331,7 +330,7 @@ public class VideoService {
     }
 
     public SuccessResponse updateVideoEncodingResult(Long orgId, String videoUuid, String status) {
-        String videoKey = s3Util.composeVideoKey(orgId, videoUuid);
+        String videoKey = s3Util.generateVideoKey(orgId, videoUuid);
         Video video = videoRepository.findByVideoKey(videoKey)
                 .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
         Long videoId = video.getId();
