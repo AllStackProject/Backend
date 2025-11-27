@@ -8,6 +8,7 @@ import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -25,6 +26,7 @@ import org.springframework.security.web.access.ExceptionTranslationFilter;
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
@@ -82,6 +84,8 @@ public class SecurityConfig {
             combined.addAll(excludedPatterns);
         }
 
+        System.out.println("===================== PERMIT PATTERNS ===");
+        combined.forEach(p -> System.out.println(" - " + p));
         return combined.toArray(new String[0]);
     }
 }
