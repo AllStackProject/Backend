@@ -344,7 +344,7 @@ public class VideoService {
             AiFunctionType aiFunction = video.getAiFunctionType();
             if (!aiFunction.equals(NONE)) {
                 log.info("AI 기능 처리 시작: videoId={}, function={}", videoId, aiFunction);
-                aiFunctionService.processAiFunction(videoId, video.getHlsPrefix(), aiFunction);
+                aiFunctionService.processAiFunction(videoId, videoKey, aiFunction);
             }
 
             video.setUploadStatus(COMPLETE);
