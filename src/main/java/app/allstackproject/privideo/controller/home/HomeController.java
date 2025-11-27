@@ -3,7 +3,6 @@ package app.allstackproject.privideo.controller.home;
 import static app.allstackproject.privideo.common.config.SwaggerConfig.ORG_AUTH_KEY;
 
 import app.allstackproject.privideo.common.response.BaseResponse;
-import app.allstackproject.privideo.dto.admin.AdminReadNoticeResponse;
 import app.allstackproject.privideo.dto.home.ReadAllNoticeResponse;
 import app.allstackproject.privideo.dto.home.ReadHomeResponse;
 import app.allstackproject.privideo.dto.home.ReadNoticeResponse;

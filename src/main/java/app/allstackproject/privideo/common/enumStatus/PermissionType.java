@@ -26,25 +26,4 @@ public enum PermissionType {
     public static boolean has(long mask, PermissionType p) {
         return (mask & p.getBit()) == p.getBit();
     }
-
-    public static long add(long mask, PermissionType p) {
-        return mask | p.getBit();
-    }
-
-    public static long remove(long mask, PermissionType p) {
-        return mask & ~p.getBit();
-    }
-
-    public static String describe(long mask) {
-        StringBuilder sb = new StringBuilder();
-        for (PermissionType p : values()) {
-            if (has(mask, p)) {
-                if (sb.length() > 0) {
-                    sb.append(", ");
-                }
-                sb.append(p.name());
-            }
-        }
-        return sb.length() > 0 ? sb.toString() : "NONE";
-    }
 }
