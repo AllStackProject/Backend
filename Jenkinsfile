@@ -1,4 +1,3 @@
-// test를 위한 주석 
 podTemplate(yaml: """
 apiVersion: v1
 kind: Pod
@@ -6,24 +5,54 @@ metadata:
   labels:
     jenkins/kaniko: "true"
 spec:
+  nodeSelector:
+    jenkins-node: "true"
+
+  tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "cicd"
+    effect: "NoSchedule"
+
   containers:
-    - name: kaniko
-      image: gcr.io/kaniko-project/executor:v1.6.0-debug
-      imagePullPolicy: Always
-      command:
-        - cat
-      tty: true
-      volumeMounts:
-        - name: docker-config
-          mountPath: /kaniko/.docker
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:v1.6.0-debug
+    imagePullPolicy: Always
+    command:
+      - /busybox/sh
+    args:
+      - -c
+      - sleep 99d          # 그냥 살아만 있게
+    tty: true
+    volumeMounts:
+      - name: docker-config
+        mountPath: /kaniko/.docker    # DockerHub 인증
+      
+      - name: kaniko-build
+        mountPath: /workspace         # build context
+      
+      - name: kaniko-tmp
+        mountPath: /tmp
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+
   volumes:
-    - name: docker-config
-      secret:
-        secretName: docker-config-dockerhub
-        items:
-          - key: .dockerconfigjson
-            path: config.json
-""") {
+  - name: docker-config
+    secret:
+      secretName: docker-config-dockerhub
+      items:
+      - key: .dockerconfigjson
+        path: config.json
+
+  - name: kaniko-build
+    persistentVolumeClaim:
+      claimName: pvc-kaniko-build-60
+  - name: kaniko-tmp
+    persistentVolumeClaim:
+      claimName: pvc-kaniko-tmp-30
+""")  {
 
   node(POD_LABEL) {
 
@@ -31,19 +60,27 @@ spec:
       // Webhook으로 받은 SCM 정보로 자동 checkout
       checkout scm
     }
+    stage('Copy to Kaniko Context') {
+      container('kaniko') {
+      sh """
+      rm -rf /workspace/*
+      cp -r ${WORKSPACE}/* /workspace/
+      """
+  }
+}
 
-    stage('SonarQube Analysis') {
-        withSonarQubeEnv('sonarQube') {
-            withCredentials([string(credentialsId: 'sonarQubeToken', variable: 'SONAR_TOKEN')]) {
-                sh """
-                    ./gradlew sonarqube \
-                      -Dsonar.projectKey=backend \
-                      -Dsonar.host.url=$SONAR_HOST_URL \
-                      -Dsonar.login=$SONAR_TOKEN
-                """
-            }
-        }
-    }
+//    stage('SonarQube Analysis') {
+//        withSonarQubeEnv('sonarQube') {
+//            withCredentials([string(credentialsId: 'sonarQubeToken', variable: 'SONAR_TOKEN')]) {
+//                sh """
+//                    ./gradlew sonarqube \
+//                      -Dsonar.projectKey=backend \
+//                      -Dsonar.host.url=$SONAR_HOST_URL \
+//                      -Dsonar.login=$SONAR_TOKEN
+//               """
+//            }
+//        }
+//   }
 
     
     stage('Build & Push with Kaniko') {
@@ -54,9 +91,11 @@ spec:
           // 빌드 및 DockerHub 푸시
           sh """
           /kaniko/executor \
-            --context ${WORKSPACE} \
-            --dockerfile ${WORKSPACE}/Dockerfile \
+            --context /workspace \
+            --dockerfile /workspace/Dockerfile \
             --destination ${IMAGE} \
+            --cache=true \
+            --cache-repo=docker.io/dockdock150/backend-cache \
             --cleanup \
             --force
           """
@@ -81,14 +120,14 @@ spec:
 
       // ✅ kustomization.yaml 수정
       sh """
-        cd DeploymentRepo/overlays/dev
+        cd DeploymentRepo/backend/overlays/dev
         sed -i 's|newTag:.*|newTag: "${BUILD_NUMBER}"|' kustomization.yaml
       """
 
       // ✅ 변경사항 커밋 및 푸시
       sh '''
         cd DeploymentRepo
-        git add overlays/dev/kustomization.yaml
+        git add backend/overlays/dev/kustomization.yaml
         git commit -m "chore: update image tag to ${BUILD_NUMBER}"
         git push origin main
       '''
