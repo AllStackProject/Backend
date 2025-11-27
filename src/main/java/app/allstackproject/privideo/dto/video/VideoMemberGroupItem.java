@@ -11,7 +11,7 @@ public class VideoMemberGroupItem {
 
     private String name;
 
-    private boolean isSelected;
+    private Boolean isSelected;
 
     private List<VideoCategoryItem> categories;
 }

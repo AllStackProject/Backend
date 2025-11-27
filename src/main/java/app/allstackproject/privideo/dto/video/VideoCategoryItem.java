@@ -9,6 +9,6 @@ public class VideoCategoryItem {
     private Long id;
 
     private String title;
-    
-    private boolean isSelected;
+
+    private Boolean isSelected;
 }
