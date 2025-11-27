@@ -115,8 +115,8 @@ public class Video extends BaseEntity {
     }
 
     public static Video create(Organization organization, Member creator, String title, String description,
-                               String videoKey, String thumbnailKey, Long wholeTime, boolean isComment,
-                               AiFunctionType aiFunctionType, LocalDate expiredAt) {
+                               String videoKey, String thumbnailKey, String hlsPrefix, Long wholeTime,
+                               boolean isComment, AiFunctionType aiFunctionType, LocalDate expiredAt) {
         if (expiredAt == null) {
             expiredAt = LocalDate.now().plusYears(100);
         }
@@ -128,7 +128,7 @@ public class Video extends BaseEntity {
                 .description(description)
                 .videoKey(videoKey)
                 .thumbnailKey(thumbnailKey)
-                .hlsPrefix("")
+                .hlsPrefix(hlsPrefix)
                 .wholeTime(wholeTime)
                 .isComment(isComment)
                 .aiFunctionType(aiFunctionType)
