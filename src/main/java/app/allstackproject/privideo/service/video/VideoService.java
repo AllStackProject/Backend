@@ -5,6 +5,8 @@ import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.NONE
 import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.QUIZ;
 import static app.allstackproject.privideo.common.enumStatus.AiFunctionType.SUMMARY;
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
+import static app.allstackproject.privideo.common.enumStatus.OpenScopeType.GROUP;
+import static app.allstackproject.privideo.common.enumStatus.OpenScopeType.PUBLIC;
 import static app.allstackproject.privideo.common.enumStatus.S3ImgType.THUMBNAIL;
 import static app.allstackproject.privideo.common.enumStatus.UploadStatusType.COMPLETE;
 import static app.allstackproject.privideo.common.enumStatus.UploadStatusType.FAIL;
@@ -28,11 +30,14 @@ import static app.allstackproject.privideo.common.response.status.BaseExceptionR
 import static app.allstackproject.privideo.service.video.LogService.SEGMENT_SECONDS;
 
 import app.allstackproject.privideo.common.enumStatus.AiFunctionType;
+import app.allstackproject.privideo.common.enumStatus.OpenScopeType;
 import app.allstackproject.privideo.common.enumStatus.UploadStatusType;
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.response.SuccessResponse;
 import app.allstackproject.privideo.common.util.CdnUrlProvider;
 import app.allstackproject.privideo.common.util.S3Util;
+import app.allstackproject.privideo.dto.admin.ReadAllCategoryItem;
+import app.allstackproject.privideo.dto.admin.ReadAllMemberGroupItem;
 import app.allstackproject.privideo.dto.admin.ReadAllVideoItem;
 import app.allstackproject.privideo.dto.video.CreateVideoRequest;
 import app.allstackproject.privideo.dto.video.CreateVideoResponse;
@@ -40,11 +45,15 @@ import app.allstackproject.privideo.dto.video.JoinVideoSessionResult;
 import app.allstackproject.privideo.dto.video.LeaveVideoSessionInfo;
 import app.allstackproject.privideo.dto.video.ModifyVideoRequest;
 import app.allstackproject.privideo.dto.video.QuizInfo;
+import app.allstackproject.privideo.dto.video.ReadVideoInfoResponse;
+import app.allstackproject.privideo.dto.video.VideoCategoryItem;
 import app.allstackproject.privideo.dto.video.VideoInfo;
+import app.allstackproject.privideo.dto.video.VideoMemberGroupItem;
 import app.allstackproject.privideo.entity.Category;
 import app.allstackproject.privideo.entity.History;
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.MemberGroup;
+import app.allstackproject.privideo.entity.MemberGroupMapping;
 import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.entity.Video;
 import app.allstackproject.privideo.entity.VideoCategoryMapping;
@@ -68,6 +77,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -369,6 +379,90 @@ public class VideoService {
         }
 
         return uploadStatus;
+    }
+
+    @Transactional(readOnly = true)
+    public ReadVideoInfoResponse readVideoInfo(Long orgId, Long memberId, Long videoId) {
+        Video video = videoRepository.findByIdAndOrganizationId(videoId, orgId)
+                .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
+
+        if (!video.getCreator().getId().equals(memberId)) {
+            throw new ApiException(VIDEO_CREATE_NOT_FOUND);
+        }
+        String thumbnailUrl = cdnUrlProvider.generateImgUrl(video.getThumbnailKey());
+
+        List<VideoMemberGroupMapping> videoGroupMappings = videoMemberGroupMappingRepository.findAllByVideoId(videoId);
+        Set<Long> allMappingGroupIds = videoGroupMappings.stream()
+                .map(m -> m.getMemberGroup().getId())
+                .collect(Collectors.toSet());
+
+        List<VideoCategoryMapping> videoCategoryMappings = videoCategoryMappingRepository.findAllByVideoId(videoId);
+        Set<Long> allMappingCategoryIds = videoCategoryMappings.stream()
+                .map(m -> m.getCategory().getId())
+                .collect(Collectors.toSet());
+        OpenScopeType openScope = allMappingGroupIds.isEmpty() ? PUBLIC : GROUP;
+
+        List<MemberGroupMapping> myGroupMappings = memberGroupMappingRepository.findAllByMemberId(memberId);
+        Map<Long, MemberGroup> myGroupsById = myGroupMappings.stream()
+                .map(MemberGroupMapping::getMemberGroup)
+                .collect(Collectors.toMap(
+                        MemberGroup::getId,
+                        g -> g,
+                        (g1, g2) -> g1
+                ));
+
+        List<Long> myGroupIds = new ArrayList<>(myGroupsById.keySet());
+        if (myGroupIds.isEmpty()) {
+            return ReadVideoInfoResponse.of(
+                    video.getTitle(),
+                    video.getDescription(),
+                    thumbnailUrl,
+                    video.getWatchCnt(),
+                    video.getExpiredAt(),
+                    video.getIsComment(),
+                    openScope,
+                    List.of()
+            );
+        }
+
+        List<Category> categories = categoryRepository.findAllByMemberGroupIdIn(myGroupIds);
+        Map<Long, List<Category>> categoriesByGroupId = categories.stream()
+                .collect(Collectors.groupingBy(Category::getMemberGroupId));
+
+        List<VideoMemberGroupItem> memberGroupItems = myGroupIds.stream()
+                .map(groupId -> {
+                    MemberGroup group = myGroupsById.get(groupId);
+                    boolean groupSelected = allMappingGroupIds.contains(groupId);
+
+                    List<VideoCategoryItem> categoryItems = categoriesByGroupId
+                            .getOrDefault(groupId, List.of())
+                            .stream()
+                            .map(c -> new VideoCategoryItem(
+                                    c.getId(),
+                                    c.getTitle(),
+                                    allMappingCategoryIds.contains(c.getId())
+                            ))
+                            .toList();
+
+                    return new VideoMemberGroupItem(
+                            group.getId(),
+                            group.getName(),
+                            groupSelected,
+                            categoryItems
+                    );
+                })
+                .toList();
+
+        return ReadVideoInfoResponse.of(
+                video.getTitle(),
+                video.getDescription(),
+                thumbnailUrl,
+                video.getWatchCnt(),
+                video.getExpiredAt(),
+                video.getIsComment(),
+                openScope,
+                memberGroupItems
+        );
     }
 
     public boolean modifyVideo(Long orgId, Long memberId, Long videoId, ModifyVideoRequest modifyVideoRequest) {

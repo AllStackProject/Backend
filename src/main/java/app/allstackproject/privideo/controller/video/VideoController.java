@@ -16,6 +16,7 @@ import app.allstackproject.privideo.dto.video.LeaveVideoSessionRequest;
 import app.allstackproject.privideo.dto.video.ModifyVideoRequest;
 import app.allstackproject.privideo.dto.video.ReadVideoEncodingResultRequest;
 import app.allstackproject.privideo.dto.video.ReadVideoEncodingResultResponse;
+import app.allstackproject.privideo.dto.video.ReadVideoInfoResponse;
 import app.allstackproject.privideo.service.video.CloudFrontCookieService;
 import app.allstackproject.privideo.service.video.VideoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -120,6 +121,16 @@ public class VideoController {
                 leaveVideoSessionRequest);
         boolean result = videoService.leaveVideoSession(leaveVideoSessionInfo);
         return new BaseResponse<>(SuccessResponse.of(result));
+    }
+
+    @GetMapping("/{videoId}")
+    @PreAuthorize("hasAuthority('org:granted')")
+    @Operation(summary = "영상 메타 데이터 조회")
+    public BaseResponse<ReadVideoInfoResponse> readVideoInfo(
+            @AuthenticationPrincipal(expression = "memberId") Long memberId,
+            @PathVariable("orgId") Long orgId,
+            @PathVariable("videoId") Long videoId) {
+        return new BaseResponse<>(videoService.readVideoInfo(orgId, memberId, videoId));
     }
 
     @PatchMapping("/{videoId}")
