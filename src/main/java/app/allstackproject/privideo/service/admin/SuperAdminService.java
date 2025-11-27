@@ -4,9 +4,7 @@ import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTI
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.PENDING;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.CREATOR_CANNOT_CHANGE;
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.FORBIDDEN_NO_PERMISSION;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_MEMBER_GROUP;
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_IN_ORGANIZATION;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
 
@@ -189,13 +187,13 @@ public class SuperAdminService {
         if (Boolean.TRUE.equals(permissionMap.getVideoManage())) {
             permissionList.add(PermissionType.VIDEO_MANAGE);
         }
-        if (Boolean.TRUE.equals(permissionMap.getStatsReport())) {
+        if (Boolean.TRUE.equals(permissionMap.getStatsReportManage())) {
             permissionList.add(PermissionType.STATS_REPORT);
         }
-        if (Boolean.TRUE.equals(permissionMap.getNotice())) {
+        if (Boolean.TRUE.equals(permissionMap.getNoticeManage())) {
             permissionList.add(PermissionType.NOTICE);
         }
-        if (Boolean.TRUE.equals(permissionMap.getOrgSetting())) {
+        if (Boolean.TRUE.equals(permissionMap.getOrgSettingManage())) {
             permissionList.add(PermissionType.ORG_SETTING);
         }
 
