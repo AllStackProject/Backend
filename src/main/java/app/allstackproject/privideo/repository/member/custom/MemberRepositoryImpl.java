@@ -47,7 +47,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
                         user.name,
                         member.nickname,
                         member.isAdmin,
-                        member.permissionCode.gt(0L)
+                        member.permissionCode
                 ))
                 .from(member)
                 .join(member.user, user)
