@@ -25,4 +25,6 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
     boolean existsByIdAndOrganizationIdAndStatus(Long id, Long orgId, BaseStatusType status);
 
     Long countByOrganizationIdAndJoinStatusAndStatus(Long orgId, JoinStatusType joinStatus, BaseStatusType status);
+
+    void deleteAllByOrganizationId(Long orgId);
 }
