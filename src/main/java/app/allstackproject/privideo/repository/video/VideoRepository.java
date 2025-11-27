@@ -13,4 +13,6 @@ public interface VideoRepository extends JpaRepository<Video, Long>, VideoReposi
     Optional<Video> findByIdAndOrganizationId(Long videoId, Long orgId);
 
     Optional<Video> findByVideoKey(String videoKey);
+
+    void deleteAllByOrganizationId(Long orgId);
 }

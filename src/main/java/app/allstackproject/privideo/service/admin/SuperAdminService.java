@@ -22,11 +22,14 @@ import app.allstackproject.privideo.dto.organization.UpdateMemberPermissionReque
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.MemberGroup;
 import app.allstackproject.privideo.entity.MemberGroupMapping;
+import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.repository.member.MemberGroupMappingRepository;
 import app.allstackproject.privideo.repository.member.MemberGroupRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
+import app.allstackproject.privideo.repository.video.CategoryRepository;
+import app.allstackproject.privideo.repository.video.VideoRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,6 +51,8 @@ public class SuperAdminService {
     private final MemberGroupMappingRepository memberGroupMappingRepository;
     private final OrganizationRepository organizationRepository;
     private final OrgRedisRepository orgRedisRepository;
+    private final VideoRepository videoRepository;
+    private final CategoryRepository categoryRepository;
 
     @Transactional(readOnly = true)
     public List<ReadAllMemberItem> readAllMember(Long orgId) {
@@ -166,6 +171,13 @@ public class SuperAdminService {
         }
 
         member.updateToInactive();
+        return true;
+    }
+
+    public boolean deleteOrganization(Long orgId) {
+        Organization organization = organizationRepository.findById(orgId)
+                .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
+        organization.updateToInactive();
         return true;
     }
 
