@@ -32,7 +32,6 @@ import app.allstackproject.privideo.entity.OrgViewLog;
 import app.allstackproject.privideo.entity.Video;
 import app.allstackproject.privideo.repository.history.HistoryRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
-import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
 import app.allstackproject.privideo.service.video.LogService;
 import java.time.DayOfWeek;
@@ -61,7 +60,6 @@ public class StatsAdminService {
     private final VideoRepository videoRepository;
     private final MongoTemplate mongoTemplate;
     private final LogService logService;
-    private final OrganizationRepository organizationRepository;
 
     public List<AllMemberWatchLogItem> readAllMemberWatchLog(Long orgId) {
         List<ReadAllMemberItem> members = memberRepository.findByOrganizationId(orgId);
