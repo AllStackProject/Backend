@@ -8,9 +8,13 @@ import static app.allstackproject.privideo.service.video.LogService.SEGMENT_SECO
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
+import app.allstackproject.privideo.common.enumStatus.AgeType;
+import app.allstackproject.privideo.common.enumStatus.GenderType;
 import app.allstackproject.privideo.common.exception.ApiException;
+import app.allstackproject.privideo.dto.admin.AgeCountDto;
 import app.allstackproject.privideo.dto.admin.AllMemberWatchLogItem;
 import app.allstackproject.privideo.dto.admin.AllVideoWatchLogItem;
+import app.allstackproject.privideo.dto.admin.GenderCountDto;
 import app.allstackproject.privideo.dto.admin.GroupWatchCompleteRate;
 import app.allstackproject.privideo.dto.admin.MemberAvgWatchRateDto;
 import app.allstackproject.privideo.dto.admin.MemberGroupItem;
@@ -34,7 +38,6 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -213,6 +216,16 @@ public class StatsAdminService {
         return log.getBuckets().values().stream()
                 .mapToLong(Integer::longValue)
                 .sum();
+    }
+
+    public Map<GenderType, Long> readOrgGenderReport(Long orgId) {
+        return memberRepository.countMemberByGender(orgId).stream()
+                .collect(Collectors.toMap(GenderCountDto::getGender, GenderCountDto::getCount));
+    }
+
+    public Map<AgeType, Long> readOrgAgeReport(Long orgId) {
+        return memberRepository.countMemberByAge(orgId).stream()
+                .collect(Collectors.toMap(AgeCountDto::getAge, AgeCountDto::getCount));
     }
 
     public List<ReadAllVideoIntervalLogItem> readAllVideoIntervalLog(Long orgId) {

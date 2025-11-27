@@ -13,11 +13,11 @@ public class UpdateMemberPermissionRequest {
     private Boolean videoManage;
 
     @NotNull
-    private Boolean statsReport;
+    private Boolean statsReportManage;
 
     @NotNull
-    private Boolean notice;
+    private Boolean noticeManage;
 
     @NotNull
-    private Boolean orgSetting;
+    private Boolean orgSettingManage;
 }

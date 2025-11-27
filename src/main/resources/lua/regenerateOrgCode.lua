@@ -5,7 +5,7 @@ local orgId   = ARGV[1]
 local newCode = ARGV[2]
 local now     = ARGV[3]
 
-local oldCode = redis.call('HGET', orgKey, 'code')
+local oldCode = redis.call('HGET', orgKey, 'orgCode')
 
 if redis.call('EXISTS', newIdxKey) == 1 then
   local mapped = redis.call('GET', newIdxKey)
@@ -16,10 +16,10 @@ end
 
 redis.call('SET', newIdxKey, orgId)
 
-redis.call('HSET', orgKey, 'code', newCode, 'updatedAt', now)
+redis.call('HSET', orgKey, 'orgCode', newCode, 'updatedAt', now)
 
 if oldCode and oldCode ~= false and oldCode ~= newCode then
-  redis.call('DEL', 'orgcode:' .. oldCode)
+  redis.call('DEL', 'orgCode:' .. oldCode)
 end
 
 return oldCode

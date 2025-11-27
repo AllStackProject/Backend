@@ -12,7 +12,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:5173", "http://172.16.2.101:32019")
+                .allowedOrigins("http://localhost:5173", "https://localhost:5173",
+                        "http://app.privideo.cloud:5173", "https://app.privideo.cloud:5173",
+                        "http://172.16.2.101:32019", "https://172.16.2.101:32019")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH")
                 .exposedHeaders("Authorization", "Authorization-refresh")
                 .allowedHeaders("*")

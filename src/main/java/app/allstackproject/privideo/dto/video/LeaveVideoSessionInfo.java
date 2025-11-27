@@ -6,8 +6,6 @@ import lombok.Getter;
 
 @Getter
 public class LeaveVideoSessionInfo {
-    private final Long memberId;
-
     private final Long orgId;
 
     private final Long videoId;
@@ -23,9 +21,8 @@ public class LeaveVideoSessionInfo {
     private final Boolean isQuit;
 
     @Builder(access = AccessLevel.PRIVATE)
-    private LeaveVideoSessionInfo(Long memberId, Long orgId, Long videoId, String sessionId, Long watchRate,
+    private LeaveVideoSessionInfo(Long orgId, Long videoId, String sessionId, Long watchRate,
                                   String watchSegments, Long recentPosition, Boolean isQuit) {
-        this.memberId = memberId;
         this.orgId = orgId;
         this.videoId = videoId;
         this.sessionId = sessionId;
@@ -35,10 +32,9 @@ public class LeaveVideoSessionInfo {
         this.isQuit = isQuit;
     }
 
-    public static LeaveVideoSessionInfo create(Long memberId, Long orgId, Long videoId,
+    public static LeaveVideoSessionInfo create(Long orgId, Long videoId,
                                                LeaveVideoSessionRequest leaveVideoSessionRequest) {
         return LeaveVideoSessionInfo.builder()
-                .memberId(memberId)
                 .orgId(orgId)
                 .videoId(videoId)
                 .sessionId(leaveVideoSessionRequest.getSessionId())

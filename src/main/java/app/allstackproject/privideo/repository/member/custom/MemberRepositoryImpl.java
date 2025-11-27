@@ -8,6 +8,8 @@ import static app.allstackproject.privideo.entity.QMemberGroupMapping.memberGrou
 import static app.allstackproject.privideo.entity.QUser.user;
 
 import app.allstackproject.privideo.common.enumStatus.JoinStatusType;
+import app.allstackproject.privideo.dto.admin.AgeCountDto;
+import app.allstackproject.privideo.dto.admin.GenderCountDto;
 import app.allstackproject.privideo.dto.admin.MemberGroupItem;
 import app.allstackproject.privideo.dto.admin.ReadAllJoinRequestItem;
 import app.allstackproject.privideo.dto.admin.ReadAllMemberItem;
@@ -45,7 +47,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
                         user.name,
                         member.nickname,
                         member.isAdmin,
-                        member.permissionCode.gt(0L)
+                        member.permissionCode
                 ))
                 .from(member)
                 .join(member.user, user)
@@ -106,6 +108,46 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
                         member.status.eq(ACTIVE),
                         member.joinStatus.eq(joinStatus)
                 )
+                .fetch();
+    }
+
+    @Override
+    public List<GenderCountDto> countMemberByGender(Long orgId) {
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        GenderCountDto.class,
+                        user.gender,
+                        member.count()
+                ))
+                .from(member)
+                .join(member.user, user)
+                .where(
+                        user.status.eq(ACTIVE),
+                        member.organization.id.eq(orgId),
+                        member.status.eq(ACTIVE),
+                        member.joinStatus.eq(JoinStatusType.APPROVED)
+                )
+                .groupBy(user.gender)
+                .fetch();
+    }
+
+    @Override
+    public List<AgeCountDto> countMemberByAge(Long orgId) {
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        AgeCountDto.class,
+                        user.age,
+                        member.count()
+                ))
+                .from(member)
+                .join(member.user, user)
+                .where(
+                        user.status.eq(ACTIVE),
+                        member.organization.id.eq(orgId),
+                        member.status.eq(ACTIVE),
+                        member.joinStatus.eq(JoinStatusType.APPROVED)
+                )
+                .groupBy(user.age)
                 .fetch();
     }
 }

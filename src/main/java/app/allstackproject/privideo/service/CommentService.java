@@ -47,6 +47,7 @@ public class CommentService {
             throw new ApiException(COMMENT_UNAUTHORIZED_DELETE);
         }
 
+        commentRepository.deleteAllByParentCommentId(commentId);
         commentRepository.deleteById(commentId);
         return true;
     }

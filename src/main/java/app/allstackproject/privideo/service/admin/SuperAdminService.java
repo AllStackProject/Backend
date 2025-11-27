@@ -4,9 +4,7 @@ import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTI
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.PENDING;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.CREATOR_CANNOT_CHANGE;
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.FORBIDDEN_NO_PERMISSION;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_MEMBER_GROUP;
-import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_IN_ORGANIZATION;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
 
@@ -22,11 +20,14 @@ import app.allstackproject.privideo.dto.organization.UpdateMemberPermissionReque
 import app.allstackproject.privideo.entity.Member;
 import app.allstackproject.privideo.entity.MemberGroup;
 import app.allstackproject.privideo.entity.MemberGroupMapping;
+import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.repository.member.MemberGroupMappingRepository;
 import app.allstackproject.privideo.repository.member.MemberGroupRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
 import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
+import app.allstackproject.privideo.repository.video.CategoryRepository;
+import app.allstackproject.privideo.repository.video.VideoRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,6 +49,8 @@ public class SuperAdminService {
     private final MemberGroupMappingRepository memberGroupMappingRepository;
     private final OrganizationRepository organizationRepository;
     private final OrgRedisRepository orgRedisRepository;
+    private final VideoRepository videoRepository;
+    private final CategoryRepository categoryRepository;
 
     @Transactional(readOnly = true)
     public List<ReadAllMemberItem> readAllMember(Long orgId) {
@@ -169,6 +172,13 @@ public class SuperAdminService {
         return true;
     }
 
+    public boolean deleteOrganization(Long orgId) {
+        Organization organization = organizationRepository.findById(orgId)
+                .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
+        organization.updateToInactive();
+        return true;
+    }
+
     private PermissionType[] convertToPermissionTypes(
             UpdateMemberPermissionRequest permissionMap) {
 
@@ -177,13 +187,13 @@ public class SuperAdminService {
         if (Boolean.TRUE.equals(permissionMap.getVideoManage())) {
             permissionList.add(PermissionType.VIDEO_MANAGE);
         }
-        if (Boolean.TRUE.equals(permissionMap.getStatsReport())) {
+        if (Boolean.TRUE.equals(permissionMap.getStatsReportManage())) {
             permissionList.add(PermissionType.STATS_REPORT);
         }
-        if (Boolean.TRUE.equals(permissionMap.getNotice())) {
+        if (Boolean.TRUE.equals(permissionMap.getNoticeManage())) {
             permissionList.add(PermissionType.NOTICE);
         }
-        if (Boolean.TRUE.equals(permissionMap.getOrgSetting())) {
+        if (Boolean.TRUE.equals(permissionMap.getOrgSettingManage())) {
             permissionList.add(PermissionType.ORG_SETTING);
         }
 

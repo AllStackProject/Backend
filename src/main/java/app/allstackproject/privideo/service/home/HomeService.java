@@ -1,17 +1,27 @@
 package app.allstackproject.privideo.service.home;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
+import static app.allstackproject.privideo.common.enumStatus.OpenScopeType.GROUP;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_IN_ORGANIZATION;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.NOTICE_FORBIDDEN;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.NOTICE_NOT_IN_ORGANIZATION;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ORGANIZATION_NOT_FOUND;
 
 import app.allstackproject.privideo.common.enumStatus.FilterType;
+import app.allstackproject.privideo.common.enumStatus.OpenScopeType;
 import app.allstackproject.privideo.common.exception.ApiException;
 import app.allstackproject.privideo.common.util.CdnUrlProvider;
 import app.allstackproject.privideo.dto.home.HomeVideoItem;
+import app.allstackproject.privideo.dto.home.ReadAllNoticeItem;
 import app.allstackproject.privideo.dto.home.ReadHomeResponse;
+import app.allstackproject.privideo.dto.home.ReadNoticeResponse;
 import app.allstackproject.privideo.entity.Member;
+import app.allstackproject.privideo.entity.Notice;
 import app.allstackproject.privideo.entity.Organization;
+import app.allstackproject.privideo.repository.member.MemberGroupMappingRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
+import app.allstackproject.privideo.repository.notice.NoticeMemberGroupMappingRepository;
+import app.allstackproject.privideo.repository.notice.NoticeRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.video.VideoRepository;
 import java.util.List;
@@ -28,6 +38,9 @@ public class HomeService {
     private final MemberRepository memberRepository;
     private final OrganizationRepository organizationRepository;
     private final VideoRepository videoRepository;
+    private final NoticeRepository noticeRepository;
+    private final NoticeMemberGroupMappingRepository noticeMemberGroupMappingRepository;
+    private final MemberGroupMappingRepository memberGroupMappingRepository;
     private final CdnUrlProvider cdnUrlProvider;
 
     @Transactional(readOnly = true)
@@ -83,5 +96,44 @@ public class HomeService {
         List<HomeVideoItem> result = videoRepository.findSearchVideos(orgId, memberId, keyword);
         result.forEach(item -> item.setThumbnailUrl(cdnUrlProvider.generateImgUrl(item.getThumbnailUrl())));
         return result;
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReadAllNoticeItem> readAllNotice(Long orgId, Long memberId) {
+        return noticeRepository.findAllVisibleByOrgIdAndMemberId(orgId, memberId);
+    }
+
+    public ReadNoticeResponse readNotice(Long orgId, Long memberId, Long noticeId) {
+        Notice notice = noticeRepository.findByIdAndOrganizationId(noticeId, orgId)
+                .orElseThrow(() -> new ApiException(NOTICE_NOT_IN_ORGANIZATION));
+        notice.watch();
+
+        List<Long> noticeGroupIds = noticeMemberGroupMappingRepository.findAllByNoticeId(noticeId)
+                .stream()
+                .map(m -> m.getMemberGroup().getId())
+                .toList();
+
+        List<Long> myGroupIds = memberGroupMappingRepository.findAllByMemberId(memberId)
+                .stream()
+                .map(m -> m.getMemberGroup().getId())
+                .toList();
+
+        OpenScopeType scope;
+
+        if (noticeGroupIds.isEmpty()) {
+            scope = OpenScopeType.PUBLIC;
+        } else if (noticeGroupIds.stream().anyMatch(myGroupIds::contains)) {
+            scope = GROUP;
+        } else {
+            throw new ApiException(NOTICE_FORBIDDEN);
+        }
+
+        return ReadNoticeResponse.of(
+                notice.getTitle(),
+                notice.getContent(),
+                notice.getCreatedAt(),
+                notice.getWatchCnt(),
+                scope
+        );
     }
 }

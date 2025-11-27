@@ -16,7 +16,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -37,7 +36,7 @@ public class SuperAdminController {
     private final SuperAdminService superAdminService;
 
     @GetMapping("/members")
-    @Operation(summary = "조직 내 전체 멤버 조회")
+    @Operation(summary = "조직 내 멤버 목록 조회")
     public BaseResponse<ReadAllMemberResponse> readAllMember(@PathVariable Long orgId) {
         return new BaseResponse<>(ReadAllMemberResponse.of(superAdminService.readAllMember(orgId)));
     }
@@ -79,8 +78,14 @@ public class SuperAdminController {
     }
 
     @DeleteMapping("/member/{memberId}")
-    @Operation(summary = "조직 멤버 탈퇴시키기")
+    @Operation(summary = "조직 멤버 내보내기")
     public BaseResponse<SuccessResponse> withdrawMember(@PathVariable Long orgId, @PathVariable Long memberId) {
         return new BaseResponse<>(SuccessResponse.of(superAdminService.withdrawMember(orgId, memberId)));
+    }
+
+    @DeleteMapping("")
+    @Operation(summary = "조직 삭제")
+    public BaseResponse<SuccessResponse> deleteOrganization(@PathVariable Long orgId) {
+        return new BaseResponse<>(SuccessResponse.of(superAdminService.deleteOrganization(orgId)));
     }
 }

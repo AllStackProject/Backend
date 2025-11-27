@@ -1,6 +1,7 @@
 package app.allstackproject.privideo.repository.video.custom;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
+import static app.allstackproject.privideo.common.enumStatus.UploadStatusType.COMPLETE;
 import static app.allstackproject.privideo.entity.QCategory.category;
 import static app.allstackproject.privideo.entity.QVideoCategoryMapping.videoCategoryMapping;
 
@@ -21,6 +22,7 @@ public class CategoryRepositoryImpl implements CategoryRepositoryCustom {
                 .join(videoCategoryMapping.category, category)
                 .where(
                         videoCategoryMapping.video.id.eq(videoId),
+                        videoCategoryMapping.video.uploadStatus.eq(COMPLETE),
                         category.status.eq(ACTIVE)
                 )
                 .orderBy(category.title.asc())

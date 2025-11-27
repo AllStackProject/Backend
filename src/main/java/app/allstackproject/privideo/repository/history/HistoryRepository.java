@@ -13,4 +13,6 @@ public interface HistoryRepository extends JpaRepository<History, Long>, History
 
     Long countByMemberIdAndIsCompleteIsTrueAndCompletedAtBetween(Long memberId, LocalDateTime startDate,
                                                                  LocalDateTime endDate);
+
+    void deleteAllByVideoId(Long videoId);
 }

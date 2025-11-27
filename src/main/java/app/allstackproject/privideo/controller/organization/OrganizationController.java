@@ -85,7 +85,7 @@ public class OrganizationController {
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")
     @GetMapping("")
-    @Operation(summary = "전체 조직 조회", description = "가입 요청을 보낸 조직과 가입이 완료된 조직을 모두 조회합니다.")
+    @Operation(summary = "조직 목록 조회", description = "가입 요청을 보낸 조직과 가입이 완료된 조직을 모두 조회합니다.")
     public BaseResponse<ReadOrgsResponse> readOrgs(@AuthenticationPrincipal(expression = "userId") Long userId) {
         List<ReadOrgDto> result = organizationService.readOrgs(userId);
         return new BaseResponse<>(ReadOrgsResponse.of(result));

@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Set;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +19,10 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -47,9 +49,10 @@ public class S3Util {
 
     private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png");
 
+    private static final String HLS_NAME = "hls";
     private static final String VIDEO_EXTENSION = ".mp4";
     private static final String VIDEO_CONTENT_TYPE = "video/mp4";
-    private static final String PLAY_FILE = "master.m3u8";
+    private static final String PLAY_FILE = "video.m3u8";
 
     // ================== Upload ==================
 
@@ -103,13 +106,12 @@ public class S3Util {
 
     // ================== Key 생성 ==================
 
-    public String generateImgKey(Long orgId, String originalFileName, S3ImgType imgType) {
+    public String generateImgKey(Long orgId, String originalFileName, String uuid, S3ImgType imgType) {
         String extension = getFileExtension(originalFileName);
         if (extension.isEmpty()) {
             extension = ".png"; // fallback
         }
 
-        String uuid = UUID.randomUUID().toString();
         if (imgType.equals(THUMBNAIL)) {
             return String.format("images/org-%d/thumbnail/%s%s", orgId, uuid, extension);
         } else {
@@ -117,15 +119,13 @@ public class S3Util {
         }
     }
 
-    public String generateVideoKey(Long orgId) {
-        String uuid = UUID.randomUUID().toString();
-        return String.format("org-%d/%s/original%s", orgId, uuid, VIDEO_EXTENSION);
+    public String generateVideoKey(Long orgId, String uuid) {
+        return String.format("%s/org-%d/%s/video%s", HLS_NAME, orgId, uuid, VIDEO_EXTENSION);
     }
 
     public String generateHlsPrefix(String key) {
         int lastSlash = key.lastIndexOf('/');
-        String basePath = key.substring(0, lastSlash);
-        return "hls/" + basePath;
+        return key.substring(0, lastSlash);
     }
 
     public boolean isImageFile(MultipartFile file) {

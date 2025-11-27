@@ -45,6 +45,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -80,21 +81,19 @@ public class OrganizationService {
         organizationRepository.save(organization);
         memberRepository.save(member);
 
-        String imgKey = s3Util.generateImgKey(organization.getId(), createOrgRequest.getImg().getName(), ORG);
+        String uuid = UUID.randomUUID().toString();
+        String imgKey = s3Util.generateImgKey(organization.getId(), createOrgRequest.getImg().getName(), uuid, ORG);
         s3Util.uploadImgWithKey(createOrgRequest.getImg(), imgKey);
         organization.setImgKey(imgKey);
 
         String code = generateCode(user.getId());
         try {
             orgRedisRepository.createOrgCode(organization.getId(), code);
-            log.info("조직 코드 Redis 저장 완료 - orgId: {}, code: {}", organization.getId(), code);
-
             orgRedisRepository.saveMemberPermission(
                     organization.getId(),
                     member.getId(),
                     member.getPermissionCode()
             );
-
         } catch (Exception e) {
             log.info("Redis 저장 실패 - orgId: {}", organization.getId());
         }
@@ -142,7 +141,10 @@ public class OrganizationService {
                         cdnUrlProvider.generateImgUrl(r.getImgUrl()),
                         r.getJoinAt(),
                         r.getIsSuperAdmin(),
-                        r.getIsAdmin(),
+                        r.getVideoManage(),
+                        r.getStatsReportManage(),
+                        r.getNoticeManage(),
+                        r.getOrgSettingManage(),
                         r.getJoinStatus(),
                         codeMap.get(r.getId())
                 ))
@@ -259,7 +261,7 @@ public class OrganizationService {
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_IN_ORGANIZATION));
 
         String orgName = organization.getName();
-        String orgCode = orgRedisRepository.getOrgcodeById(orgId);
+        String orgCode = orgRedisRepository.getOrgCodeById(orgId);
         String nickname = member.getNickname();
         Boolean isAdmin = member.getPermissionCode() != 0L;
         LocalDateTime joinedAt = member.getCreatedAt();

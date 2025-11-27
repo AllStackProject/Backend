@@ -27,6 +27,7 @@ import app.allstackproject.privideo.entity.Organization;
 import app.allstackproject.privideo.repository.member.MemberGroupMappingRepository;
 import app.allstackproject.privideo.repository.member.MemberGroupRepository;
 import app.allstackproject.privideo.repository.member.MemberRepository;
+import app.allstackproject.privideo.repository.notice.NoticeMemberGroupMappingRepository;
 import app.allstackproject.privideo.repository.organization.OrgRedisRepository;
 import app.allstackproject.privideo.repository.organization.OrganizationRepository;
 import app.allstackproject.privideo.repository.video.CategoryRepository;
@@ -34,6 +35,7 @@ import app.allstackproject.privideo.repository.video.VideoCategoryMappingReposit
 import app.allstackproject.privideo.repository.video.VideoMemberGroupMappingRepository;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -55,13 +57,15 @@ public class OrgAdminService {
     private final VideoCategoryMappingRepository videoCategoryMappingRepository;
     private final S3Util s3Util;
     private final CdnUrlProvider cdnUrlProvider;
+    private final NoticeMemberGroupMappingRepository noticeMemberGroupMappingRepository;
 
     public boolean modifyOrgInfo(Long orgId, MultipartFile img) {
         Organization organization = organizationRepository.findById(orgId)
                 .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
 
+        String uuid = UUID.randomUUID().toString();
         String oldImgKey = organization.getImgKey();
-        String newImgKey = s3Util.generateImgKey(orgId, img.getOriginalFilename(), ORG);
+        String newImgKey = s3Util.generateImgKey(orgId, img.getOriginalFilename(), uuid, ORG);
 
         s3Util.uploadImgWithKey(img, newImgKey);
         organization.setImgKey(newImgKey);
@@ -96,7 +100,7 @@ public class OrgAdminService {
         String orgName = organization.getName();
         String imgUrl = cdnUrlProvider.generateImgUrl(organization.getImgKey());
         Long memberCnt = memberRepository.countByOrganizationIdAndJoinStatusAndStatus(orgId, APPROVED, ACTIVE);
-        String orgCode = orgRedisRepository.getOrgcodeById(orgId);
+        String orgCode = orgRedisRepository.getOrgCodeById(orgId);
 
         List<MemberGroupItem> memberGroups = memberGroupRepository.findAllByOrganizationId(orgId);
 
@@ -146,7 +150,8 @@ public class OrgAdminService {
         MemberGroup memberGroup = memberGroupRepository.findByIdAndOrganizationId(groupId, orgId)
                 .orElseThrow(() -> new ApiException(MEMBER_GROUP_NOT_FOUND));
         memberGroupMappingRepository.deleteByMemberGroupId(groupId);
-        videoMemberGroupMappingRepository.deleteByMemberGroupId(groupId);
+        videoMemberGroupMappingRepository.deleteAllByMemberGroupId(groupId);
+        noticeMemberGroupMappingRepository.deleteAllByMemberGroupId(groupId);
         memberGroupRepository.delete(memberGroup);
         return true;
     }
@@ -198,7 +203,7 @@ public class OrgAdminService {
 
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ApiException(CATEGORY_NOT_FOUND));
-        videoCategoryMappingRepository.deleteByCategoryId(categoryId);
+        videoCategoryMappingRepository.deleteAllByCategoryId(categoryId);
         categoryRepository.delete(category);
 
         return true;

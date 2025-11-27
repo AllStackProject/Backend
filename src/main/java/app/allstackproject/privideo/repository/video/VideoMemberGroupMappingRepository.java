@@ -1,12 +1,15 @@
 package app.allstackproject.privideo.repository.video;
 
 import app.allstackproject.privideo.entity.VideoMemberGroupMapping;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface VideoMemberGroupMappingRepository extends JpaRepository<VideoMemberGroupMapping, Long> {
-    void deleteByMemberGroupId(Long groupId);
+    void deleteAllByMemberGroupId(Long groupId);
 
-    void deleteByVideoId(Long videoId);
+    void deleteAllByVideoId(Long videoId);
+
+    List<VideoMemberGroupMapping> findAllByVideoId(Long videoId);
 }
