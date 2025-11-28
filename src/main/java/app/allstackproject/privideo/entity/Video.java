@@ -41,19 +41,21 @@ public class Video extends BaseEntity {
     private Member creator;
 
     @NotBlank
-    @Column(length = 600)
     private String title;
 
     @NotBlank
-    @Column(length = 1000)
+    @Column(columnDefinition = "text")
     private String description;
 
     @NotNull
+    @Column(name = "video_url")
     private String videoKey;
 
     @NotNull
+    @Column(name = "thumbnail_url")
     private String thumbnailKey;
 
+    // TODO: hlsPrefix를 다 저장해야 할까? uuid만 저장하고 매번 키는 새로 만드는 건?
     @Setter
     @NotNull
     private String hlsPrefix;
