@@ -41,17 +41,18 @@ public class Video extends BaseEntity {
     private Member creator;
 
     @NotBlank
-    @Column(length = 600)
     private String title;
 
     @NotBlank
-    @Column(length = 1000)
+    @Column(columnDefinition = "text")
     private String description;
 
     @NotNull
+    @Column(name = "video_url")
     private String videoKey;
 
     @NotNull
+    @Column(name = "thumbnail_url")
     private String thumbnailKey;
 
     @Setter

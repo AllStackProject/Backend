@@ -33,7 +33,7 @@ public class Comment extends BaseEntity {
     private Video video;
 
     @NotBlank
-    @Column(length = 600)
+    @Column(columnDefinition = "text")
     private String text;
 
     private boolean isChild;
