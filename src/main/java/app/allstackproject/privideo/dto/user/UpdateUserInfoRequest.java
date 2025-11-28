@@ -2,10 +2,7 @@ package app.allstackproject.privideo.dto.user;
 
 import app.allstackproject.privideo.common.annotation.AgeTypeConstraint;
 import app.allstackproject.privideo.common.annotation.EnumConstraint;
-import app.allstackproject.privideo.common.annotation.PasswordConstraint;
 import app.allstackproject.privideo.common.enumStatus.GenderType;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -17,13 +14,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateUserInfoRequest {
 
-    @PasswordConstraint
     private String newPassword;
 
     @AgeTypeConstraint
     private Integer changedAge;
 
-    @PasswordConstraint
     private String confirmPassword;
 
     @EnumConstraint(enumClass = GenderType.class, message = "성별의 유형은 MALE 또는 FEMALE 이어야 합니다.")

@@ -106,9 +106,17 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(USER_NOT_FOUND));
 
-        validateAndUpdatePassword(user, request);
-        updateUserFields(user, request);
+        user.updateInfo(
+                request.getChangedPhoneNum(),
+                GenderType.valueOf(request.getChangedGender().toUpperCase()),
+                request.getChangedAge()
+        );
 
+        if (request.getNewPassword().isEmpty()) {
+            return true;
+        }
+
+        validateAndUpdatePassword(user, request);
         return true;
     }
 
@@ -122,14 +130,6 @@ public class UserService {
         }
 
         user.changePassword(request.getNewPassword(), passwordEncoder);
-    }
-
-    private void updateUserFields(User user, UpdateUserInfoRequest request) {
-        user.updateInfo(
-                request.getChangedPhoneNum(),
-                GenderType.valueOf(request.getChangedGender().toUpperCase()),
-                request.getChangedAge()
-        );
     }
 
     public boolean deleteUser(Long userId) {
