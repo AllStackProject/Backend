@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -34,6 +35,7 @@ public class Notice extends BaseEntity {
     private String title;
 
     @NotNull
+    @Column(columnDefinition = "text")
     private String content;
 
     @NotNull

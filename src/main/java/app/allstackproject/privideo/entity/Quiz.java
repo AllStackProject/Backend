@@ -34,6 +34,7 @@ public class Quiz extends BaseEntity {
     private boolean answer;
 
     @NotBlank
+    @Column(columnDefinition = "text")
     private String description;
 
     @Builder(access = AccessLevel.PRIVATE)
