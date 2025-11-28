@@ -84,8 +84,6 @@ public class SecurityConfig {
             combined.addAll(excludedPatterns);
         }
 
-        System.out.println("===================== PERMIT PATTERNS ===");
-        combined.forEach(p -> System.out.println(" - " + p));
         return combined.toArray(new String[0]);
     }
 }

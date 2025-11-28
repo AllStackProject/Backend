@@ -59,9 +59,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
         String token = header.substring(TOKEN_PREFIX.length());
 
-        log.warn("이거왜이래 [JwtAuthFilter] method={} uri={} token={}",
-                req.getMethod(), req.getRequestURI(), token);
-
         try {
             jwtProvider.validate(token);
             Claims c = jwtProvider.getClaims(token);
