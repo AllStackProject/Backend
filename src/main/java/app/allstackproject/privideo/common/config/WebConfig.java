@@ -16,7 +16,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "http://app.privideo.cloud:5173", "https://app.privideo.cloud:5173",
                         "http://172.16.2.101:32019", "https://172.16.2.101:32019",
                         "http://www.privideo.cloud", "https://www.privideo.cloud")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .exposedHeaders("Authorization", "Authorization-refresh")
                 .allowedHeaders("*")
                 .allowCredentials(true);
