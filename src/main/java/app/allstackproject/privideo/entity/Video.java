@@ -55,7 +55,6 @@ public class Video extends BaseEntity {
     @Column(name = "thumbnail_url")
     private String thumbnailKey;
 
-    // TODO: hlsPrefix를 다 저장해야 할까? uuid만 저장하고 매번 키는 새로 만드는 건?
     @Setter
     @NotNull
     private String hlsPrefix;
