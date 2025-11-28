@@ -4,6 +4,7 @@ import app.allstackproject.privideo.common.annotation.AgeTypeConstraint;
 import app.allstackproject.privideo.common.annotation.EnumConstraint;
 import app.allstackproject.privideo.common.enumStatus.GenderType;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,12 +14,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateUserInfoRequest {
-
+    @NotNull
     private String newPassword;
 
     @AgeTypeConstraint
     private Integer changedAge;
 
+    @NotNull
     private String confirmPassword;
 
     @EnumConstraint(enumClass = GenderType.class, message = "성별의 유형은 MALE 또는 FEMALE 이어야 합니다.")
