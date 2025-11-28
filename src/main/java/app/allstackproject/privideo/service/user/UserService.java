@@ -1,7 +1,9 @@
 package app.allstackproject.privideo.service.user;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
+import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.INACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.PENDING;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_LEAVED_USER;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DB_CONSTRAINT_VIOLATE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DUPLICATE_EMAIL;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_ORG_CODE;
@@ -46,6 +48,10 @@ public class UserService {
     private final OrgRedisRepository orgRedisRepository;
 
     public boolean signup(@Valid PostSignupRequest postSignupRequest) {
+        if (userRepository.existsByEmailAndStatus(postSignupRequest.getEmail(), INACTIVE)) {
+            throw new ApiException(ALREADY_LEAVED_USER);
+        }
+
         if (userRepository.existsByEmailAndStatus(postSignupRequest.getEmail(), ACTIVE)) {
             throw new ApiException(DUPLICATE_EMAIL);
         }
