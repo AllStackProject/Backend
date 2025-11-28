@@ -69,18 +69,18 @@ spec:
   }
 }
 
-//    stage('SonarQube Analysis') {
-//        withSonarQubeEnv('sonarQube') {
-//            withCredentials([string(credentialsId: 'sonarQubeToken', variable: 'SONAR_TOKEN')]) {
-//                sh """
-//                    ./gradlew sonarqube \
-//                      -Dsonar.projectKey=backend \
-//                      -Dsonar.host.url=$SONAR_HOST_URL \
-//                      -Dsonar.login=$SONAR_TOKEN
-//               """
-//            }
-//        }
-//   }
+  stage('SonarQube Analysis') {
+    withSonarQubeEnv('sonarQube') {
+      withCredentials([string(credentialsId: 'sonarQubeToken', variable: 'SONAR_TOKEN')]) {
+        sh """
+          ./gradlew sonarqube \
+           -Dsonar.projectKey=backend \
+           -Dsonar.host.url=$SONAR_HOST_URL \
+           -Dsonar.login=$SONAR_TOKEN
+           """
+            }
+        }
+   }
 
     
     stage('Build & Push with Kaniko') {
