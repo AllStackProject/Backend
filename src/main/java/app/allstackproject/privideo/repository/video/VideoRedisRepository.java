@@ -6,6 +6,7 @@ import app.allstackproject.privideo.common.util.RedisRetryUtil;
 import app.allstackproject.privideo.common.util.RedisUtil;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Repository;
 public class VideoRedisRepository {
 
     private final RedisTemplate<String, String> redisTemplate;
+    private static final long WATCH_SESSION_TTL_HOURS = 2;
 
     public void createWatchSession(String sessionId, Long memberId) {
         String key = RedisUtil.getWatchSessionKey(sessionId);
@@ -28,6 +30,7 @@ public class VideoRedisRepository {
                     sessionData.put(MEMBER_ID, String.valueOf(memberId));
 
                     redisTemplate.opsForHash().putAll(key, sessionData);
+                    redisTemplate.expire(key, WATCH_SESSION_TTL_HOURS, TimeUnit.HOURS);
 
                     log.debug("시청 세션 저장 성공 [sessionId: {}, memberId: {}]", sessionId, memberId);
                 },
