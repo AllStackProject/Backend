@@ -119,12 +119,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     Long redisPermission = null;
                     try {
                         redisPermission = orgRedisRepository.getMemberPermission(orgId, memberId);
-                        if (redisPermission == null) {
-                            log.warn("Redis에 권한 없음 - 탈퇴한 멤버로 처리. memberId: {}, orgId: {}", memberId, orgId);
-                            throw new ApiException(ALREADY_LEAVED_MEMBER); // or INVALID_TOKEN으로 처리? 프론트 편한 대로
-                        }
 
-                        if (!redisPermission.equals(perm)) {
+                        if (redisPermission != null && !redisPermission.equals(perm)) {
                             log.info("권한 변경 감지 - memberId: {}, 기존: {}, 최신: {}", memberId, perm, redisPermission);
                             String newToken = jwtProvider.createOrgToken(OrgTokenDto.builder()
                                     .userId(userId)
@@ -138,6 +134,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         }
                     } catch (Exception e) {
                         log.warn("Redis 조회 실패", e);
+                    }
+
+                    if (redisPermission == null) {
+                        log.warn("Redis에 권한 없음 - 탈퇴한 멤버로 처리. memberId: {}, orgId: {}", memberId, orgId);
+                        throw new ApiException(ALREADY_LEAVED_MEMBER);
                     }
 
                     long finalPerm = (redisPermission != null) ? redisPermission : perm;
