@@ -1,7 +1,9 @@
 package app.allstackproject.privideo.service.user;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
+import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.INACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.PENDING;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_LEAVED_USER;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DB_CONSTRAINT_VIOLATE;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DUPLICATE_EMAIL;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.INVALID_ORG_CODE;
@@ -46,6 +48,10 @@ public class UserService {
     private final OrgRedisRepository orgRedisRepository;
 
     public boolean signup(@Valid PostSignupRequest postSignupRequest) {
+        if (userRepository.existsByEmailAndStatus(postSignupRequest.getEmail(), INACTIVE)) {
+            throw new ApiException(ALREADY_LEAVED_USER);
+        }
+
         if (userRepository.existsByEmailAndStatus(postSignupRequest.getEmail(), ACTIVE)) {
             throw new ApiException(DUPLICATE_EMAIL);
         }
@@ -106,9 +112,17 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(USER_NOT_FOUND));
 
-        validateAndUpdatePassword(user, request);
-        updateUserFields(user, request);
+        user.updateInfo(
+                request.getChangedPhoneNum(),
+                GenderType.valueOf(request.getChangedGender().toUpperCase()),
+                request.getChangedAge()
+        );
 
+        if (request.getNewPassword().isEmpty()) {
+            return true;
+        }
+
+        validateAndUpdatePassword(user, request);
         return true;
     }
 
@@ -122,14 +136,6 @@ public class UserService {
         }
 
         user.changePassword(request.getNewPassword(), passwordEncoder);
-    }
-
-    private void updateUserFields(User user, UpdateUserInfoRequest request) {
-        user.updateInfo(
-                request.getChangedPhoneNum(),
-                GenderType.valueOf(request.getChangedGender().toUpperCase()),
-                request.getChangedAge()
-        );
     }
 
     public boolean deleteUser(Long userId) {

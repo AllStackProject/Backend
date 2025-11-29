@@ -1,11 +1,13 @@
 package app.allstackproject.privideo.service.organization;
 
 import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.ACTIVE;
+import static app.allstackproject.privideo.common.enumStatus.BaseStatusType.INACTIVE;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.PENDING;
 import static app.allstackproject.privideo.common.enumStatus.JoinStatusType.REJECTED;
 import static app.allstackproject.privideo.common.enumStatus.S3ImgType.ORG;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_APPROVED_MEMBER;
+import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_LEAVED_MEMBER;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.ALREADY_REQUESTED_MEMBER;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.DUPLICATE_NICKNAME;
 import static app.allstackproject.privideo.common.response.status.BaseExceptionResponseStatus.MEMBER_NOT_FOUND;
@@ -162,13 +164,11 @@ public class OrganizationService {
             organization = organizationRepository.findById(orgId)
                     .orElseThrow(() -> new ApiException(ORGANIZATION_NOT_FOUND));
         } else {
-//            organization = orgRedisRepository.findByCode(orgCode)
-//                    .orElseThrow(() -> new ApiException(INVALID_ORG_CODE));
-//
-//            orgId = organization.getId();
-//
-//            orgRedisRepository.saveOrgCode(orgId, orgCode);
             throw new ApiException(ORG_CODE_NOT_AVAILABLE);
+        }
+
+        if (memberRepository.findByUserIdAndOrganizationIdAndStatus(userId, orgId, INACTIVE).isPresent()) {
+            throw new ApiException(ALREADY_LEAVED_MEMBER);
         }
 
         Optional<Member> existMember = memberRepository.findByUserIdAndOrganizationIdAndStatus(userId, orgId, ACTIVE);
