@@ -55,7 +55,7 @@ public enum BaseExceptionResponseStatus implements ResponseStatus {
     DUPLICATE_NICKNAME(5014, HttpStatus.BAD_REQUEST, "이미 존재하는 닉네임입니다."),
     INVALID_AGE_TYPE(5015, HttpStatus.BAD_REQUEST, "나이는 10, 20, 30, 40, 50, 60 중 하나여야 합니다."),
     ALREADY_LEAVED_USER(5016, HttpStatus.BAD_REQUEST, "탈퇴 이력이 있는 회원입니다."),
-    ALREADY_LEAVED_MEMBER(5017, HttpStatus.BAD_REQUEST, "해당 조직에 대해 탈퇴 이력이 있는 멤버입니다."),
+    ALREADY_LEAVED_MEMBER(5017, HttpStatus.BAD_REQUEST, "해당 조직에 대해 탈퇴한 멤버입니다."),
 
     /**
      * 6000: Comment 오류
