@@ -1,0 +1,93 @@
+package app.allstackproject.privideo.domain.comment.service;
+
+import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.COMMENT_NOT_FOUND;
+import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.COMMENT_UNAUTHORIZED_DELETE;
+import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.INVALID_COMMENT_REQUEST;
+import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.PARENT_COMMENT_NOT_FOUND;
+import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.VIDEO_COMMENT_NOT_ALLOWED;
+
+import app.allstackproject.privideo.global.exception.ApiException;
+import app.allstackproject.privideo.global.util.CdnUrlProvider;
+import app.allstackproject.privideo.domain.comment.dto.response.CommentResponse;
+import app.allstackproject.privideo.domain.comment.dto.response.CommentsResult;
+import app.allstackproject.privideo.domain.comment.dto.request.CreateCommentRequest;
+import app.allstackproject.privideo.domain.comment.dto.response.CommentInfo;
+import app.allstackproject.privideo.domain.comment.entity.Comment;
+import app.allstackproject.privideo.domain.comment.repository.CommentRepository;
+import app.allstackproject.privideo.domain.member.repository.MemberRepository;
+import app.allstackproject.privideo.domain.video.repository.VideoRepository;
+import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Optional;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@AllArgsConstructor
+@Transactional
+public class CommentService {
+
+    private final CommentRepository commentRepository;
+    private final VideoRepository videoRepository;
+    private final MemberRepository memberRepository;
+    private final CdnUrlProvider cdnUrlProvider;
+
+    @Transactional(readOnly = true)
+    public CommentResponse getUserComments(Long memberId, Long orgId) {
+        List<Comment> commentList = commentRepository.findByMemberIdAndVideoOrganizationId(memberId, orgId);
+        return CommentResponse.of(commentList, cdnUrlProvider);
+    }
+
+    public boolean deleteComment(Long memberId, Long orgId, Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new ApiException(COMMENT_NOT_FOUND));
+
+        if (!comment.getMember().getId().equals(memberId)) {
+            throw new ApiException(COMMENT_UNAUTHORIZED_DELETE);
+        }
+
+        commentRepository.deleteAllByParentCommentId(commentId);
+        commentRepository.deleteById(commentId);
+        return true;
+    }
+
+    @Transactional(readOnly = true)
+    public CommentsResult readVideoComments(Long memberId, Long orgId, Long videoId) {
+        if (!videoRepository.isValidMemberAndOrgAndVideo(memberId, orgId, videoId)) {
+            throw new ApiException(INVALID_COMMENT_REQUEST);
+        }
+
+        if (!videoRepository.findById(videoId).get().getIsComment()) {
+            throw new ApiException(VIDEO_COMMENT_NOT_ALLOWED);
+        }
+
+        List<CommentInfo> commentInfos = commentRepository.findAllByVideoId(videoId);
+        return CommentsResult.create(commentInfos);
+    }
+
+    public boolean createComment(Long memberId, Long orgId, Long videoId,
+                                 @Valid CreateCommentRequest createCommentRequest) {
+        if (!videoRepository.isValidMemberAndOrgAndVideo(memberId, orgId, videoId)) {
+            throw new ApiException(INVALID_COMMENT_REQUEST);
+        }
+        if (!videoRepository.findById(videoId).get().getIsComment()) {
+            throw new ApiException(VIDEO_COMMENT_NOT_ALLOWED);
+        }
+
+        boolean isChild = createCommentRequest.getParentCommentId() != null;
+        Long parentCommentId = createCommentRequest.getParentCommentId();
+        if (isChild) {
+            Optional<Comment> parentComment = commentRepository.findById(parentCommentId);
+            if (parentComment.isEmpty() || !parentComment.get().getVideo().getId().equals(videoId)) {
+                throw new ApiException(PARENT_COMMENT_NOT_FOUND);
+            }
+        }
+
+        Comment comment = Comment.create(videoRepository.getReferenceById(videoId),
+                memberRepository.getReferenceById(memberId), createCommentRequest.getText(), isChild, parentCommentId);
+        commentRepository.save(comment);
+
+        return true;
+    }
+}
