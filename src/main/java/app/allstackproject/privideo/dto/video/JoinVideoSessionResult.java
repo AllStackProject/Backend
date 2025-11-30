@@ -1,6 +1,6 @@
 package app.allstackproject.privideo.dto.video;
 
-import app.allstackproject.privideo.common.enumStatus.AiFunctionType;
+import app.allstackproject.privideo.domain.video.enums.AiFunctionType;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;

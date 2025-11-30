@@ -1,12 +1,12 @@
 package app.allstackproject.privideo.dto.organization;
 
-import static app.allstackproject.privideo.common.enumStatus.PermissionType.NOTICE;
-import static app.allstackproject.privideo.common.enumStatus.PermissionType.ORG_SETTING;
-import static app.allstackproject.privideo.common.enumStatus.PermissionType.STATS_REPORT;
-import static app.allstackproject.privideo.common.enumStatus.PermissionType.VIDEO_MANAGE;
+import static app.allstackproject.privideo.domain.organization.dto.enums.PermissionType.NOTICE;
+import static app.allstackproject.privideo.domain.organization.dto.enums.PermissionType.ORG_SETTING;
+import static app.allstackproject.privideo.domain.organization.dto.enums.PermissionType.STATS_REPORT;
+import static app.allstackproject.privideo.domain.organization.dto.enums.PermissionType.VIDEO_MANAGE;
 
-import app.allstackproject.privideo.common.enumStatus.JoinStatusType;
-import app.allstackproject.privideo.common.enumStatus.PermissionType;
+import app.allstackproject.privideo.domain.organization.dto.enums.JoinStatusType;
+import app.allstackproject.privideo.domain.organization.dto.enums.PermissionType;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,6 +1,6 @@
 package app.allstackproject.privideo.dto.organization;
 
-import app.allstackproject.privideo.common.enumStatus.JoinStatusType;
+import app.allstackproject.privideo.domain.organization.dto.enums.JoinStatusType;
 import java.time.LocalDateTime;
 import lombok.Getter;
 

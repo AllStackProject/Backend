@@ -1,6 +1,6 @@
 package app.allstackproject.privideo.dto.video;
 
-import app.allstackproject.privideo.entity.Video;
+import app.allstackproject.privideo.domain.video.entity.Video;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;

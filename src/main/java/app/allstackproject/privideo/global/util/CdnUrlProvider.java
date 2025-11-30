@@ -1,0 +1,19 @@
+package app.allstackproject.privideo.global.util;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class CdnUrlProvider {
+    @Value("${cloud.aws.cloudfront.distribution-domain}")
+    private String DISTRIBUTION_DOMAIN;
+
+    public String generateImgUrl(String imgKey) {
+        if (imgKey == null || imgKey.isBlank()) {
+            return null;
+        }
+        return DISTRIBUTION_DOMAIN + "/" + imgKey;
+    }
+}

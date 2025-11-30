@@ -1,5 +1,6 @@
 package app.allstackproject.privideo.dto.video;
 
+import app.allstackproject.privideo.domain.video.dto.request.LeaveVideoSessionRequest;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
