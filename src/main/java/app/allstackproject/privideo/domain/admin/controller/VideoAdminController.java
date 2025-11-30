@@ -2,13 +2,15 @@ package app.allstackproject.privideo.domain.admin.controller;
 
 import static app.allstackproject.privideo.global.config.SwaggerConfig.ORG_AUTH_KEY;
 
-import app.allstackproject.privideo.global.response.BaseResponse;
-import app.allstackproject.privideo.global.response.SuccessResponse;
+import app.allstackproject.privideo.domain.admin.dto.ReadAllVideoItem;
 import app.allstackproject.privideo.domain.admin.dto.ReadAllVideosResponse;
 import app.allstackproject.privideo.domain.admin.service.VideoAdminService;
+import app.allstackproject.privideo.global.response.BaseResponse;
+import app.allstackproject.privideo.global.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,14 +31,16 @@ public class VideoAdminController {
 
     @GetMapping("/video")
     @Operation(summary = "조직 내 모든 영상 조회")
-    public BaseResponse<ReadAllVideosResponse> readAllVideos(@PathVariable("orgId") Long orgId) {
-        return new BaseResponse<>(ReadAllVideosResponse.of(videoAdminService.readAllVideos(orgId)));
+    public BaseResponse<ReadAllVideosResponse> readAllVideos(@PathVariable Long orgId) {
+        List<ReadAllVideoItem> allVideoItems = videoAdminService.readAllVideos(orgId);
+        return new BaseResponse<>(ReadAllVideosResponse.of(allVideoItems));
     }
 
     @DeleteMapping("/video/{videoId}")
     @Operation(summary = "조직 내 특정 영상 삭제")
-    public BaseResponse<SuccessResponse> deleteVideo(@PathVariable("orgId") Long orgId,
-                                                     @PathVariable("videoId") Long videoId) {
+    public BaseResponse<SuccessResponse> deleteVideo(
+            @PathVariable Long orgId,
+            @PathVariable Long videoId) {
         return new BaseResponse<>(SuccessResponse.of(videoAdminService.deleteVideo(orgId, videoId)));
     }
 }

@@ -4,6 +4,7 @@ import static app.allstackproject.privideo.global.config.SwaggerConfig.ORG_AUTH_
 import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.INVALID_VIDEO_LEAVE;
 import static app.allstackproject.privideo.global.util.BindingResultUtil.getErrorMessage;
 
+import app.allstackproject.privideo.domain.video.enums.UploadStatusType;
 import app.allstackproject.privideo.global.exception.ApiException;
 import app.allstackproject.privideo.global.response.BaseResponse;
 import app.allstackproject.privideo.global.response.SuccessResponse;
@@ -19,6 +20,7 @@ import app.allstackproject.privideo.domain.video.dto.response.ReadVideoEncodingR
 import app.allstackproject.privideo.domain.video.dto.response.ReadVideoInfoResponse;
 import app.allstackproject.privideo.domain.video.service.CloudFrontCookieService;
 import app.allstackproject.privideo.domain.video.service.VideoService;
+import app.allstackproject.privideo.shared.enums.AuthPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -55,7 +57,7 @@ public class VideoController {
     @PreAuthorize("hasAuthority('org:granted')")
     @Operation(summary = "영상 업로드")
     public BaseResponse<CreateVideoResponse> createVideo(
-            @AuthenticationPrincipal(expression = "memberId") Long memberId,
+            @AuthenticationPrincipal AuthPrincipal me,
             @PathVariable Long orgId,
             @RequestParam("title") String title,
             @RequestParam("description") String description,
@@ -70,14 +72,14 @@ public class VideoController {
                 title, description, thumbnailImg, wholeTime,
                 isComment, aiFunction, expiredAt, memberGroups, categories
         );
-        return new BaseResponse<>(videoService.createVideo(memberId, orgId, createVideoRequest));
+        return new BaseResponse<>(videoService.createVideo(me.memberId(), orgId, createVideoRequest));
     }
 
     @PostMapping("/airflow/status")
     @Operation(summary = "영상 인코딩 성공 여부")
     public BaseResponse<SuccessResponse> readVideoEncodingResult(
             @Valid @RequestBody ReadVideoEncodingResultRequest updateVideoEncodingResultRequest,
-            @PathVariable("orgId") Long orgId) {
+            @PathVariable Long orgId) {
         return new BaseResponse<>(
                 videoService.updateVideoEncodingResult(orgId, updateVideoEncodingResultRequest.getVideoUuid(),
                         updateVideoEncodingResultRequest.getStatus()));
@@ -87,69 +89,72 @@ public class VideoController {
     @PreAuthorize("hasAuthority('org:granted')")
     @Operation(summary = "영상 업로드 성공 여부")
     public BaseResponse<ReadVideoEncodingResultResponse> readVideoEncodingResult(
-            @AuthenticationPrincipal(expression = "memberId") Long memberId,
-            @PathVariable("orgId") Long orgId,
-            @PathVariable("videoId") Long videoId
-    ) {
-        return new BaseResponse<>(
-                ReadVideoEncodingResultResponse.of(videoService.readVideoEncodingResult(memberId, orgId, videoId)));
+            @AuthenticationPrincipal AuthPrincipal me,
+            @PathVariable Long orgId,
+            @PathVariable Long videoId) {
+        UploadStatusType uploadStatus = videoService.readVideoEncodingResult(me.memberId(), orgId, videoId);
+        return new BaseResponse<>(ReadVideoEncodingResultResponse.of(uploadStatus));
     }
 
     @PostMapping("/{videoId}/join")
     @PreAuthorize("hasAuthority('org:granted')")
     @Operation(summary = "영상 시청 세션 시작")
     public BaseResponse<JoinVideoSessionResponse> joinVideoSession(
-            @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId,
-            @PathVariable("videoId") Long videoId, HttpServletResponse response) {
-        JoinVideoSessionResult result = videoService.joinVideoSession(memberId, orgId, videoId);
-        cloudFrontCookieService.addSignedCookies(response, result.getVideo().getHlsPrefix());
+            @AuthenticationPrincipal AuthPrincipal me,
+            @PathVariable Long orgId,
+            @PathVariable Long videoId,
+            HttpServletResponse response) {
+        JoinVideoSessionResult joinVideoSessionResult = videoService.joinVideoSession(me.memberId(), orgId, videoId);
+        cloudFrontCookieService.addSignedCookies(response, joinVideoSessionResult.getVideo().getHlsPrefix());
 
-        return new BaseResponse<>(JoinVideoSessionResponse.from(result));
+        return new BaseResponse<>(JoinVideoSessionResponse.from(joinVideoSessionResult));
     }
 
     @PostMapping("/{videoId}/leave")
     @Operation(summary = "영상 시청 세션 종료")
-    public BaseResponse<SuccessResponse> leaveVideoSession(@PathVariable("orgId") Long orgId,
-                                                           @PathVariable("videoId") Long videoId,
-                                                           @Valid @RequestBody LeaveVideoSessionRequest leaveVideoSessionRequest,
-                                                           BindingResult bindingResult) {
+    public BaseResponse<SuccessResponse> leaveVideoSession(
+            @PathVariable Long orgId,
+            @PathVariable Long videoId,
+            @Valid @RequestBody LeaveVideoSessionRequest leaveVideoSessionRequest,
+            BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             throw new ApiException(INVALID_VIDEO_LEAVE, getErrorMessage(bindingResult));
         }
 
         LeaveVideoSessionInfo leaveVideoSessionInfo = LeaveVideoSessionInfo.create(orgId, videoId,
                 leaveVideoSessionRequest);
-        boolean result = videoService.leaveVideoSession(leaveVideoSessionInfo);
-        return new BaseResponse<>(SuccessResponse.of(result));
+        return new BaseResponse<>(SuccessResponse.of(videoService.leaveVideoSession(leaveVideoSessionInfo)));
     }
 
     @GetMapping("/{videoId}")
     @PreAuthorize("hasAuthority('org:granted')")
     @Operation(summary = "영상 메타 데이터 조회")
     public BaseResponse<ReadVideoInfoResponse> readVideoInfo(
-            @AuthenticationPrincipal(expression = "memberId") Long memberId,
-            @PathVariable("orgId") Long orgId,
-            @PathVariable("videoId") Long videoId) {
-        return new BaseResponse<>(videoService.readVideoInfo(orgId, memberId, videoId));
+            @AuthenticationPrincipal AuthPrincipal me,
+            @PathVariable Long orgId,
+            @PathVariable Long videoId) {
+        return new BaseResponse<>(videoService.readVideoInfo(orgId, me.memberId(), videoId));
     }
 
     @PatchMapping("/{videoId}")
     @PreAuthorize("hasAuthority('org:granted')")
     @Operation(summary = "영상 수정")
-    public BaseResponse<SuccessResponse> modifyVideo(@AuthenticationPrincipal(expression = "memberId") Long memberId,
-                                                     @PathVariable("orgId") Long orgId,
-                                                     @PathVariable("videoId") Long videoId,
-                                                     @Valid @RequestBody ModifyVideoRequest modifyVideoRequest) {
+    public BaseResponse<SuccessResponse> modifyVideo(
+            @AuthenticationPrincipal AuthPrincipal me,
+            @PathVariable Long orgId,
+            @PathVariable Long videoId,
+            @Valid @RequestBody ModifyVideoRequest modifyVideoRequest) {
         return new BaseResponse<>(
-                SuccessResponse.of(videoService.modifyVideo(orgId, memberId, videoId, modifyVideoRequest)));
+                SuccessResponse.of(videoService.modifyVideo(orgId, me.memberId(), videoId, modifyVideoRequest)));
     }
 
     @DeleteMapping("/{videoId}")
     @PreAuthorize("hasAuthority('org:granted')")
     @Operation(summary = "업로드한 영상 삭제")
-    public BaseResponse<SuccessResponse> deleteVideo(@AuthenticationPrincipal(expression = "memberId") Long memberId,
-                                                     @PathVariable("orgId") Long orgId,
-                                                     @PathVariable("videoId") Long videoId) {
-        return new BaseResponse<>(SuccessResponse.of(videoService.deleteVideo(orgId, memberId, videoId)));
+    public BaseResponse<SuccessResponse> deleteVideo(
+            @AuthenticationPrincipal AuthPrincipal me,
+            @PathVariable Long orgId,
+            @PathVariable Long videoId) {
+        return new BaseResponse<>(SuccessResponse.of(videoService.deleteVideo(orgId, me.memberId(), videoId)));
     }
 }

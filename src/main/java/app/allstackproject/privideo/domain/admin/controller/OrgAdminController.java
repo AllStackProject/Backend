@@ -12,6 +12,7 @@ import app.allstackproject.privideo.domain.admin.dto.ReadAllCategoryResponse;
 import app.allstackproject.privideo.domain.admin.dto.ReadAdminOrganizationInfoResponse;
 import app.allstackproject.privideo.domain.organization.dto.response.OrgCodeResponse;
 import app.allstackproject.privideo.domain.admin.service.OrgAdminService;
+import app.allstackproject.privideo.shared.enums.AuthPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -42,14 +43,15 @@ public class OrgAdminController {
 
     @GetMapping("/orgs/info")
     @Operation(summary = "조직 정보 조회")
-    public BaseResponse<ReadAdminOrganizationInfoResponse> readOrganizationInfo(@PathVariable("orgId") Long orgId) {
+    public BaseResponse<ReadAdminOrganizationInfoResponse> readOrganizationInfo(@PathVariable Long orgId) {
         return new BaseResponse<>(orgAdminService.readOrganizationInfo(orgId));
     }
 
     @PatchMapping("/orgs/info")
     @Operation(summary = "조직 이미지 수정")
-    public BaseResponse<SuccessResponse> modifyOrgInfo(@PathVariable("orgId") Long orgId,
-                                                       @Valid @ModelAttribute ModifyOrgInfoRequest modifyOrgInfoRequest) {
+    public BaseResponse<SuccessResponse> modifyOrgInfo(
+            @PathVariable Long orgId,
+            @Valid @ModelAttribute ModifyOrgInfoRequest modifyOrgInfoRequest) {
         return new BaseResponse<>(
                 SuccessResponse.of(orgAdminService.modifyOrgInfo(orgId, modifyOrgInfoRequest.getImg())));
     }
@@ -57,8 +59,9 @@ public class OrgAdminController {
     @PatchMapping("/orgs/code")
     @Operation(summary = "조직 코드 재발급", description = "조직 코드를 새로 발급합니다.")
     public BaseResponse<OrgCodeResponse> regenerateOrgToken(
-            @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId) {
-        OrgCodeResponse newOrgCode = orgAdminService.regenerateOrgCode(memberId, orgId);
+            @AuthenticationPrincipal AuthPrincipal me,
+            @PathVariable Long orgId) {
+        OrgCodeResponse newOrgCode = orgAdminService.regenerateOrgCode(me.memberId(), orgId);
         return new BaseResponse<>(newOrgCode);
     }
 

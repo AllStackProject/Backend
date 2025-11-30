@@ -5,6 +5,7 @@ import static app.allstackproject.privideo.global.config.SwaggerConfig.ORG_AUTH_
 import app.allstackproject.privideo.domain.scrap.service.ScrapService;
 import app.allstackproject.privideo.global.response.BaseResponse;
 import app.allstackproject.privideo.global.response.SuccessResponse;
+import app.allstackproject.privideo.shared.enums.AuthPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,20 +30,19 @@ public class ScrapController {
 
     @PostMapping("")
     @Operation(summary = "영상 스크랩 등록")
-    public BaseResponse<SuccessResponse> addVideoScrap(@AuthenticationPrincipal(expression = "memberId") Long memberId,
-                                                       @PathVariable("orgId") Long orgId,
-                                                       @PathVariable("videoId") Long videoId) {
-        boolean result = scrapService.addVideoScrap(memberId, orgId, videoId);
-        return new BaseResponse<>(SuccessResponse.of(result));
+    public BaseResponse<SuccessResponse> addVideoScrap(
+            @AuthenticationPrincipal AuthPrincipal me,
+            @PathVariable Long orgId,
+            @PathVariable Long videoId) {
+        return new BaseResponse<>(SuccessResponse.of(scrapService.addVideoScrap(me.memberId(), orgId, videoId)));
     }
 
     @DeleteMapping("")
     @Operation(summary = "영상 스크랩 취소")
     public BaseResponse<SuccessResponse> deleteVideoScrap(
-            @AuthenticationPrincipal(expression = "memberId") Long memberId,
-            @PathVariable("orgId") Long orgId,
-            @PathVariable("videoId") Long videoId) {
-        boolean result = scrapService.deleteVideoScrap(memberId, orgId, videoId);
-        return new BaseResponse<>(SuccessResponse.of(result));
+            @AuthenticationPrincipal AuthPrincipal me,
+            @PathVariable Long orgId,
+            @PathVariable Long videoId) {
+        return new BaseResponse<>(SuccessResponse.of(scrapService.deleteVideoScrap(me.memberId(), orgId, videoId)));
     }
 }

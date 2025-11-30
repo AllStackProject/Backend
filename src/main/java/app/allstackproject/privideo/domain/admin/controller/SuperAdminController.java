@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/admin/org/{orgId}")
-@PreAuthorize("hasAuthority('org:admin')")
+@PreAuthorize("hasAuthority('org:granted') and hasAuthority('org:admin')")
 @Tag(name = "Admin-Super", description = "슈퍼 관리자 관련 API")
 @SecurityRequirement(name = ORG_AUTH_KEY)
 public class SuperAdminController {
@@ -43,23 +43,22 @@ public class SuperAdminController {
 
     @PutMapping("/member/{memberId}/perm")
     @Operation(summary = "조직 멤버의 권한 수정")
-    public BaseResponse<SuccessResponse> updateMemberPermission(@PathVariable Long orgId, @PathVariable Long memberId,
-                                                                @Valid @RequestBody UpdateMemberPermissionRequest request) {
-
-        boolean isSuccess = superAdminService.updateMemberPermission(memberId, orgId, request);
-
-        return new BaseResponse<>(SuccessResponse.of(isSuccess));
+    public BaseResponse<SuccessResponse> updateMemberPermission(
+            @PathVariable Long orgId,
+            @PathVariable Long memberId,
+            @Valid @RequestBody UpdateMemberPermissionRequest request) {
+        return new BaseResponse<>(
+                SuccessResponse.of(superAdminService.updateMemberPermission(memberId, orgId, request)));
     }
 
     @PutMapping("/member/{memberId}/group")
     @Operation(summary = "조직 멤버의 멤버 그룹 수정")
-    public BaseResponse<SuccessResponse> modifyMemberGroup(@PathVariable Long orgId, @PathVariable Long memberId,
-                                                           @Valid @RequestBody ModifyMemberGroupRequest modifyMemberGroupRequest) {
-
-        boolean isSuccess = superAdminService.modifyMemberGroup(memberId, orgId,
-                modifyMemberGroupRequest.getMemberGroupIds());
-
-        return new BaseResponse<>(SuccessResponse.of(isSuccess));
+    public BaseResponse<SuccessResponse> modifyMemberGroup(
+            @PathVariable Long orgId,
+            @PathVariable Long memberId,
+            @Valid @RequestBody ModifyMemberGroupRequest modifyMemberGroupRequest) {
+        return new BaseResponse<>(SuccessResponse.of(
+                superAdminService.modifyMemberGroup(memberId, orgId, modifyMemberGroupRequest.getMemberGroupIds())));
     }
 
     @GetMapping("/member/join")
@@ -71,15 +70,18 @@ public class SuperAdminController {
     @PatchMapping("/member/{memberId}/join")
     @Operation(summary = "조직 가입 요청 처리", description = "조직 가입 요청을 승인 또는 거절합니다.")
     public BaseResponse<SuccessResponse> changeJoinState(
-            @Valid @RequestBody ChangeJoinStateRequest changeJoinStateRequest, @PathVariable Long orgId,
-            @PathVariable Long memberId) {
-        boolean isSuccess = superAdminService.changeJoinState(orgId, memberId, changeJoinStateRequest);
-        return new BaseResponse<>(SuccessResponse.of(isSuccess));
+            @PathVariable Long orgId,
+            @PathVariable Long memberId,
+            @Valid @RequestBody ChangeJoinStateRequest changeJoinStateRequest) {
+        return new BaseResponse<>(
+                SuccessResponse.of(superAdminService.changeJoinState(orgId, memberId, changeJoinStateRequest)));
     }
 
     @DeleteMapping("/member/{memberId}")
     @Operation(summary = "조직 멤버 내보내기")
-    public BaseResponse<SuccessResponse> withdrawMember(@PathVariable Long orgId, @PathVariable Long memberId) {
+    public BaseResponse<SuccessResponse> withdrawMember(
+            @PathVariable Long orgId,
+            @PathVariable Long memberId) {
         return new BaseResponse<>(SuccessResponse.of(superAdminService.withdrawMember(orgId, memberId)));
     }
 

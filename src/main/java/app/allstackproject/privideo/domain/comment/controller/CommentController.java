@@ -11,6 +11,7 @@ import app.allstackproject.privideo.domain.comment.dto.response.CommentsResult;
 import app.allstackproject.privideo.domain.comment.dto.request.CreateCommentRequest;
 import app.allstackproject.privideo.domain.comment.dto.response.ReadCommentsResponse;
 import app.allstackproject.privideo.domain.comment.service.CommentService;
+import app.allstackproject.privideo.shared.enums.AuthPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,23 +40,26 @@ public class CommentController {
     @GetMapping("/comments")
     @Operation(summary = "댓글 목록 조회")
     public BaseResponse<ReadCommentsResponse> readComments(
-            @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId,
-            @PathVariable("videoId") Long videoId) {
-        CommentsResult commentsResult = commentService.readVideoComments(memberId, orgId, videoId);
+            @AuthenticationPrincipal AuthPrincipal me,
+            @PathVariable Long orgId,
+            @PathVariable Long videoId) {
+        CommentsResult commentsResult = commentService.readVideoComments(me.memberId(), orgId, videoId);
         return new BaseResponse<>(ReadCommentsResponse.of(commentsResult));
     }
 
     @PostMapping("/comment")
     @Operation(summary = "댓글 작성")
     public BaseResponse<SuccessResponse> createComment(
-            @AuthenticationPrincipal(expression = "memberId") Long memberId, @PathVariable("orgId") Long orgId,
-            @PathVariable("videoId") Long videoId, @Valid @RequestBody CreateCommentRequest createCommentRequest,
+            @AuthenticationPrincipal AuthPrincipal me,
+            @PathVariable Long orgId,
+            @PathVariable Long videoId,
+            @Valid @RequestBody CreateCommentRequest createCommentRequest,
             BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             throw new ApiException(INVALID_COMMENT_CREATE, getErrorMessage(bindingResult));
         }
 
-        boolean result = commentService.createComment(memberId, orgId, videoId, createCommentRequest);
-        return new BaseResponse<>(SuccessResponse.of(result));
+        return new BaseResponse<>(
+                SuccessResponse.of(commentService.createComment(me.memberId(), orgId, videoId, createCommentRequest)));
     }
 }

@@ -44,20 +44,22 @@ public class UserController {
 
     @Operation(summary = "유저 회원가입")
     @PostMapping("/signup")
-    public BaseResponse<SuccessResponse> postSignup(@Valid @RequestBody PostSignupRequest postSignupRequest,
-                                                    BindingResult bindingResult) {
+    public BaseResponse<SuccessResponse> postSignup(
+            @Valid @RequestBody PostSignupRequest postSignupRequest,
+            BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             throw new ApiException(INVALID_USER_SIGNUP, getErrorMessage(bindingResult));
         }
 
-        boolean isSuccess = userService.signup(postSignupRequest);
-        return new BaseResponse<>(SuccessResponse.of(isSuccess));
+        return new BaseResponse<>(SuccessResponse.of(userService.signup(postSignupRequest)));
     }
 
     @Operation(summary = "유저 로그인")
     @PostMapping("/login")
-    public BaseResponse<SuccessResponse> postLogin(@Valid @RequestBody PostLoginRequest postLoginRequest,
-                                                   BindingResult bindingResult, HttpServletResponse response) {
+    public BaseResponse<SuccessResponse> postLogin(
+            @Valid @RequestBody PostLoginRequest postLoginRequest,
+            BindingResult bindingResult,
+            HttpServletResponse response) {
         if (bindingResult.hasErrors()) {
             throw new ApiException(INVALID_USER_LOGIN, getErrorMessage(bindingResult));
         }
@@ -74,12 +76,8 @@ public class UserController {
     @PreAuthorize("hasAuthority('bootstrap:granted')")
     @GetMapping("/info")
     @Operation(summary = "유저 정보 조회")
-    public BaseResponse<UserInfoResponse> getMyInfo(
-            @AuthenticationPrincipal AuthPrincipal me) {
-
-        Long useerId = me.userId();
-        UserInfoResponse user = userService.getUserInfo(useerId);
-        return new BaseResponse<>(user);
+    public BaseResponse<UserInfoResponse> getMyInfo(@AuthenticationPrincipal AuthPrincipal me) {
+        return new BaseResponse<>(userService.getUserInfo(me.userId()));
     }
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")
@@ -88,16 +86,13 @@ public class UserController {
     public BaseResponse<SuccessResponse> updateMyInfo(
             @AuthenticationPrincipal AuthPrincipal me,
             @RequestBody @Valid UpdateUserInfoRequest request) {
-
-        Long userId = me.userId();
-        boolean result = userService.updateUserInfo(userId, request);
-        return new BaseResponse<>(SuccessResponse.of(result));
+        return new BaseResponse<>(SuccessResponse.of(userService.updateUserInfo(me.userId(), request)));
     }
 
     @PreAuthorize("hasAuthority('bootstrap:granted')")
     @DeleteMapping("")
     @Operation(summary = "유저 탈퇴")
-    public BaseResponse<SuccessResponse> deleteUser(@AuthenticationPrincipal(expression = "userId") Long userId) {
-        return new BaseResponse<>(SuccessResponse.of(userService.deleteUser(userId)));
+    public BaseResponse<SuccessResponse> deleteUser(@AuthenticationPrincipal AuthPrincipal me) {
+        return new BaseResponse<>(SuccessResponse.of(userService.deleteUser(me.userId())));
     }
 }
