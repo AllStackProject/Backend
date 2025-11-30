@@ -1,7 +1,7 @@
 package app.allstackproject.privideo.domain.notice.repository.custom;
 
 import app.allstackproject.privideo.domain.admin.dto.AdminReadAllNoticeItem;
-import app.allstackproject.privideo.dto.home.ReadAllNoticeItem;
+import app.allstackproject.privideo.domain.notice.dto.ReadAllNoticeItem;
 import java.util.List;
 
 public interface NoticeRepositoryCustom {

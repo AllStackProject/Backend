@@ -5,7 +5,7 @@ import app.allstackproject.privideo.domain.admin.dto.QuitLogItem;
 import app.allstackproject.privideo.domain.admin.dto.ReadAllVideoIntervalLogItem;
 import app.allstackproject.privideo.domain.admin.dto.ReadAllVideoItem;
 import app.allstackproject.privideo.domain.admin.dto.VideoRankItem;
-import app.allstackproject.privideo.dto.home.HomeVideoItem;
+import app.allstackproject.privideo.domain.home.dto.response.HomeVideoItem;
 import java.util.List;
 import java.util.Map;
 

@@ -2,7 +2,7 @@ package app.allstackproject.privideo.domain.video.service;
 
 import app.allstackproject.privideo.domain.video.enums.AiFunctionType;
 import app.allstackproject.privideo.global.util.S3Util;
-import app.allstackproject.privideo.dto.video.QuizInfo;
+import app.allstackproject.privideo.domain.quiz.dto.QuizInfo;
 import app.allstackproject.privideo.domain.quiz.entity.Quiz;
 import app.allstackproject.privideo.domain.video.entity.Video;
 import app.allstackproject.privideo.domain.quiz.repository.QuizRepository;

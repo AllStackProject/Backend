@@ -1,4 +1,4 @@
-package app.allstackproject.privideo.dto.organization;
+package app.allstackproject.privideo.domain.organization.dto.response;
 
 import app.allstackproject.privideo.domain.organization.dto.enums.JoinStatusType;
 import java.time.LocalDateTime;

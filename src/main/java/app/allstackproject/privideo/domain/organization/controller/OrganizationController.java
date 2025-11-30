@@ -10,14 +10,14 @@ import static app.allstackproject.privideo.global.util.BindingResultUtil.getErro
 import app.allstackproject.privideo.global.exception.ApiException;
 import app.allstackproject.privideo.global.response.BaseResponse;
 import app.allstackproject.privideo.global.response.SuccessResponse;
-import app.allstackproject.privideo.dto.organization.CreatOrgResult;
+import app.allstackproject.privideo.domain.organization.dto.response.CreatOrgResult;
 import app.allstackproject.privideo.domain.organization.dto.request.CreateOrgRequest;
 import app.allstackproject.privideo.domain.organization.dto.response.CreateOrgResponse;
 import app.allstackproject.privideo.domain.organization.dto.request.JoinOrgRequest;
-import app.allstackproject.privideo.dto.organization.ReadOrgDto;
+import app.allstackproject.privideo.domain.organization.dto.response.ReadOrgDto;
 import app.allstackproject.privideo.domain.organization.dto.response.ReadOrgsResponse;
 import app.allstackproject.privideo.domain.organization.dto.response.SelectOrgResponse;
-import app.allstackproject.privideo.dto.organization.SelectOrgResult;
+import app.allstackproject.privideo.domain.organization.dto.response.SelectOrgResult;
 import app.allstackproject.privideo.domain.organization.service.OrganizationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

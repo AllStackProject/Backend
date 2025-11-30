@@ -1,4 +1,4 @@
-package app.allstackproject.privideo.dto.video;
+package app.allstackproject.privideo.domain.comment.dto.response;
 
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;

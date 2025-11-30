@@ -6,7 +6,7 @@ import static app.allstackproject.privideo.global.response.status.BaseExceptionR
 
 import app.allstackproject.privideo.global.exception.ApiException;
 import app.allstackproject.privideo.global.util.CdnUrlProvider;
-import app.allstackproject.privideo.dto.history.HistoryItem;
+import app.allstackproject.privideo.domain.history.dto.HistoryItem;
 import app.allstackproject.privideo.domain.scrap.dto.ScrapResponse;
 import app.allstackproject.privideo.domain.scrap.entity.Scrap;
 import app.allstackproject.privideo.domain.scrap.repository.ScrapRepository;

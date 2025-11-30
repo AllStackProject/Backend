@@ -1,6 +1,5 @@
 package app.allstackproject.privideo.domain.organization.dto.response;
 
-import app.allstackproject.privideo.dto.organization.ReadOrgDto;
 import java.util.List;
 import lombok.Getter;
 

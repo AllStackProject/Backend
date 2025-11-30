@@ -1,6 +1,6 @@
 package app.allstackproject.privideo.domain.video.service;
 
-import app.allstackproject.privideo.dto.video.QuizInfo;
+import app.allstackproject.privideo.domain.quiz.dto.QuizInfo;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;

@@ -1,8 +1,5 @@
 package app.allstackproject.privideo.domain.comment.dto.response;
 
-import app.allstackproject.privideo.dto.comment.ChildCommentDto;
-import app.allstackproject.privideo.dto.comment.CommentDto;
-import app.allstackproject.privideo.dto.comment.CommentsResult;
 import java.util.List;
 import lombok.Getter;
 

@@ -18,7 +18,7 @@ import app.allstackproject.privideo.domain.admin.dto.ReadAllVideoItem;
 import app.allstackproject.privideo.domain.admin.dto.VideoRankItem;
 import app.allstackproject.privideo.domain.organization.dto.enums.OpenScopeType;
 import app.allstackproject.privideo.domain.video.enums.FilterType;
-import app.allstackproject.privideo.dto.home.HomeVideoItem;
+import app.allstackproject.privideo.domain.home.dto.response.HomeVideoItem;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;

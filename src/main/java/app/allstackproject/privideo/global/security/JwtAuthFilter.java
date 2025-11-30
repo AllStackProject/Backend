@@ -8,7 +8,6 @@ import app.allstackproject.privideo.shared.enums.AuthPrincipal;
 import app.allstackproject.privideo.domain.organization.dto.enums.PermissionType;
 import app.allstackproject.privideo.shared.enums.TokenType;
 import app.allstackproject.privideo.global.exception.ApiException;
-import app.allstackproject.privideo.dto.organization.OrgTokenDto;
 import app.allstackproject.privideo.domain.organization.repository.OrgRedisRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;

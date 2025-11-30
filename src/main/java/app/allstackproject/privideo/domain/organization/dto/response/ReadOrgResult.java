@@ -1,4 +1,4 @@
-package app.allstackproject.privideo.dto.organization;
+package app.allstackproject.privideo.domain.organization.dto.response;
 
 import static app.allstackproject.privideo.domain.organization.dto.enums.PermissionType.NOTICE;
 import static app.allstackproject.privideo.domain.organization.dto.enums.PermissionType.ORG_SETTING;

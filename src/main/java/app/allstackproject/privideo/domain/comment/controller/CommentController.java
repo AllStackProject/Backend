@@ -7,7 +7,7 @@ import static app.allstackproject.privideo.global.util.BindingResultUtil.getErro
 import app.allstackproject.privideo.global.exception.ApiException;
 import app.allstackproject.privideo.global.response.BaseResponse;
 import app.allstackproject.privideo.global.response.SuccessResponse;
-import app.allstackproject.privideo.dto.comment.CommentsResult;
+import app.allstackproject.privideo.domain.comment.dto.response.CommentsResult;
 import app.allstackproject.privideo.domain.comment.dto.request.CreateCommentRequest;
 import app.allstackproject.privideo.domain.comment.dto.response.ReadCommentsResponse;
 import app.allstackproject.privideo.domain.comment.service.CommentService;

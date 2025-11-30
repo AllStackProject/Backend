@@ -2,7 +2,7 @@ package app.allstackproject.privideo;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import app.allstackproject.privideo.dto.video.QuizInfo;
+import app.allstackproject.privideo.domain.quiz.dto.QuizInfo;
 import app.allstackproject.privideo.domain.video.service.GeminiAiService;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;

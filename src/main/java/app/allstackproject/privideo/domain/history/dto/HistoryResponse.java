@@ -1,6 +1,5 @@
 package app.allstackproject.privideo.domain.history.dto;
 
-import app.allstackproject.privideo.dto.history.VideoHistory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

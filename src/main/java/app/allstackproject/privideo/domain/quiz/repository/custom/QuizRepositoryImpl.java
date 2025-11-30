@@ -4,7 +4,7 @@ import static app.allstackproject.privideo.domain.quiz.entity.QQuiz.quiz;
 import static app.allstackproject.privideo.domain.video.entity.QVideo.video;
 import static app.allstackproject.privideo.domain.video.enums.UploadStatusType.COMPLETE;
 
-import app.allstackproject.privideo.dto.video.QuizInfo;
+import app.allstackproject.privideo.domain.quiz.dto.QuizInfo;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;

@@ -1,4 +1,4 @@
-package app.allstackproject.privideo.dto.video;
+package app.allstackproject.privideo.domain.video.dto.response;
 
 import app.allstackproject.privideo.domain.video.entity.Video;
 import com.fasterxml.jackson.annotation.JsonIgnore;

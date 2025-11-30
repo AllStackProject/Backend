@@ -9,9 +9,9 @@ import static app.allstackproject.privideo.global.response.status.BaseExceptionR
 import app.allstackproject.privideo.global.exception.ApiException;
 import app.allstackproject.privideo.global.util.CdnUrlProvider;
 import app.allstackproject.privideo.domain.comment.dto.response.CommentResponse;
-import app.allstackproject.privideo.dto.comment.CommentsResult;
+import app.allstackproject.privideo.domain.comment.dto.response.CommentsResult;
 import app.allstackproject.privideo.domain.comment.dto.request.CreateCommentRequest;
-import app.allstackproject.privideo.dto.video.CommentInfo;
+import app.allstackproject.privideo.domain.comment.dto.response.CommentInfo;
 import app.allstackproject.privideo.domain.comment.entity.Comment;
 import app.allstackproject.privideo.domain.comment.repository.CommentRepository;
 import app.allstackproject.privideo.domain.member.repository.MemberRepository;

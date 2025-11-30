@@ -4,7 +4,7 @@ import static app.allstackproject.privideo.domain.member.entity.QMember.member;
 import static app.allstackproject.privideo.domain.organization.entity.QOrganization.organization;
 import static app.allstackproject.privideo.shared.enums.BaseStatusType.ACTIVE;
 
-import app.allstackproject.privideo.dto.organization.ReadOrgResult;
+import app.allstackproject.privideo.domain.organization.dto.response.ReadOrgResult;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;

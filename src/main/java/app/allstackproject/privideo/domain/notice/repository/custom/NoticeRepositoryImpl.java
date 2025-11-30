@@ -9,7 +9,7 @@ import static app.allstackproject.privideo.shared.enums.BaseStatusType.ACTIVE;
 
 import app.allstackproject.privideo.domain.admin.dto.AdminReadAllNoticeItem;
 import app.allstackproject.privideo.domain.organization.dto.enums.OpenScopeType;
-import app.allstackproject.privideo.dto.home.ReadAllNoticeItem;
+import app.allstackproject.privideo.domain.notice.dto.ReadAllNoticeItem;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.StringExpression;

@@ -7,7 +7,6 @@ import static app.allstackproject.privideo.global.response.status.BaseExceptionR
 import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.UNSUPPORTED_TOKEN_TYPE;
 
 import app.allstackproject.privideo.global.exception.ApiException;
-import app.allstackproject.privideo.dto.organization.OrgTokenDto;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;

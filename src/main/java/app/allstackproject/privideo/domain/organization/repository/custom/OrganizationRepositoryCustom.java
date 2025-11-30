@@ -1,6 +1,6 @@
 package app.allstackproject.privideo.domain.organization.repository.custom;
 
-import app.allstackproject.privideo.dto.organization.ReadOrgResult;
+import app.allstackproject.privideo.domain.organization.dto.response.ReadOrgResult;
 import java.util.List;
 
 public interface OrganizationRepositoryCustom {

@@ -20,7 +20,7 @@ import app.allstackproject.privideo.domain.admin.dto.MemberWatchLogItem;
 import app.allstackproject.privideo.domain.admin.dto.MonthlyWatchItem;
 import app.allstackproject.privideo.domain.admin.dto.VideoWatchLogItem;
 import app.allstackproject.privideo.domain.organization.dto.enums.OpenScopeType;
-import app.allstackproject.privideo.dto.history.VideoHistory;
+import app.allstackproject.privideo.domain.history.dto.VideoHistory;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;

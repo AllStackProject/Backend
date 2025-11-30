@@ -1,7 +1,6 @@
 package app.allstackproject.privideo.domain.video.dto.response;
 
 import app.allstackproject.privideo.domain.organization.dto.enums.OpenScopeType;
-import app.allstackproject.privideo.dto.video.VideoMemberGroupItem;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.Getter;

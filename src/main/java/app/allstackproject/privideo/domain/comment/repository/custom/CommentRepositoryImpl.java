@@ -7,7 +7,7 @@ import static app.allstackproject.privideo.shared.enums.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.domain.organization.dto.enums.JoinStatusType.APPROVED;
 import static app.allstackproject.privideo.domain.video.enums.UploadStatusType.COMPLETE;
 
-import app.allstackproject.privideo.dto.video.CommentInfo;
+import app.allstackproject.privideo.domain.comment.dto.response.CommentInfo;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;

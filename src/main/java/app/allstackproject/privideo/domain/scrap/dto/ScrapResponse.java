@@ -1,6 +1,6 @@
 package app.allstackproject.privideo.domain.scrap.dto;
 
-import app.allstackproject.privideo.dto.history.HistoryItem;
+import app.allstackproject.privideo.domain.history.dto.HistoryItem;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

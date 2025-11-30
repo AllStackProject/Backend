@@ -1,4 +1,4 @@
-package app.allstackproject.privideo.dto.home;
+package app.allstackproject.privideo.domain.home.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.List;

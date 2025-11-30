@@ -1,6 +1,5 @@
 package app.allstackproject.privideo.domain.notice.dto;
 
-import app.allstackproject.privideo.dto.home.ReadAllNoticeItem;
 import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

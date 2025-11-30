@@ -1,4 +1,4 @@
-package app.allstackproject.privideo.dto.organization;
+package app.allstackproject.privideo.global.security;
 
 import lombok.Builder;
 import lombok.Getter;

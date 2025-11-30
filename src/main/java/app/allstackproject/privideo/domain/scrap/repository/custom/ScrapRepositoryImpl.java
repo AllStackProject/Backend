@@ -10,7 +10,7 @@ import static app.allstackproject.privideo.domain.video.entity.QVideoMemberGroup
 import static app.allstackproject.privideo.domain.video.enums.UploadStatusType.COMPLETE;
 import static app.allstackproject.privideo.shared.enums.BaseStatusType.ACTIVE;
 
-import app.allstackproject.privideo.dto.history.HistoryItem;
+import app.allstackproject.privideo.domain.history.dto.HistoryItem;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;

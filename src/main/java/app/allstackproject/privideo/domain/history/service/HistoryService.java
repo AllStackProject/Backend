@@ -1,4 +1,4 @@
-package app.allstackproject.privideo.domain.video.service;
+package app.allstackproject.privideo.domain.history.service;
 
 import static app.allstackproject.privideo.shared.enums.BaseStatusType.ACTIVE;
 import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.MEMBER_NOT_IN_ORGANIZATION;
@@ -6,11 +6,12 @@ import static app.allstackproject.privideo.global.response.status.BaseExceptionR
 import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.VIDEO_NOT_IN_ORGANIZATION;
 import static app.allstackproject.privideo.domain.video.service.LogService.SEGMENT_SECONDS;
 
+import app.allstackproject.privideo.domain.video.service.LogService;
 import app.allstackproject.privideo.global.exception.ApiException;
 import app.allstackproject.privideo.global.util.CdnUrlProvider;
 import app.allstackproject.privideo.domain.admin.dto.VideoIntervalLogItem;
 import app.allstackproject.privideo.domain.history.dto.HistoryResponse;
-import app.allstackproject.privideo.dto.history.VideoHistory;
+import app.allstackproject.privideo.domain.history.dto.VideoHistory;
 import app.allstackproject.privideo.domain.video.entity.Video;
 import app.allstackproject.privideo.domain.history.repository.HistoryRepository;
 import app.allstackproject.privideo.domain.member.repository.MemberRepository;

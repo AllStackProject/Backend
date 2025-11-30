@@ -6,7 +6,7 @@ import app.allstackproject.privideo.domain.admin.dto.MemberAvgWatchRateDto;
 import app.allstackproject.privideo.domain.admin.dto.MemberWatchLogItem;
 import app.allstackproject.privideo.domain.admin.dto.MonthlyWatchItem;
 import app.allstackproject.privideo.domain.admin.dto.VideoWatchLogItem;
-import app.allstackproject.privideo.dto.history.VideoHistory;
+import app.allstackproject.privideo.domain.history.dto.VideoHistory;
 import java.time.LocalDateTime;
 import java.util.List;
 

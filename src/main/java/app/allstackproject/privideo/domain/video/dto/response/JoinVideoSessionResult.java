@@ -1,6 +1,7 @@
-package app.allstackproject.privideo.dto.video;
+package app.allstackproject.privideo.domain.video.dto.response;
 
 import app.allstackproject.privideo.domain.video.enums.AiFunctionType;
+import app.allstackproject.privideo.domain.quiz.dto.QuizInfo;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;

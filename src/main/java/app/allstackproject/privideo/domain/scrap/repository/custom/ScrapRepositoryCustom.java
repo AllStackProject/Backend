@@ -1,6 +1,6 @@
 package app.allstackproject.privideo.domain.scrap.repository.custom;
 
-import app.allstackproject.privideo.dto.history.HistoryItem;
+import app.allstackproject.privideo.domain.history.dto.HistoryItem;
 import java.util.List;
 
 public interface ScrapRepositoryCustom {

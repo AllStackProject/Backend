@@ -16,7 +16,7 @@ import app.allstackproject.privideo.domain.history.dto.HistoryResponse;
 import app.allstackproject.privideo.domain.comment.service.CommentService;
 import app.allstackproject.privideo.domain.organization.service.OrganizationService;
 import app.allstackproject.privideo.domain.scrap.service.ScrapService;
-import app.allstackproject.privideo.domain.video.service.HistoryService;
+import app.allstackproject.privideo.domain.history.service.HistoryService;
 import app.allstackproject.privideo.domain.video.service.VideoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;

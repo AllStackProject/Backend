@@ -1,4 +1,4 @@
-package app.allstackproject.privideo.dto.video;
+package app.allstackproject.privideo.domain.quiz.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

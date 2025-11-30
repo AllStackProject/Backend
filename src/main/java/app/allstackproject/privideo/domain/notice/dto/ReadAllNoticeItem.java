@@ -1,4 +1,4 @@
-package app.allstackproject.privideo.dto.home;
+package app.allstackproject.privideo.domain.notice.dto;
 
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
