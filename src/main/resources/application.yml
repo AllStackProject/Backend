@@ -108,10 +108,10 @@ spring:
     hibernate:
       ddl-auto: validate
 
-    properties:
-      hibernate:
-        format_sql: true
-        show_sql: true
+#    properties:
+#      hibernate:
+#        format_sql: true
+#        show_sql: true
 ---
 spring:
   config:
