@@ -34,6 +34,7 @@ spring:
 logging:
   level:
     org.hibernate.sql: debug
+    app.allstackproject.privideo: debug
 ---
 spring:
   config:
