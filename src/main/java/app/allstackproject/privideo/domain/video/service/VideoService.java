@@ -1,15 +1,15 @@
 package app.allstackproject.privideo.domain.video.service;
 
+import static app.allstackproject.privideo.domain.organization.dto.enums.OpenScopeType.GROUP;
+import static app.allstackproject.privideo.domain.organization.dto.enums.OpenScopeType.PUBLIC;
 import static app.allstackproject.privideo.domain.video.enums.AiFunctionType.FEEDBACK;
 import static app.allstackproject.privideo.domain.video.enums.AiFunctionType.NONE;
 import static app.allstackproject.privideo.domain.video.enums.AiFunctionType.QUIZ;
 import static app.allstackproject.privideo.domain.video.enums.AiFunctionType.SUMMARY;
-import static app.allstackproject.privideo.shared.enums.BaseStatusType.ACTIVE;
-import static app.allstackproject.privideo.domain.organization.dto.enums.OpenScopeType.GROUP;
-import static app.allstackproject.privideo.domain.organization.dto.enums.OpenScopeType.PUBLIC;
 import static app.allstackproject.privideo.domain.video.enums.S3ImgType.THUMBNAIL;
 import static app.allstackproject.privideo.domain.video.enums.UploadStatusType.COMPLETE;
 import static app.allstackproject.privideo.domain.video.enums.UploadStatusType.FAIL;
+import static app.allstackproject.privideo.domain.video.service.LogService.SEGMENT_SECONDS;
 import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.CATEGORY_NOT_FOUND;
 import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.HISTORY_NOT_FOUND;
 import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.INVALID_AIRFLOW_STATUS;
@@ -27,48 +27,48 @@ import static app.allstackproject.privideo.global.response.status.BaseExceptionR
 import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.VIDEO_NOT_ACCESSIBLE;
 import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.VIDEO_NOT_FOUND;
 import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.VIDEO_NOT_IN_ORGANIZATION;
-import static app.allstackproject.privideo.domain.video.service.LogService.SEGMENT_SECONDS;
+import static app.allstackproject.privideo.shared.enums.BaseStatusType.ACTIVE;
 
-import app.allstackproject.privideo.domain.video.enums.AiFunctionType;
-import app.allstackproject.privideo.domain.organization.dto.enums.OpenScopeType;
-import app.allstackproject.privideo.domain.video.enums.UploadStatusType;
-import app.allstackproject.privideo.global.exception.ApiException;
-import app.allstackproject.privideo.global.response.SuccessResponse;
-import app.allstackproject.privideo.global.util.CdnUrlProvider;
-import app.allstackproject.privideo.global.util.S3Util;
 import app.allstackproject.privideo.domain.admin.dto.ReadAllVideoItem;
+import app.allstackproject.privideo.domain.comment.repository.CommentRepository;
+import app.allstackproject.privideo.domain.history.entity.History;
+import app.allstackproject.privideo.domain.history.repository.HistoryRepository;
+import app.allstackproject.privideo.domain.member.entity.Member;
+import app.allstackproject.privideo.domain.member.entity.MemberGroup;
+import app.allstackproject.privideo.domain.member.entity.MemberGroupMapping;
+import app.allstackproject.privideo.domain.member.repository.MemberGroupMappingRepository;
+import app.allstackproject.privideo.domain.member.repository.MemberGroupRepository;
+import app.allstackproject.privideo.domain.member.repository.MemberRepository;
+import app.allstackproject.privideo.domain.organization.dto.enums.OpenScopeType;
+import app.allstackproject.privideo.domain.organization.entity.Organization;
+import app.allstackproject.privideo.domain.organization.repository.OrganizationRepository;
+import app.allstackproject.privideo.domain.quiz.dto.QuizInfo;
+import app.allstackproject.privideo.domain.quiz.repository.QuizRepository;
+import app.allstackproject.privideo.domain.scrap.repository.ScrapRepository;
 import app.allstackproject.privideo.domain.video.dto.request.CreateVideoRequest;
-import app.allstackproject.privideo.domain.video.dto.response.CreateVideoResponse;
-import app.allstackproject.privideo.domain.video.dto.response.JoinVideoSessionResult;
 import app.allstackproject.privideo.domain.video.dto.request.LeaveVideoSessionInfo;
 import app.allstackproject.privideo.domain.video.dto.request.ModifyVideoRequest;
-import app.allstackproject.privideo.domain.quiz.dto.QuizInfo;
+import app.allstackproject.privideo.domain.video.dto.response.CreateVideoResponse;
+import app.allstackproject.privideo.domain.video.dto.response.JoinVideoSessionResult;
 import app.allstackproject.privideo.domain.video.dto.response.ReadVideoInfoResponse;
 import app.allstackproject.privideo.domain.video.dto.response.VideoCategoryItem;
 import app.allstackproject.privideo.domain.video.dto.response.VideoInfo;
 import app.allstackproject.privideo.domain.video.dto.response.VideoMemberGroupItem;
 import app.allstackproject.privideo.domain.video.entity.Category;
-import app.allstackproject.privideo.domain.history.entity.History;
-import app.allstackproject.privideo.domain.member.entity.Member;
-import app.allstackproject.privideo.domain.member.entity.MemberGroup;
-import app.allstackproject.privideo.domain.member.entity.MemberGroupMapping;
-import app.allstackproject.privideo.domain.organization.entity.Organization;
 import app.allstackproject.privideo.domain.video.entity.Video;
 import app.allstackproject.privideo.domain.video.entity.VideoCategoryMapping;
 import app.allstackproject.privideo.domain.video.entity.VideoMemberGroupMapping;
-import app.allstackproject.privideo.domain.comment.repository.CommentRepository;
-import app.allstackproject.privideo.domain.history.repository.HistoryRepository;
-import app.allstackproject.privideo.domain.member.repository.MemberGroupMappingRepository;
-import app.allstackproject.privideo.domain.member.repository.MemberGroupRepository;
-import app.allstackproject.privideo.domain.member.repository.MemberRepository;
-import app.allstackproject.privideo.domain.organization.repository.OrganizationRepository;
-import app.allstackproject.privideo.domain.quiz.repository.QuizRepository;
-import app.allstackproject.privideo.domain.scrap.repository.ScrapRepository;
+import app.allstackproject.privideo.domain.video.enums.AiFunctionType;
+import app.allstackproject.privideo.domain.video.enums.UploadStatusType;
 import app.allstackproject.privideo.domain.video.repository.CategoryRepository;
 import app.allstackproject.privideo.domain.video.repository.VideoCategoryMappingRepository;
 import app.allstackproject.privideo.domain.video.repository.VideoMemberGroupMappingRepository;
 import app.allstackproject.privideo.domain.video.repository.VideoRedisRepository;
 import app.allstackproject.privideo.domain.video.repository.VideoRepository;
+import app.allstackproject.privideo.global.exception.ApiException;
+import app.allstackproject.privideo.global.response.SuccessResponse;
+import app.allstackproject.privideo.global.util.CdnUrlProvider;
+import app.allstackproject.privideo.global.util.S3Util;
 import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -110,7 +110,8 @@ public class VideoService {
     private final MemberGroupMappingRepository memberGroupMappingRepository;
     private final VideoRedisRepository videoRedisRepository;
 
-    public JoinVideoSessionResult joinVideoSession(Long memberId, Long orgId, Long videoId) {
+    @Transactional(readOnly = true)
+    public JoinVideoSessionResult prepareJoinVideoSession(Long memberId, Long orgId, Long videoId) {
         Member member = memberRepository.findByIdAndOrganizationIdAndStatus(memberId, orgId, ACTIVE)
                 .orElseThrow(() -> new ApiException(MEMBER_NOT_IN_ORGANIZATION));
 
@@ -121,7 +122,8 @@ public class VideoService {
         }
 
         String sessionId = UUID.nameUUIDFromBytes(
-                (memberId.toString() + videoId.toString()).getBytes(StandardCharsets.UTF_8)).toString();
+                (memberId.toString() + videoId.toString()).getBytes(StandardCharsets.UTF_8)
+        ).toString();
 
         if (videoRedisRepository.existsWatchSession(sessionId)) {
             throw new ApiException(VIDEO_ALREADY_WATCHING);
@@ -131,15 +133,13 @@ public class VideoService {
             throw new ApiException(VIDEO_NOT_ACCESSIBLE);
         }
 
-        videoRedisRepository.createWatchSession(sessionId, memberId);
-        video.watch();
-
         String playbackUrl = s3Util.generatePlaybackUrl(video.getHlsPrefix());
-
         VideoInfo videoInfo = VideoInfo.from(video);
 
-        List<Long> segViewCnts = logService.getSegViewCounts(videoId,
-                (int) Math.ceil((double) video.getWholeTime() / SEGMENT_SECONDS));
+        List<Long> segViewCnts = logService.getSegViewCounts(
+                videoId,
+                (int) Math.ceil((double) video.getWholeTime() / SEGMENT_SECONDS)
+        );
 
         boolean isScrapped = scrapRepository.existsByMemberIdAndVideoId(memberId, videoId);
         List<String> categories = categoryRepository.findAllByVideoId(videoId);
@@ -157,20 +157,48 @@ public class VideoService {
         }
 
         Optional<History> history = historyRepository.findByMemberIdAndVideoId(memberId, videoId);
-        if (history.isPresent()) {
-            if (history.get().isComplete()) {
-                return JoinVideoSessionResult.completed(sessionId, playbackUrl, videoInfo, segViewCnts,
-                        video.getIsComment(), isScrapped, categories, aiType, quizInfos, aiFeedback, aiSummary);
-            }
-        } else {
-            History newHistory = History.create(member, video);
-            historyRepository.save(newHistory);
+        boolean completed = history.isPresent() && history.get().isComplete();
+
+        if (completed) {
+            return JoinVideoSessionResult.completed(
+                    sessionId, playbackUrl, videoInfo, segViewCnts,
+                    video.getIsComment(), isScrapped, categories, aiType, quizInfos, aiFeedback, aiSummary
+            );
         }
 
-        logService.incOrgViewBucket(orgId, Instant.now());
+        return JoinVideoSessionResult.create(
+                sessionId, playbackUrl, videoInfo, segViewCnts,
+                video.getIsComment(), isScrapped, categories, aiType, quizInfos, aiFeedback, aiSummary
+        );
+    }
 
-        return JoinVideoSessionResult.create(sessionId, playbackUrl, videoInfo, segViewCnts, video.getIsComment(),
-                isScrapped, categories, aiType, quizInfos, aiFeedback, aiSummary);
+    public void openWatchSession(String sessionId, Long memberId, Long orgId, Long videoId) {
+        if (videoRedisRepository.existsWatchSession(sessionId)) {
+            throw new ApiException(VIDEO_ALREADY_WATCHING);
+        }
+
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
+        if (!video.getOrganization().getId().equals(orgId)) {
+            throw new ApiException(VIDEO_NOT_IN_ORGANIZATION);
+        }
+
+        History history = historyRepository.findByMemberIdAndVideoId(memberId, videoId)
+                .orElseGet(() -> History.create(
+                        memberRepository.getReferenceById(memberId),
+                        video
+                ));
+
+        if (history.getId() == null) {
+            historyRepository.save(history);
+        }
+
+        video.watch();
+        videoRedisRepository.createWatchSession(sessionId, memberId);
+
+        if (!history.isComplete()) {
+            logService.incOrgViewBucket(orgId, Instant.now());
+        }
     }
 
     public boolean leaveVideoSession(LeaveVideoSessionInfo leaveVideoSessionInfo) {

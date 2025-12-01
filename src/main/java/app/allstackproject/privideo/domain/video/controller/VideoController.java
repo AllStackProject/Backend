@@ -104,10 +104,17 @@ public class VideoController {
             @PathVariable Long orgId,
             @PathVariable Long videoId,
             HttpServletResponse response) {
-        JoinVideoSessionResult joinVideoSessionResult = videoService.joinVideoSession(me.memberId(), orgId, videoId);
-        cloudFrontCookieService.addSignedCookies(response, joinVideoSessionResult.getVideo().getHlsPrefix());
+        JoinVideoSessionResult result = videoService.prepareJoinVideoSession(me.memberId(), orgId, videoId);
 
-        return new BaseResponse<>(JoinVideoSessionResponse.from(joinVideoSessionResult));
+        cloudFrontCookieService.addSignedCookies(response, result.getVideo().getHlsPrefix());
+
+        videoService.openWatchSession(
+                result.getSessionId(),
+                me.memberId(),
+                orgId,
+                videoId
+        );
+        return new BaseResponse<>(JoinVideoSessionResponse.from(result));
     }
 
     @PostMapping("/{videoId}/leave")
