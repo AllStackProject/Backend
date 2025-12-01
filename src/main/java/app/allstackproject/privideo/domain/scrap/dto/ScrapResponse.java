@@ -1,0 +1,20 @@
+package app.allstackproject.privideo.domain.scrap.dto;
+
+import app.allstackproject.privideo.domain.history.dto.HistoryItem;
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class ScrapResponse {
+
+    private List<HistoryItem> allScrap;
+
+    public static ScrapResponse of(List<HistoryItem> historyItems) {
+        return new ScrapResponse(historyItems);
+    }
+}
+
