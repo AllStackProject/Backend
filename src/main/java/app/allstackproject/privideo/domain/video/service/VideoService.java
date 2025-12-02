@@ -81,12 +81,10 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -360,7 +358,6 @@ public class VideoService {
     }
 
     public SuccessResponse updateVideoEncodingResult(Long orgId, String videoUuid, String status) {
-        log.debug("====== updateVideoEncodingResult start ======");
         String videoKey = s3Util.generateVideoKey(orgId, videoUuid);
         Video video = videoRepository.findByVideoKey(videoKey)
                 .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
@@ -370,16 +367,12 @@ public class VideoService {
             throw new ApiException(VIDEO_NOT_IN_ORGANIZATION);
         }
 
-        log.debug("====== updateVideoEncodingResult status: " + status + " ======");
         if (status.equals("SUCCESS")) {
             AiFunctionType aiFunction = video.getAiFunctionType();
-            log.debug("====== updateVideoEncodingResult aiFunction: " + aiFunction + " ======");
             if (!aiFunction.equals(NONE)) {
-                log.info("AI 기능 처리 시작: videoId={}, function={}", videoId, aiFunction);
                 aiFunctionService.processAiFunction(videoId, videoKey, aiFunction);
             }
 
-            log.debug("====== updateVideoEncodingResult prev uploadStatus: " + video.getUploadStatus() + " ======");
             video.setUploadStatus(COMPLETE);
         } else if (status.equals("FAILED")) {
             videoMemberGroupMappingRepository.deleteAllByVideoId(videoId);
@@ -392,12 +385,10 @@ public class VideoService {
             throw new ApiException(INVALID_AIRFLOW_STATUS);
         }
 
-        log.debug("====== updateVideoEncodingResult after uploadStatus: " + video.getUploadStatus() + " ======");
         return SuccessResponse.of(true);
     }
 
     public UploadStatusType readVideoEncodingResult(Long memberId, Long orgId, Long videoId) {
-        log.debug("====== readVideoEncodingResult start ======");
         Video video = videoRepository.findById(videoId)
                 .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
         if (!video.getOrganization().getId().equals(orgId)) {
@@ -408,7 +399,6 @@ public class VideoService {
         }
 
         UploadStatusType uploadStatus = video.getUploadStatus();
-        log.debug("====== readVideoEncodingResult uploadStatus: " + uploadStatus + " ======");
 
         if (uploadStatus.equals(FAIL)) {
             videoRepository.delete(video);

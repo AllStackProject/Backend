@@ -146,3 +146,10 @@ rtzr:
     client-id: ${RTZR_CLIENT_ID}
     client-secret: ${RTZR_CLIENT_SECRET}
     base-url: ${RTZR_BASE_URL}
+
+---
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
