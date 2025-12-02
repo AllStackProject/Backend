@@ -3,7 +3,7 @@ WORKDIR /workspace
 COPY . .
 RUN gradle clean build -x test
 
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 COPY --from=builder /workspace/build/libs/*-SNAPSHOT.jar /app/app.jar
 EXPOSE 8080
