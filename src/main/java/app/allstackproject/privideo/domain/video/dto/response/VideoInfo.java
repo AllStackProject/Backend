@@ -22,21 +22,24 @@ public class VideoInfo {
 
     private final Long wholeTime;
 
+    private final Long recentPositionSec;
+
     private final LocalDateTime createdAt;
 
     @Builder(access = AccessLevel.PRIVATE)
     private VideoInfo(Long id, String title, String description, String hlsPrefix, Long watchCnt, Long wholeTime,
-                      LocalDateTime createdAt) {
+                      Long recentPositionSec, LocalDateTime createdAt) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.hlsPrefix = hlsPrefix;
         this.watchCnt = watchCnt;
         this.wholeTime = wholeTime;
+        this.recentPositionSec = recentPositionSec;
         this.createdAt = createdAt;
     }
 
-    public static VideoInfo from(Video video) {
+    public static VideoInfo from(Video video, Long recentPositionSec) {
         return VideoInfo.builder()
                 .id(video.getId())
                 .title(video.getTitle())
@@ -44,6 +47,7 @@ public class VideoInfo {
                 .hlsPrefix(video.getHlsPrefix())
                 .watchCnt(video.getWatchCnt())
                 .wholeTime(video.getWholeTime())
+                .recentPositionSec(recentPositionSec)
                 .createdAt(video.getCreatedAt())
                 .build();
     }

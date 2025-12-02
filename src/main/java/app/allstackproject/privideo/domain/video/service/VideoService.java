@@ -134,7 +134,6 @@ public class VideoService {
         }
 
         String playbackUrl = s3Util.generatePlaybackUrl(video.getHlsPrefix());
-        VideoInfo videoInfo = VideoInfo.from(video);
 
         List<Long> segViewCnts = logService.getSegViewCounts(
                 videoId,
@@ -156,18 +155,21 @@ public class VideoService {
             quizInfos = quizRepository.findAllByVideoId(videoId);
         }
 
+        Long recentPositionSec = 0L;
         Optional<History> history = historyRepository.findByMemberIdAndVideoId(memberId, videoId);
-        boolean completed = history.isPresent() && history.get().isComplete();
 
-        if (completed) {
-            return JoinVideoSessionResult.completed(
-                    sessionId, playbackUrl, videoInfo, segViewCnts,
-                    video.getIsComment(), isScrapped, categories, aiType, quizInfos, aiFeedback, aiSummary
-            );
+        if (history.isPresent()) {
+            recentPositionSec = history.get().getRecentPositionSec();
+            if (history.get().isComplete()) {
+                return JoinVideoSessionResult.completed(
+                        sessionId, playbackUrl, VideoInfo.from(video, recentPositionSec), segViewCnts,
+                        video.getIsComment(), isScrapped, categories, aiType, quizInfos, aiFeedback, aiSummary
+                );
+            }
         }
 
         return JoinVideoSessionResult.create(
-                sessionId, playbackUrl, videoInfo, segViewCnts,
+                sessionId, playbackUrl, VideoInfo.from(video, recentPositionSec), segViewCnts,
                 video.getIsComment(), isScrapped, categories, aiType, quizInfos, aiFeedback, aiSummary
         );
     }
