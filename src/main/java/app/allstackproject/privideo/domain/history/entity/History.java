@@ -79,7 +79,7 @@ public class History extends BaseEntity {
     }
 
     public void update(Long watchRate, Long recentPositionSec, boolean hadEnd) {
-        this.watchRate = watchRate;
+        this.watchRate = Math.max(this.watchRate, watchRate);
         this.recentPositionSec = recentPositionSec;
         this.hadEnd = hadEnd;
 
