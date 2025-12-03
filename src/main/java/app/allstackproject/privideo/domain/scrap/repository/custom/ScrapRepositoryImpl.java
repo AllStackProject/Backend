@@ -1,6 +1,5 @@
 package app.allstackproject.privideo.domain.scrap.repository.custom;
 
-import static app.allstackproject.privideo.domain.history.entity.QHistory.history;
 import static app.allstackproject.privideo.domain.member.entity.QMember.member;
 import static app.allstackproject.privideo.domain.member.entity.QMemberGroupMapping.memberGroupMapping;
 import static app.allstackproject.privideo.domain.organization.dto.enums.JoinStatusType.APPROVED;
@@ -93,7 +92,8 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
                         scrap.member.joinStatus.eq(APPROVED),
                         video.organization.id.eq(orgId)
                 )
-                .orderBy(history.lastWatchedAt.desc())
+                .orderBy(
+                        scrap.createdAt.desc())
                 .fetch();
     }
 }
