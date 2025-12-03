@@ -13,8 +13,10 @@ import static app.allstackproject.privideo.shared.enums.BaseStatusType.ACTIVE;
 import app.allstackproject.privideo.domain.history.dto.HistoryItem;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 
@@ -73,34 +75,23 @@ public class ScrapRepositoryImpl implements ScrapRepositoryCustom {
 
     @Override
     public List<HistoryItem> findByMemberIdAndOrganizationId(Long memberId, Long orgId) {
-        BooleanExpression scrappedExists = JPAExpressions
-                .selectOne()
-                .from(scrap)
-                .where(
-                        scrap.member.id.eq(memberId),
-                        scrap.video.id.eq(history.video.id),
-                        scrap.video.uploadStatus.eq(COMPLETE)
-                )
-                .exists();
-
         return jpaQueryFactory
                 .select(Projections.constructor(
                         HistoryItem.class,
                         video.id,
                         video.title,
                         video.thumbnailKey,
-                        history.watchRate,
-                        history.lastWatchedAt,
+                        Expressions.constant(0L),
+                        Expressions.constant(LocalDateTime.now()),
                         video.wholeTime
                 ))
-                .from(history)
-                .join(history.video, video)
+                .from(scrap)
+                .join(scrap.video, video)
                 .where(
-                        history.member.id.eq(memberId),
-                        history.member.status.eq(ACTIVE),
-                        history.member.joinStatus.eq(APPROVED),
-                        video.organization.id.eq(orgId),
-                        scrappedExists
+                        scrap.member.id.eq(memberId),
+                        scrap.member.status.eq(ACTIVE),
+                        scrap.member.joinStatus.eq(APPROVED),
+                        video.organization.id.eq(orgId)
                 )
                 .orderBy(history.lastWatchedAt.desc())
                 .fetch();
