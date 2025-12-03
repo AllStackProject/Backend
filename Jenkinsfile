@@ -146,7 +146,7 @@ spec:
       def commitAuthor = sh(script: "git log -1 --pretty=format:'%an'", returnStdout: true).trim()
       def commitMsg = sh(script: "git log -1 --pretty=format:'%s'", returnStdout: true).trim()
       def commitHash = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-      def timestamp = BUILD_TIMESTAMP
+      def timestamp = new Date().format("yyyy-MM-dd HH:mm:ss")
       def imageTag = BUILD_NUMBER
 
       if (currentBuild.result == 'SUCCESS') {
