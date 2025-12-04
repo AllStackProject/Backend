@@ -1,10 +1,7 @@
 package app.allstackproject.privideo.domain.user.service;
 
-import static app.allstackproject.privideo.shared.enums.BaseStatusType.ACTIVE;
-import static app.allstackproject.privideo.shared.enums.BaseStatusType.INACTIVE;
 import static app.allstackproject.privideo.domain.organization.dto.enums.JoinStatusType.PENDING;
 import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.ALREADY_LEAVED_USER;
-import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.DB_CONSTRAINT_VIOLATE;
 import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.DUPLICATE_EMAIL;
 import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.INVALID_ORG_CODE;
 import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.INVALID_PASSWORD;
@@ -12,25 +9,26 @@ import static app.allstackproject.privideo.global.response.status.BaseExceptionR
 import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.PASSWORD_MISMATCH;
 import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.PASSWORD_SAME_AS_CURRENT;
 import static app.allstackproject.privideo.global.response.status.BaseExceptionResponseStatus.USER_NOT_FOUND;
+import static app.allstackproject.privideo.shared.enums.BaseStatusType.ACTIVE;
+import static app.allstackproject.privideo.shared.enums.BaseStatusType.INACTIVE;
 
+import app.allstackproject.privideo.domain.member.entity.Member;
+import app.allstackproject.privideo.domain.member.repository.MemberRepository;
+import app.allstackproject.privideo.domain.organization.entity.Organization;
+import app.allstackproject.privideo.domain.organization.repository.OrgRedisRepository;
+import app.allstackproject.privideo.domain.organization.repository.OrganizationRepository;
 import app.allstackproject.privideo.domain.user.dto.enums.GenderType;
-import app.allstackproject.privideo.global.exception.ApiException;
-import app.allstackproject.privideo.global.security.JwtProvider;
 import app.allstackproject.privideo.domain.user.dto.request.PostLoginRequest;
 import app.allstackproject.privideo.domain.user.dto.request.PostSignupRequest;
 import app.allstackproject.privideo.domain.user.dto.request.UpdateUserInfoRequest;
 import app.allstackproject.privideo.domain.user.dto.response.UserInfoResponse;
-import app.allstackproject.privideo.domain.member.entity.Member;
-import app.allstackproject.privideo.domain.organization.entity.Organization;
 import app.allstackproject.privideo.domain.user.entity.User;
-import app.allstackproject.privideo.domain.member.repository.MemberRepository;
-import app.allstackproject.privideo.domain.organization.repository.OrgRedisRepository;
-import app.allstackproject.privideo.domain.organization.repository.OrganizationRepository;
 import app.allstackproject.privideo.domain.user.repository.UserRepository;
+import app.allstackproject.privideo.global.exception.ApiException;
+import app.allstackproject.privideo.global.security.JwtProvider;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,11 +63,7 @@ public class UserService {
                 postSignupRequest.getAge()
         ).hashPassword(passwordEncoder);
 
-        try {
-            userRepository.save(user);
-        } catch (DataIntegrityViolationException e) {
-            throw new ApiException(DB_CONSTRAINT_VIOLATE);
-        }
+        userRepository.save(user);
 
         String orgCode = postSignupRequest.getOrganizationCode();
         if (orgCode != null && !orgCode.isBlank()) {
