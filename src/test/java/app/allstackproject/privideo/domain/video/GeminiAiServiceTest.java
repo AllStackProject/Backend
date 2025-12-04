@@ -1,4 +1,4 @@
-package app.allstackproject.privideo;
+package app.allstackproject.privideo.domain.video;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
