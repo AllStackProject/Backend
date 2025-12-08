@@ -106,7 +106,10 @@ public class VideoController {
             HttpServletResponse response) {
         JoinVideoSessionResult result = videoService.prepareJoinVideoSession(me.memberId(), orgId, videoId);
 
-        cloudFrontCookieService.addSignedCookies(response, result.getVideo().getHlsPrefix());
+        boolean isCloudFrontSuccess = cloudFrontCookieService.addSignedCookies(
+                response,
+                result.getVideo().getHlsPrefix()
+        );
 
         videoService.openWatchSession(
                 result.getSessionId(),
@@ -114,7 +117,15 @@ public class VideoController {
                 orgId,
                 videoId
         );
-        return new BaseResponse<>(JoinVideoSessionResponse.from(result));
+
+        JoinVideoSessionResponse joinResponse = JoinVideoSessionResponse.from(result);
+        if (!isCloudFrontSuccess) {
+            String s3FallbackUrl = videoService.getFallbackPlaybackUrl(result.getVideo().getHlsPrefix());
+            joinResponse.setPlaybackUrl(s3FallbackUrl);
+            joinResponse.setFallbackToS3(true);
+        }
+
+        return new BaseResponse<>(joinResponse);
     }
 
     @PostMapping("/{videoId}/leave")
