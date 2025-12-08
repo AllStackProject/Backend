@@ -201,6 +201,10 @@ public class VideoService {
         }
     }
 
+    public String getFallbackPlaybackUrl(String hlsPrefix) {
+        return s3Util.generatePlaybackUrl(hlsPrefix);
+    }
+
     public boolean leaveVideoSession(LeaveVideoSessionInfo leaveVideoSessionInfo) {
         String sessionId = leaveVideoSessionInfo.getSessionId();
         if (!videoRedisRepository.existsWatchSession(sessionId)) {

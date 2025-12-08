@@ -36,9 +36,33 @@ public class CloudFrontCookieService {
     @Value("${cloud.aws.cloudfront.cookie-domain}")
     private String COOKIE_DOMAIN;
 
+    @Value("${cloud.aws.cloudfront.fallback-enabled:true}")
+    private boolean fallbackEnabled;
+
     private PrivateKey cachedPrivateKey;
 
-    public void addSignedCookies(HttpServletResponse response, String videoHlsPrefix) {
+    /**
+     * CloudFront 서명된 쿠키 추가 (실패 시 fallback 처리)
+     *
+     * @return true if CloudFront cookies added, false if fallback to S3
+     */
+    public boolean addSignedCookies(HttpServletResponse response, String videoHlsPrefix) {
+        if (!fallbackEnabled) {
+            addSignedCookiesInternal(response, videoHlsPrefix);
+            return true;
+        }
+
+        try {
+            addSignedCookiesInternal(response, videoHlsPrefix);
+            log.info("CloudFront signed cookies added successfully for: {}", videoHlsPrefix);
+            return true;
+        } catch (Exception e) {
+            log.error("CloudFront signing failed, falling back to S3 direct access: {}", videoHlsPrefix, e);
+            return false;
+        }
+    }
+
+    private void addSignedCookiesInternal(HttpServletResponse response, String videoHlsPrefix) {
         long expirationTime = Instant.now().getEpochSecond() + COOKIE_TTL_SECONDS;
 
         String resource = String.format(

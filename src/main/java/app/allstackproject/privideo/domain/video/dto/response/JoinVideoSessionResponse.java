@@ -2,14 +2,17 @@ package app.allstackproject.privideo.domain.video.dto.response;
 
 import app.allstackproject.privideo.domain.video.enums.AiFunctionType;
 import app.allstackproject.privideo.domain.quiz.dto.QuizInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 public class JoinVideoSessionResponse {
     private final String sessionId;
 
-    private final String playbackUrl;
+    @Setter
+    private String playbackUrl;
 
     private final Boolean watchCompleted;
 
@@ -31,10 +34,14 @@ public class JoinVideoSessionResponse {
 
     private final String aiSummary;
 
+    @Setter
+    @JsonIgnore
+    private Boolean fallbackToS3;
+
     private JoinVideoSessionResponse(String sessionId, String playbackUrl, Boolean watchCompleted, VideoInfo video,
                                      List<Long> segViewCnts, Boolean isComment, Boolean isScrapped,
                                      List<String> categories, AiFunctionType aiType, List<QuizInfo> aiQuizzes,
-                                     String aiFeedback, String aiSummary) {
+                                     String aiFeedback, String aiSummary, Boolean fallbackToS3) {
         this.sessionId = sessionId;
         this.playbackUrl = playbackUrl;
         this.watchCompleted = watchCompleted;
@@ -47,12 +54,13 @@ public class JoinVideoSessionResponse {
         this.aiQuizzes = aiQuizzes == null ? List.of() : List.copyOf(aiQuizzes);
         this.aiFeedback = aiFeedback;
         this.aiSummary = aiSummary;
+        this.fallbackToS3 = fallbackToS3;
     }
 
     public static JoinVideoSessionResponse from(JoinVideoSessionResult result) {
         return new JoinVideoSessionResponse(result.getSessionId(), result.getPlaybackUrl(), result.getWatchCompleted(),
                 result.getVideo(), result.getSegViewCnts(), result.getIsComment(), result.getIsScrapped(),
                 result.getCategories(), result.getAiType(), result.getAiQuizzes(), result.getAiFeedback(),
-                result.getAiSummary());
+                result.getAiSummary(), false);
     }
 }
