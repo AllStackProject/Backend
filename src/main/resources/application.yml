@@ -91,12 +91,14 @@ cloud:
         output: ${AWS_OUTPUT_BUCKET}
       presign:
         upload-expiration: ${AWS_UPLOAD_EXPIRATION}
+        playback-expiration: PT1H
     cloudfront:
       distribution-domain: ${CDN_BASE_URL}
       cookie-domain: ${COOKIE_DOMAIN}
       key-pair-id: ${CF_KEY_PAIR_ID}
       cookie-ttl-seconds: ${CF_COOKIE_TTL}
       private-key-base64: ${CF_PRIVATE_KEY_BASE64}
+      fallback-enabled: true
 ---
 
 spring:
