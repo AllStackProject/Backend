@@ -35,7 +35,7 @@ public class PostSignupRequest {
     @AgeTypeConstraint
     private Integer age;
 
-    @NotBlank(message = "비밀번호를 입력해주세요.")
+    @NotBlank(message = "전화번호를 입력해주세요.")
     private String phoneNumber;
 
     private String organizationCode;

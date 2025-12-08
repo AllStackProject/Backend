@@ -4,9 +4,11 @@ import app.allstackproject.privideo.domain.organization.dto.enums.OpenScopeType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
+@NoArgsConstructor
 public class ReadAllVideoItem {
     private Long id;
 
