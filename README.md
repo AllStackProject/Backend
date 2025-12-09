@@ -75,7 +75,7 @@
 
 > 도메인 단위로 나누고, 각 도메인 하위에 `controller / service / repository / dto / entity`를 두는 형태
 
-```bash
+```
 privideo-backend
 ├── src
 │   ├── main
