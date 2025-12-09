@@ -2,7 +2,7 @@
   <h1>Privideo Backend</h1>
   <h3>조직형 프라이빗 영상 공유 · 시청 데이터 분석 플랫폼 API 서버</h3>
 
-  <img width="80%" alt="banner" src="https://github.com/user-attachments/assets/a93a8d41-de28-4b55-b559-1ecd48f29c9e" />
+  <img width="70%" alt="banner" src="https://github.com/user-attachments/assets/a93a8d41-de28-4b55-b559-1ecd48f29c9e" />
 
   <br/><br/>
 
@@ -52,12 +52,8 @@
 
 ## 🏗 아키텍처
 
-> 전체 인프라 아키텍처는 상위 README(Infrastucture Architecture) 참고
-
 <div align="center">
-  <!-- 실제 경로에 맞게 수정 -->
-  <img width="850" alt="Backend Architecture" src="./docs/images/backend-architecture.png"/>
-  <p><i>API 서버 · DB · Redis · MongoDB · S3/CloudFront 연동 구조</i></p>
+  <img width="70%" alt="privideo-아키텍처" src="https://github.com/user-attachments/assets/41c73cac-c886-4456-84f4-c5df022dfe2e" />
 </div>
 
 - Route53 / Ingress를 통해 `privideo-backend`로 요청 유입
@@ -70,15 +66,13 @@
 
 ## 🔖 ERD
 
-<img width="3310" height="1786" alt="FISA" src="https://github.com/user-attachments/assets/f12ae76d-2c93-4d14-8ced-8c6e5e66b185" />
+<img width="100%" alt="FISA" src="https://github.com/user-attachments/assets/f12ae76d-2c93-4d14-8ced-8c6e5e66b185" />
 
 ---
 
 ## 🗂 Repository 구조
 
-> 패키지 구조는 도메인 단위로 나누고, 각 도메인 하위에
-> 
-> `controller / service / repository / dto / entity`를 두는 형태입니다.
+> 도메인 단위로 나누고, 각 도메인 하위에 `controller / service / repository / dto / entity`를 두는 형태
 
 ```bash
 privideo-backend
