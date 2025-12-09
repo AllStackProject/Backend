@@ -54,7 +54,7 @@
 ## 🏗 아키텍처
 
 <div align="center">
-  <img width="70%" alt="privideo-아키텍처" src="https://github.com/user-attachments/assets/41c73cac-c886-4456-84f4-c5df022dfe2e" />
+  <img width="100%" alt="privideo-아키텍처" src="https://github.com/user-attachments/assets/41c73cac-c886-4456-84f4-c5df022dfe2e" />
 </div>
 
 - Route53 / Ingress를 통해 `privideo-backend`로 요청 유입
