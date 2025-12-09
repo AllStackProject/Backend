@@ -1,6 +1,6 @@
 <div align="center">
   <h1>Privideo Backend</h1>
-  <h3>조직형 프라이빗 영상 공유 · 시청 데이터 분석 플랫폼 API 서버</h3>
+  <h3>조직형 프라이빗 영상 공유 플랫폼 API 서버</h3>
 
   <img width="70%" alt="banner" src="https://github.com/user-attachments/assets/a93a8d41-de28-4b55-b559-1ecd48f29c9e" />
 
@@ -31,20 +31,21 @@
   - 조직 내 멤버 가입/탈퇴, 상태 관리
 
 - 🎬 **영상 업로드 & 메타데이터 관리**  
-  - S3 업로드 Presigned URL 발급
+  - S3에 영상을 업로드하기 위한 Presigned URL 발급
+  - 영상 실시간 스트리밍을 위한 CloudFront Signed Cookie 생성
   - HLS 변환 결과(HLS Prefix) 저장 및 CloudFront 경로 관리
   - 영상 공개 범위(전체 공개 / 멤버그룹 제한) 및 만료일 설정
 
-- 📈 **시청 이력 & 세그먼트 분석**  
+- 📈 **시청 이력 & 구간별 분석**  
   - Redis 기반 시청 세션 관리 (watchSegments, recentPosition 등)
   - PostgreSQL History 테이블에 세션 요약 저장
   - MongoDB / Redis를 활용한 구간별(세그먼트) 시청 분석 데이터 집계
 
-- 🤖 **AI 분석 연동 (Spring AI / Vertex AI Gemini)**  
-  - 요약, 퀴즈, 피드백 등 `AiFunctionType` 기반 분석 결과 저장
-  - 사용자별 퀴즈 응시, 정답률 관리
+- 🤖 **AI 분석 제공 (Spring AI / Vertex AI Gemini)**
+  - S3의 원본 영상으로부터 RTZR API를 통해 STT 처리
+  - 결과 텍스트에 대해 요약, 퀴즈, 피드백 등 `AiFunctionType` 기반 분석 결과 저장
 
-- 🧩 **관리자 대시보드 API**  
+- 🧩 **관리자 대시보드**  
   - 조직별 영상별 시청 지표(완료율, 이탈 구간, 연령/성별 분포 등)
   - 필터(기간, 그룹, 카테고리) 기반 조회
 
