@@ -32,23 +32,25 @@
 ## 주요 기능
 
 - 👥 **조직 / 멤버 관리**  
-  - 조직 생성, 초대 코드, 권한(관리자/일반) 관리
-  - 조직 내 멤버 가입/탈퇴, 상태 관리
+  - 조직 생성 및 **초대 코드** 기반 가입
+  - 역할 기반 권한(관리자 / 일반 멤버)
+  - 조직 내 멤버 가입/탈퇴, 상태 관리(활성/비활성)
 
-- 🎬 **영상 업로드 & 메타데이터 관리**  
-  - 클라이언트가 S3에 영상을 업로드하기 위한 Presigned URL 발급
-  - 영상 실시간 스트리밍을 위한 CloudFront Signed Cookie 생성
-  - HLS 변환 결과(HLS Prefix) 저장 및 CloudFront 경로 관리
+- 🎬 **영상 업로드 & 스트리밍**  
+  - 클라이언트가 S3에 영상을 업로드하기 위한 **Presigned URL 발급**
+  - HLS 인코딩 결과에 대한 **HLS Prefix 관리**
+  - CloudFront + **Signed Cookie**를 활용한 보안 스트리밍
   - 영상 공개 범위(전체 공개 / 멤버그룹 제한) 및 만료일 설정
 
 - 📈 **시청 이력 & 구간별 분석**  
   - Redis 기반 시청 세션 관리 (watchSegments, recentPosition 등)
-  - PostgreSQL History 테이블에 세션 요약 저장
-  - MongoDB를 활용한 구간별(세그먼트) 시청 분석 데이터 집계
+  - 세션 종료 시 PostgreSQL `History` 테이블에 요약 저장
+  - MongoDB를 활용한 구간별(세그먼트) 시청 분석 데이터 집계 : 구간별 조회수 및 이탈수
 
 - 🤖 **AI 분석 제공 (Spring AI / Vertex AI Gemini)**
   - S3의 원본 영상으로부터 RTZR API를 통해 STT 처리
-  - 결과 텍스트에 대해 요약, 퀴즈, 피드백 등 `AiFunctionType` 기반 분석 결과 저장
+  - 생성된 텍스트에 대해 요약, 퀴즈, 피드백 등 `AiFunctionType` 기반 분석 결과 저장
+  - 분석 결과를 영상/조직 단위로 저장해 관리자/시청자에게 제공
 
 - 🧩 **관리자 대시보드**  
   - 조직별 영상별 시청 지표(완료율, 이탈 구간, 연령/성별 분포 등)
@@ -73,6 +75,12 @@
 ## 🔖 ERD
 
 <img width="100%" alt="FISA" src="https://github.com/user-attachments/assets/f12ae76d-2c93-4d14-8ced-8c6e5e66b185" />
+
+<!--
+> RDB에는 사용자/조직/영상/권한/시청 이력 등 **정합성이 중요한 데이터**,  
+> MongoDB에는 **세그먼트 단위의 분석용 로그**,  
+> Redis에는 **실시간 세션 상태**를 분리해서 저장합니다.
+-->
 
 ---
 
