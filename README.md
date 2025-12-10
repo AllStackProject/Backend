@@ -6,17 +6,22 @@
 
   <br/><br/>
 
-  <img src="https://img.shields.io/badge/Java-17-007396?style=plastic&logo=openjdk&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Spring%20Boot-3.5.6-6DB33F?style=plastic&logo=springboot&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Spring%20Security-6.x-6DB33F?style=plastic&logo=springsecurity&logoColor=white"/>
-  <img src="https://img.shields.io/badge/JPA%20%2B%20QueryDSL-5.1.0-59666C?style=plastic&logo=hibernate&logoColor=white"/>
-  <img src="https://img.shields.io/badge/PostgreSQL-14.18-4169E1?style=plastic&logo=postgresql&logoColor=white"/>
-  <img src="https://img.shields.io/badge/MongoDB-7.0-47A248?style=plastic&logo=mongodb&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Redis-7.2-DC382D?style=plastic&logo=redis&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Gradle-8.14-02303A?style=plastic&logo=gradle&logoColor=white"/>
-  <img src="https://img.shields.io/badge/JUnit5-25A162?style=plastic&logo=junit5&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Spring%20AI-1.0.0--M5-6DB33F?style=plastic&logo=spring&logoColor=white"/>
-  <img src="https://img.shields.io/badge/springdoc-2.8.12-85EA2D?style=plastic&logo=swagger&logoColor=white"/>
+  <p>
+    <img src="https://img.shields.io/badge/Java-17-007396?style=flat-square&logo=openjdk&logoColor=white"/>
+    <img src="https://img.shields.io/badge/Spring_Boot-3.5.6-6DB33F?style=flat-square&logo=springboot&logoColor=white"/>
+    <img src="https://img.shields.io/badge/Spring_Security-6DB33F?style=flat-square&logo=springsecurity&logoColor=white"/>
+    <img src="https://img.shields.io/badge/JPA_%2B_QueryDSL-59666C?style=flat-square&logo=hibernate&logoColor=white"/>
+  </p>
+
+  <p>
+    <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white"/>
+    <img src="https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white"/>
+    <img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white"/>
+    <img src="https://img.shields.io/badge/Gradle-02303A?style=flat-square&logo=gradle&logoColor=white"/>
+    <img src="https://img.shields.io/badge/JUnit_5-25A162?style=flat-square&logo=junit5&logoColor=white"/>
+    <img src="https://img.shields.io/badge/Spring_AI-6DB33F?style=flat-square&logo=spring&logoColor=white"/>
+    <img src="https://img.shields.io/badge/springdoc-85EA2D?style=flat-square&logo=swagger&logoColor=white"/>
+  </p>
 
 </div>
 
@@ -31,7 +36,7 @@
   - 조직 내 멤버 가입/탈퇴, 상태 관리
 
 - 🎬 **영상 업로드 & 메타데이터 관리**  
-  - S3에 영상을 업로드하기 위한 Presigned URL 발급
+  - 클라이언트가 S3에 영상을 업로드하기 위한 Presigned URL 발급
   - 영상 실시간 스트리밍을 위한 CloudFront Signed Cookie 생성
   - HLS 변환 결과(HLS Prefix) 저장 및 CloudFront 경로 관리
   - 영상 공개 범위(전체 공개 / 멤버그룹 제한) 및 만료일 설정
@@ -39,7 +44,7 @@
 - 📈 **시청 이력 & 구간별 분석**  
   - Redis 기반 시청 세션 관리 (watchSegments, recentPosition 등)
   - PostgreSQL History 테이블에 세션 요약 저장
-  - MongoDB / Redis를 활용한 구간별(세그먼트) 시청 분석 데이터 집계
+  - MongoDB를 활용한 구간별(세그먼트) 시청 분석 데이터 집계
 
 - 🤖 **AI 분석 제공 (Spring AI / Vertex AI Gemini)**
   - S3의 원본 영상으로부터 RTZR API를 통해 STT 처리
@@ -61,7 +66,7 @@
 - Spring Security + JWT 기반 인증/인가
 - JPA + QueryDSL로 RDB(PostgreSQL) 도메인 모델 관리
 - MongoDB / Redis를 통해 대용량 시청 로그, 세션 정보 관리
-- S3 Presigned URL & CloudFront Signed Cookie를 이용한 안전한 HLS 스트리밍 연동
+- S3 Presigned URL & CloudFront Signed Cookie를 이용한 안전하고 효율적인 HLS 스트리밍 연동
 
 ---
 
