@@ -145,73 +145,49 @@ k6-tests/
 
 ### 3.1 환경 변수 설정
 
-```bash
-# 필수 환경 변수
-export BASE_URL="https://localhost:8080"
-export EMAIL="test@example.com"
-export PASSWORD="password123"
-export ORG_ID=1
-export MEMBER_ID=1
-export VIDEO_ID=1
-
-# 선택 환경 변수
-export VUS=10                # 가상 사용자 수 (기본: 10)
-export DURATION="30s"        # 테스트 지속 시간 (기본: 30s)
-```
-
-### 3.2 홈 조회 API 테스트
+`k6-tests/.env` 파일을 수정합니다. 테스트 데이터 삽입 후 출력된 ID 값으로 변경하세요.
 
 ```bash
-# 기본 실행
-k6 run k6-tests/home-api-test.js
-
-# 환경 변수 지정 실행
-k6 run \
-  --env BASE_URL=https://localhost:8080 \
-  --env EMAIL=test@example.com \
-  --env PASSWORD=password123 \
-  --env ORG_ID=1 \
-  k6-tests/home-api-test.js
-
-# 결과 저장
-k6 run \
-  --out json=k6-tests/results/home-api-results.json \
-  k6-tests/home-api-test.js
+vi k6-tests/.env
 ```
-
-### 3.3 시청 기록 조회 API 테스트
 
 ```bash
-k6 run \
-  --env BASE_URL=https://localhost:8080 \
-  --env EMAIL=test@example.com \
-  --env PASSWORD=password123 \
-  --env ORG_ID=1 \
-  --env MEMBER_ID=1 \
-  --out json=k6-tests/results/history-api-results.json \
-  k6-tests/history-api-test.js
+# API 서버 URL
+BASE_URL=http://localhost:8080
+
+# 로그인 정보
+EMAIL=test@example.com
+PASSWORD=password123
+
+# 테스트 데이터 ID (insert-test-data.sql 실행 후 확인)
+USER_ID=1
+MEMBER_ID=7501    # 테스트 데이터 삽입 시 출력된 Member ID
+ORG_ID=1          # 테스트 데이터 삽입 시 출력된 Org ID  
+VIDEO_ID=1        # 테스트 데이터 삽입 시 출력된 Video ID
+
+# 부하 테스트 설정
+VUS=10
+DURATION=30s
 ```
 
-### 3.4 영상 시청 세션 시작 API 테스트
+### 3.2 테스트 실행
 
 ```bash
-# 기본 실행
-k6 run \
-  --env BASE_URL=https://localhost:8080 \
-  --env EMAIL=test@example.com \
-  --env PASSWORD=password123 \
-  --env ORG_ID=1 \
-  --env VIDEO_ID=1 \
-  --out json=k6-tests/results/video-join-api-results.json \
-  k6-tests/video-join-api-test.js
+cd k6-tests
 
-# 고부하 테스트 (VUs 수동 지정)
-k6 run \
-  --vus 100 \
-  --duration 60s \
-  --out json=k6-tests/results/video-join-high-load.json \
-  k6-tests/video-join-api-test.js
+# 개별 테스트 실행
+./run-test.sh home          # 홈 API 테스트
+./run-test.sh history       # 시청 기록 API 테스트
+./run-test.sh video-join    # 영상 세션 시작 API 테스트
+
+# 모든 테스트 순차 실행
+./run-test.sh all
+
+# 환경변수 오버라이드 (일시적으로 VUS, DURATION 변경)
+VUS=50 DURATION=60s ./run-test.sh home
 ```
+
+결과 파일은 `k6-tests/results/` 디렉토리에 저장됩니다.
 
 ---
 
