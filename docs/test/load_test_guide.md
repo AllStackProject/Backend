@@ -188,7 +188,7 @@ k6 run \
   --env PASSWORD=password123 \
   --env ORG_ID=1 \
   --env MEMBER_ID=1 \
-  --out json=results/history-api-results.json \
+  --out json=k6-tests/results/history-api-results.json \
   k6-tests/history-api-test.js
 ```
 
@@ -202,14 +202,14 @@ k6 run \
   --env PASSWORD=password123 \
   --env ORG_ID=1 \
   --env VIDEO_ID=1 \
-  --out json=results/video-join-api-results.json \
+  --out json=k6-tests/results/video-join-api-results.json \
   k6-tests/video-join-api-test.js
 
 # 고부하 테스트 (VUs 수동 지정)
 k6 run \
   --vus 100 \
   --duration 60s \
-  --out json=results/video-join-high-load.json \
+  --out json=k6-tests/results/video-join-high-load.json \
   k6-tests/video-join-api-test.js
 ```
 
@@ -222,16 +222,16 @@ k6 run \
 #### Step 1: 인덱스 적용 전 테스트
 ```bash
 # 결과 디렉토리 생성
-mkdir -p results/indexing
+mkdir -p k6-tests/results/indexing
 
 # 홈 조회 API 테스트
 k6 run \
-  --out json=results/indexing/before-home.json \
+  --out json=k6-tests/results/indexing/before-home.json \
   k6-tests/home-api-test.js
 
 # 시청 기록 조회 API 테스트
 k6 run \
-  --out json=results/indexing/before-history.json \
+  --out json=k6-tests/results/indexing/before-history.json \
   k6-tests/history-api-test.js
 ```
 
@@ -244,12 +244,12 @@ psql -h localhost -U seohyun -d fisa -f scripts/add-indexes.sql
 ```bash
 # 홈 조회 API 테스트
 k6 run \
-  --out json=results/indexing/after-home.json \
+  --out json=k6-tests/results/indexing/after-home.json \
   k6-tests/home-api-test.js
 
 # 시청 기록 조회 API 테스트
 k6 run \
-  --out json=results/indexing/after-history.json \
+  --out json=k6-tests/results/indexing/after-history.json \
   k6-tests/history-api-test.js
 ```
 
@@ -270,12 +270,12 @@ ORDER BY v.created_at DESC;
 
 #### Step 1: 캐시 비활성화 테스트
 ```bash
-mkdir -p results/cache
+mkdir -p k6-tests/results/cache
 
 # 캐시 비활성화 상태에서 테스트
 # (HomeService에서 캐시 로직 주석 처리 필요)
 k6 run \
-  --out json=results/cache/before-cache.json \
+  --out json=k6-tests/results/cache/before-cache.json \
   k6-tests/home-api-test.js
 ```
 
@@ -283,7 +283,7 @@ k6 run \
 ```bash
 # 캐시 활성화 상태에서 테스트
 k6 run \
-  --out json=results/cache/with-cache.json \
+  --out json=k6-tests/results/cache/with-cache.json \
   k6-tests/home-api-test.js
 ```
 
@@ -303,13 +303,13 @@ redis-cli ttl "home:1:RECENT"
 
 #### Step 1: 기본 설정 테스트
 ```bash
-mkdir -p results/pool
+mkdir -p k6-tests/results/pool
 
 # 기본 Pool 크기 (10)로 테스트
 k6 run \
   --vus 50 \
   --duration 60s \
-  --out json=results/pool/default-pool.json \
+  --out json=k6-tests/results/pool/default-pool.json \
   k6-tests/video-join-api-test.js
 ```
 
@@ -321,7 +321,7 @@ k6 run \
 k6 run \
   --vus 100 \
   --duration 60s \
-  --out json=results/pool/pool-50.json \
+  --out json=k6-tests/results/pool/pool-50.json \
   k6-tests/video-join-api-test.js
 ```
 
@@ -333,7 +333,7 @@ k6 run \
 k6 run \
   --vus 150 \
   --duration 60s \
-  --out json=results/pool/pool-100.json \
+  --out json=k6-tests/results/pool/pool-100.json \
   k6-tests/video-join-api-test.js
 ```
 
@@ -355,10 +355,10 @@ k6 run \
 
 ```bash
 # JSON 결과 파일 확인
-cat results/home-api-results.json | jq '.metrics.http_req_duration'
+cat k6-tests/results/home-api-results.json | jq '.metrics.http_req_duration'
 
 # 주요 지표 추출
-cat results/home-api-results.json | jq '{
+cat k6-tests/results/home-api-results.json | jq '{
   avg: .metrics.http_req_duration.values.avg,
   p95: .metrics.http_req_duration.values["p(95)"],
   p99: .metrics.http_req_duration.values["p(99)"]
@@ -370,10 +370,10 @@ cat results/home-api-results.json | jq '{
 ```bash
 # 인덱스 적용 전후 비교
 echo "=== Before Indexes ===" && \
-cat results/indexing/before-home.json | jq '.metrics.http_req_duration.values'
+cat k6-tests/results/indexing/before-home.json | jq '.metrics.http_req_duration.values'
 
 echo "=== After Indexes ===" && \
-cat results/indexing/after-home.json | jq '.metrics.http_req_duration.values'
+cat k6-tests/results/indexing/after-home.json | jq '.metrics.http_req_duration.values'
 ```
 
 ---
