@@ -67,6 +67,40 @@ spring:
 
 ### 1.3 테스트 데이터 준비
 
+#### 대용량 테스트 데이터 삽입
+
+부하 테스트를 위한 대용량 데이터를 삽입합니다:
+
+```bash
+# 1. 기존 데이터 초기화 (선택사항)
+psql -h localhost -U seohyun -d fisa -f scripts/reset-test-data.sql
+
+# 2. 테스트 데이터 삽입
+psql -h localhost -U seohyun -d fisa -f scripts/insert-test-data.sql
+```
+
+**삽입되는 데이터 규모:**
+
+| 테이블                        | 데이터 수    | 설명                |
+|-----------------------------|----------|-------------------|
+| Users                       | 100      | 테스트 사용자           |
+| Organization                | 3        | 테스트 조직            |
+| Member                      | ~150     | 조직당 50명           |
+| Member_Group                | 15       | 조직당 5개            |
+| Video                       | 1,500    | 조직당 500개 (대용량)    |
+| Category                    | 75       | 멤버 그룹당 5개         |
+| History                     | 7,500+   | 멤버당 약 50개 (대용량)   |
+| Scrap                       | 1,000    | 스크랩 데이터           |
+
+**테스트 계정 정보:**
+
+```
+Email: test@example.com
+Password: password123
+```
+
+#### 데이터 확인
+
 ```sql
 -- 테스트용 사용자 확인
 SELECT id, email FROM users WHERE email = 'test@example.com';
@@ -77,7 +111,16 @@ SELECT id, name FROM organization WHERE status = 'ACTIVE';
 -- 테스트용 비디오 확인
 SELECT id, title, upload_status 
 FROM video 
-WHERE organization_id = 1 AND upload_status = 'COMPLETE';
+WHERE organization_id = 1 AND upload_status = 'COMPLETE'
+LIMIT 10;
+
+-- 데이터 카운트 확인
+SELECT 'Users' as table_name, COUNT(*) as count FROM users
+UNION ALL SELECT 'Organizations', COUNT(*) FROM organization
+UNION ALL SELECT 'Members', COUNT(*) FROM member
+UNION ALL SELECT 'Videos', COUNT(*) FROM video
+UNION ALL SELECT 'Histories', COUNT(*) FROM history
+UNION ALL SELECT 'Scraps', COUNT(*) FROM scrap;
 ```
 
 ---
@@ -89,9 +132,11 @@ k6-tests/
 ├── shared/
 │   ├── config.js      # 공통 설정 (BASE_URL, 테스트 데이터)
 │   └── auth.js        # JWT 토큰 인증 헬퍼
+├── results/                 # 테스트 결과 저장 디렉토리
 ├── home-api-test.js         # 홈 조회 API 테스트
 ├── history-api-test.js      # 시청 기록 조회 API 테스트
-└── video-join-api-test.js   # 영상 시청 세션 시작 API 테스트
+├── video-join-api-test.js   # 영상 시청 세션 시작 API 테스트
+└── run-test.sh              # 테스트 실행 스크립트
 ```
 
 ---
@@ -130,7 +175,7 @@ k6 run \
 
 # 결과 저장
 k6 run \
-  --out json=results/home-api-results.json \
+  --out json=k6-tests/results/home-api-results.json \
   k6-tests/home-api-test.js
 ```
 
