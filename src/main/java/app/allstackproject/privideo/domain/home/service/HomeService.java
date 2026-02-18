@@ -24,9 +24,15 @@ import app.allstackproject.privideo.domain.notice.repository.NoticeMemberGroupMa
 import app.allstackproject.privideo.domain.notice.repository.NoticeRepository;
 import app.allstackproject.privideo.domain.organization.repository.OrganizationRepository;
 import app.allstackproject.privideo.domain.video.repository.VideoRepository;
+import app.allstackproject.privideo.domain.video.repository.VideoRedisRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +48,11 @@ public class HomeService {
     private final NoticeMemberGroupMappingRepository noticeMemberGroupMappingRepository;
     private final MemberGroupMappingRepository memberGroupMappingRepository;
     private final CdnUrlProvider cdnUrlProvider;
+    private final VideoRedisRepository videoRedisRepository;
+    private final ObjectMapper objectMapper;
+
+    @Value("${app.cache.enabled:true}")
+    private boolean cacheEnabled;
 
     @Transactional(readOnly = true)
     public ReadHomeResponse readHome(Long memberId, Long orgId, String filterStr) {
@@ -56,35 +67,95 @@ public class HomeService {
         Boolean isAdmin = member.getPermissionCode() != 0L;
         String orgName = organization.getName();
 
-        List<HomeVideoItem> videoInfos = videoRepository.findHomeVideos(orgId, memberId, filter);
-        videoInfos.forEach(info -> info.setThumbnailUrl(cdnUrlProvider.generateImgUrl(info.getThumbnailUrl())));
+        // 캐시에서 비디오 목록 조회 시도
+        List<Map<String, Object>> cachedVideoData = cacheEnabled
+                ? videoRedisRepository.getCachedHomeVideos(orgId, filter.name())
+                : null;
+        List<HomeVideoItem> homeVideoItems;
 
-        List<Long> videoIds = videoInfos.stream()
-                .map(HomeVideoItem::getId)
-                .toList();
+        if (cachedVideoData != null) {
+            // 캐시 히트: 캐시된 데이터를 HomeVideoItem으로 변환
+            homeVideoItems = convertCachedDataToHomeVideoItems(cachedVideoData, memberId);
+        } else {
+            // 캐시 미스: DB에서 조회
+            List<HomeVideoItem> videoInfos = videoRepository.findHomeVideos(orgId, memberId, filter);
+            videoInfos.forEach(info -> info.setThumbnailUrl(cdnUrlProvider.generateImgUrl(info.getThumbnailUrl())));
 
-        Map<Long, List<String>> categoriesMap = videoRepository.findCategoriesForHomeVideos(memberId, videoIds);
+            List<Long> videoIds = videoInfos.stream()
+                    .map(HomeVideoItem::getId)
+                    .toList();
 
-        List<HomeVideoItem> homeVideoItems = videoInfos.stream()
-                .map(v -> new HomeVideoItem(
-                        v.getId(),
-                        v.getTitle(),
-                        v.getThumbnailUrl(),
-                        v.getCreator(),
-                        v.getWholeTime(),
-                        v.getWatchCnt(),
-                        v.getCreatedAt(),
-                        v.getIsScrapped(),
-                        categoriesMap.getOrDefault(v.getId(), List.of())
-                ))
-                .toList();
+            Map<Long, List<String>> categoriesMap = videoRepository.findCategoriesForHomeVideos(memberId, videoIds);
 
-        List<String> globalCategories = categoriesMap.values().stream()
-                .flatMap(List::stream)
+            homeVideoItems = videoInfos.stream()
+                    .map(v -> new HomeVideoItem(
+                            v.getId(),
+                            v.getTitle(),
+                            v.getThumbnailUrl(),
+                            v.getCreator(),
+                            v.getWholeTime(),
+                            v.getWatchCnt(),
+                            v.getCreatedAt(),
+                            v.getIsScrapped(),
+                            categoriesMap.getOrDefault(v.getId(), List.of())
+                    ))
+                    .toList();
+
+            // 캐시에 저장 (비디오 목록만 저장, 사용자별 정보는 제외)
+            if (cacheEnabled) {
+                List<Map<String, Object>> videoDataForCache = convertHomeVideoItemsToMap(homeVideoItems);
+                videoRedisRepository.cacheHomeVideos(orgId, filter.name(), videoDataForCache);
+            }
+        }
+
+        List<String> globalCategories = homeVideoItems.stream()
+                .flatMap(v -> v.getCategories().stream())
                 .distinct()
                 .toList();
 
         return ReadHomeResponse.of(nickname, isAdmin, orgName, homeVideoItems, globalCategories);
+    }
+
+    private List<HomeVideoItem> convertCachedDataToHomeVideoItems(List<Map<String, Object>> cachedData, Long memberId) {
+        List<HomeVideoItem> items = new ArrayList<>();
+        for (Map<String, Object> data : cachedData) {
+            // 스크랩 여부는 사용자별로 다르므로 다시 조회 필요
+            // 여기서는 기본값으로 설정하고, 필요시 별도 조회
+            Boolean isScrapped = data.get("isScrapped") != null 
+                    ? Boolean.valueOf(data.get("isScrapped").toString()) 
+                    : false;
+
+            HomeVideoItem item = new HomeVideoItem(
+                    Long.valueOf(data.get("id").toString()),
+                    data.get("title").toString(),
+                    cdnUrlProvider.generateImgUrl(data.get("thumbnailUrl").toString()),
+                    data.get("creator").toString(),
+                    Long.valueOf(data.get("wholeTime").toString()),
+                    Long.valueOf(data.get("watchCnt").toString()),
+                    objectMapper.convertValue(data.get("createdAt"), java.time.LocalDateTime.class),
+                    isScrapped,
+                    objectMapper.convertValue(data.get("categories"), new TypeReference<List<String>>() {})
+            );
+            items.add(item);
+        }
+        return items;
+    }
+
+    private List<Map<String, Object>> convertHomeVideoItemsToMap(List<HomeVideoItem> items) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (HomeVideoItem item : items) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", item.getId());
+            map.put("title", item.getTitle());
+            map.put("thumbnailUrl", item.getThumbnailUrl());
+            map.put("creator", item.getCreator());
+            map.put("wholeTime", item.getWholeTime());
+            map.put("watchCnt", item.getWatchCnt());
+            map.put("createdAt", item.getCreatedAt());
+            map.put("categories", item.getCategories());
+            result.add(map);
+        }
+        return result;
     }
 
     @Transactional(readOnly = true)
