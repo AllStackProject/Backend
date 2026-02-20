@@ -2,493 +2,445 @@
 
 ## 1. 환경 설정
 
-### 1.1 k6 설치
+### 1.1 필수 도구 설치
 
 ```bash
-# macOS
+# k6 설치 (macOS)
 brew install k6
 
-# Linux (Debian/Ubuntu)
-sudo gpg -k
-sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
-    --keyserver hkp://keyserver.ubuntu.com:80 \
-    --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
-echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
-    | sudo tee /etc/apt/sources.list.d/k6.list
-sudo apt-get update
-sudo apt-get install k6
+# Redis CLI (macOS — 이미 redis가 설치되어 있다면 포함됨)
+brew install redis
 
-# Windows
-choco install k6
+# PostgreSQL CLI
+brew install postgresql
 ```
 
-### 1.2 로컬 환경 구성
+### 1.2 로컬 인프라 확인
 
-#### PostgreSQL 실행 확인
 ```bash
 # PostgreSQL 상태 확인
 pg_isready -h localhost -p 5432
 
-# DB 접속 테스트
-psql -h localhost -U seohyun -d fisa -c "SELECT 1"
-```
-
-#### Redis 실행 확인
-```bash
 # Redis 상태 확인
-redis-cli ping
-# 응답: PONG
+redis-cli ping   # → PONG
 
-# Redis 연결 테스트
-redis-cli -h localhost -p 6379 info
-```
-
-#### 애플리케이션 설정 확인
-
-`application-local.yml` 주요 설정:
-```yaml
-# PostgreSQL 설정
-spring:
-  datasource:
-    url: "jdbc:postgresql://localhost:5432/fisa"
-    hikari:
-      maximum-pool-size: 50    # Connection Pool 크기
-      minimum-idle: 10
-
-# Redis 설정
-spring:
-  data:
-    redis:
-      host: localhost
-      port: 6379
-
-# AWS/Gemini는 더미 값으로 설정 (로컬 테스트용)
+# 서버 (SSL)
+curl -sk https://localhost:8080
 ```
 
 ### 1.3 테스트 데이터 준비
 
-#### 대용량 테스트 데이터 삽입
-
-부하 테스트를 위한 대용량 데이터를 삽입합니다:
-
 ```bash
-# 1. 기존 데이터 초기화 (선택사항)
+# 기존 데이터 초기화 (선택)
 psql -h localhost -U seohyun -d fisa -f scripts/reset-test-data.sql
 
-# 2. 테스트 데이터 삽입
+# 대용량 테스트 데이터 삽입
 psql -h localhost -U seohyun -d fisa -f scripts/insert-test-data.sql
 ```
 
-**삽입되는 데이터 규모:**
+| 테이블          | 데이터 수  | 설명        |
+|--------------|--------|-----------|
+| Users        | 100    | 테스트 사용자   |
+| Organization | 3      | 테스트 조직    |
+| Member       | ~150   | 조직당 50명   |
+| Video        | 1,500  | 조직당 500개  |
+| History      | 7,500+ | 멤버당 약 50개 |
+| Scrap        | 1,000  | 스크랩 데이터   |
 
-| 테이블                        | 데이터 수    | 설명                |
-|-----------------------------|----------|-------------------|
-| Users                       | 100      | 테스트 사용자           |
-| Organization                | 3        | 테스트 조직            |
-| Member                      | ~150     | 조직당 50명           |
-| Member_Group                | 15       | 조직당 5개            |
-| Video                       | 1,500    | 조직당 500개 (대용량)    |
-| Category                    | 75       | 멤버 그룹당 5개         |
-| History                     | 7,500+   | 멤버당 약 50개 (대용량)   |
-| Scrap                       | 1,000    | 스크랩 데이터           |
-
-**테스트 계정 정보:**
-
-```
-Email: test@example.com
-Password: password123
-```
-
-#### 데이터 확인
-
-```sql
--- 테스트용 사용자 확인
-SELECT id, email FROM users WHERE email = 'test@example.com';
-
--- 테스트용 조직 확인
-SELECT id, name FROM organization WHERE status = 'ACTIVE';
-
--- 테스트용 비디오 확인
-SELECT id, title, upload_status 
-FROM video 
-WHERE organization_id = 1 AND upload_status = 'COMPLETE'
-LIMIT 10;
-
--- 데이터 카운트 확인
-SELECT 'Users' as table_name, COUNT(*) as count FROM users
-UNION ALL SELECT 'Organizations', COUNT(*) FROM organization
-UNION ALL SELECT 'Members', COUNT(*) FROM member
-UNION ALL SELECT 'Videos', COUNT(*) FROM video
-UNION ALL SELECT 'Histories', COUNT(*) FROM history
-UNION ALL SELECT 'Scraps', COUNT(*) FROM scrap;
+```bash
+# 데이터 확인
+psql -h localhost -U seohyun -d fisa -c "
+SELECT 'Users' as t, count(*) FROM users
+UNION ALL SELECT 'Videos', count(*) FROM video WHERE upload_status = 'COMPLETE'
+UNION ALL SELECT 'History', count(*) FROM history;"
 ```
 
 ---
 
-## 2. 테스트 스크립트 구조
+## 2. 프로젝트 구조
 
 ```
 k6-tests/
 ├── shared/
-│   ├── config.js      # 공통 설정 (BASE_URL, 테스트 데이터)
-│   └── auth.js        # JWT 토큰 인증 헬퍼
-├── results/                 # 테스트 결과 저장 디렉토리
-├── home-api-test.js         # 홈 조회 API 테스트
-├── history-api-test.js      # 시청 기록 조회 API 테스트
-├── video-join-api-test.js   # 영상 시청 세션 시작 API 테스트
-└── run-test.sh              # 테스트 실행 스크립트
+│   ├── config.js               # 공통 설정 (BASE_URL, 테스트 데이터)
+│   └── auth.js                 # JWT 토큰 인증 헬퍼
+├── results/                    # 테스트 결과 저장 (자동 생성)
+│   ├── scenario1-indexing/     # 인덱스 시나리오 결과
+│   ├── scenario2-cache/        # 캐시 시나리오 결과
+│   └── scenario3-pool/         # 커넥션풀 시나리오 결과
+├── home-api-test.js            # 홈 조회 API 테스트
+├── history-api-test.js         # 시청 기록 조회 API 테스트
+├── video-join-api-test.js      # 영상 시청 세션 시작 API 테스트
+└── run-scenario.sh             # 시나리오 오케스트레이터 (메인 실행 스크립트)
+
+scripts/
+├── add-indexes.sql             # 인덱스 생성 스크립트
+├── drop-indexes.sql            # 인덱스 롤백 스크립트
+├── insert-test-data.sql        # 대용량 데이터 삽입
+└── reset-test-data.sql         # 데이터 초기화
+
+src/main/resources/
+├── application-local.yml       # 로컬 환경 설정
+└── application-nocache.yml     # 캐시 비활성화 프로필
 ```
 
 ---
 
-## 3. 테스트 실행 방법
+## 3. 테스트 실행 — 권장 순서
 
-### 3.1 환경 변수 설정
+> 시나리오는 **1 → 2 → 3** 순서로 진행하세요.
+> 각 시나리오는 독립적이므로 개별 실행도 가능합니다.
 
-`k6-tests/.env` 파일을 수정합니다. 테스트 데이터 삽입 후 출력된 ID 값으로 변경하세요.
-
-```bash
-vi k6-tests/.env
-```
-
-```bash
-# API 서버 URL
-BASE_URL=http://localhost:8080
-
-# 로그인 정보
-EMAIL=test@example.com
-PASSWORD=password123
-
-# 테스트 데이터 ID (insert-test-data.sql 실행 후 확인)
-USER_ID=1
-MEMBER_ID=7501    # 테스트 데이터 삽입 시 출력된 Member ID
-ORG_ID=1          # 테스트 데이터 삽입 시 출력된 Org ID  
-VIDEO_ID=1        # 테스트 데이터 삽입 시 출력된 Video ID
-
-# 부하 테스트 설정
-VUS=10
-DURATION=30s
-```
-
-### 3.2 테스트 실행
+### 한 줄 요약
 
 ```bash
 cd k6-tests
-
-# 개별 테스트 실행
-./run-test.sh home          # 홈 API 테스트
-./run-test.sh history       # 시청 기록 API 테스트
-./run-test.sh video-join    # 영상 세션 시작 API 테스트
-
-# 모든 테스트 순차 실행
-./run-test.sh all
-
-# 환경변수 오버라이드 (일시적으로 VUS, DURATION 변경)
-VUS=50 DURATION=60s ./run-test.sh home
-```
-
-결과 파일은 `k6-tests/results/` 디렉토리에 저장됩니다.
-
----
-
-## 4. 시나리오별 테스트 실행
-
-### 4.1 시나리오 1: 인덱스 적용 전후 비교
-
-#### Step 1: 인덱스 적용 전 테스트
-```bash
-# 결과 디렉토리 생성
-mkdir -p k6-tests/results/indexing
-
-# 홈 조회 API 테스트
-k6 run \
-  --out json=k6-tests/results/indexing/before-home.json \
-  k6-tests/home-api-test.js
-
-# 시청 기록 조회 API 테스트
-k6 run \
-  --out json=k6-tests/results/indexing/before-history.json \
-  k6-tests/history-api-test.js
-```
-
-#### Step 2: 인덱스 추가
-```bash
-psql -h localhost -U seohyun -d fisa -f scripts/add-indexes.sql
-```
-
-#### Step 3: 인덱스 적용 후 테스트
-```bash
-# 홈 조회 API 테스트
-k6 run \
-  --out json=k6-tests/results/indexing/after-home.json \
-  k6-tests/home-api-test.js
-
-# 시청 기록 조회 API 테스트
-k6 run \
-  --out json=k6-tests/results/indexing/after-history.json \
-  k6-tests/history-api-test.js
-```
-
-#### Step 4: 쿼리 실행 계획 비교
-```sql
--- 인덱스 적용 전/후 쿼리 실행 계획 비교
-EXPLAIN ANALYZE
-SELECT v.id, v.title, v.thumbnail_url, v.created_at, v.watch_cnt
-FROM video v
-WHERE v.organization_id = 1 
-  AND v.upload_status = 'COMPLETE'
-ORDER BY v.created_at DESC;
+./run-scenario.sh 1       # 인덱스 (완전 자동)
+./run-scenario.sh 2       # 캐시 (서버 재시작 필요)
+./run-scenario.sh 3       # 커넥션풀 (서버 재시작 필요)
+./run-scenario.sh all     # 전체 순차 실행
 ```
 
 ---
 
-### 4.2 시나리오 2: Redis 캐시 테스트
+## 4. 시나리오 1: 인덱스 Before/After (완전 자동)
 
-#### Step 1: 캐시 비활성화 테스트
+### 목적
+
+인덱스 추가 전후의 쿼리 성능 차이 측정
+
+### 전제 조건
+
+- 서버가 `local` 프로필로 실행 중
+- PostgreSQL 접속 가능 (PGPASSWORD=1234)
+
+### 실행
+
 ```bash
-mkdir -p k6-tests/results/cache
-
-# 캐시 비활성화 상태에서 테스트
-# (HomeService에서 캐시 로직 주석 처리 필요)
-k6 run \
-  --out json=k6-tests/results/cache/before-cache.json \
-  k6-tests/home-api-test.js
+cd k6-tests
+./run-scenario.sh 1
 ```
 
-#### Step 2: 캐시 활성화 테스트
-```bash
-# 캐시 활성화 상태에서 테스트
-k6 run \
-  --out json=k6-tests/results/cache/with-cache.json \
-  k6-tests/home-api-test.js
+### 자동 실행 흐름
+
+```
+① drop-indexes.sql 실행 (인덱스 제거)
+② Redis 캐시 초기화 (home:*, video:*:info)
+③ Before 테스트: 3개 API × k6 실행
+④ add-indexes.sql 실행 (인덱스 적용)
+⑤ Redis 캐시 초기화
+⑥ After 테스트: 3개 API × k6 실행
+⑦ drop-indexes.sql 실행 (롤백 — 원래 상태 복원)
 ```
 
-#### Step 3: 캐시 히트율 확인
-```bash
-# Redis CLI로 캐시 확인
-redis-cli keys "home:*"
-redis-cli keys "video:*"
+### 결과 확인
 
-# 캐시 TTL 확인
-redis-cli ttl "home:1:RECENT"
+```
+results/scenario1-indexing/
+├── before-index-home-api-2026-03-03T14-30-00.html          # Before HTML 리포트
+├── before-index-home-api-2026-03-03T14-30-00-summary.json  # Before JSON 원시 데이터
+├── after-index-home-api-2026-03-03T14-35-00.html           # After HTML 리포트
+├── after-index-home-api-2026-03-03T14-35-00-summary.json
+├── before-index-history-api-*.html
+├── after-index-history-api-*.html
+├── before-index-video-join-api-*.html
+└── after-index-video-join-api-*.html
 ```
 
----
+### 검증
 
-### 4.3 시나리오 3: Connection Pool 최적화
-
-#### Step 1: 기본 설정 테스트
 ```bash
-mkdir -p k6-tests/results/pool
-
-# 기본 Pool 크기 (10)로 테스트
-k6 run \
-  --vus 50 \
-  --duration 60s \
-  --out json=k6-tests/results/pool/default-pool.json \
-  k6-tests/video-join-api-test.js
-```
-
-#### Step 2: Pool 크기 50으로 테스트
-```bash
-# application-local.yml 수정 후 서버 재시작
-# maximum-pool-size: 50
-
-k6 run \
-  --vus 100 \
-  --duration 60s \
-  --out json=k6-tests/results/pool/pool-50.json \
-  k6-tests/video-join-api-test.js
-```
-
-#### Step 3: Pool 크기 100으로 테스트
-```bash
-# application-local.yml 수정 후 서버 재시작
-# maximum-pool-size: 100
-
-k6 run \
-  --vus 150 \
-  --duration 60s \
-  --out json=k6-tests/results/pool/pool-100.json \
-  k6-tests/video-join-api-test.js
+# 롤백 확인 — 커스텀 인덱스가 0이면 정상
+psql -h localhost -U seohyun -d fisa -c \
+  "SELECT count(*) FROM pg_indexes WHERE indexname LIKE 'idx_%';"
 ```
 
 ---
 
-## 5. 결과 분석
+## 5. 시나리오 2: 캐시 Before/After (반자동)
 
-### 5.1 k6 결과 메트릭
+### 목적
 
-| 메트릭 | 설명 |
-|--------|------|
-| `http_req_duration` | HTTP 요청 지속 시간 |
-| `http_req_failed` | 실패한 요청 비율 |
-| `http_reqs` | 총 요청 수 |
-| `iterations` | 총 반복 횟수 |
-| `vus` | 가상 사용자 수 |
+Redis 캐시 활성화 전후의 응답 시간 차이 측정
 
-### 5.2 결과 파일 분석
+### 전제 조건
+
+- 인덱스가 적용된 상태에서 테스트하려면 먼저 `add-indexes.sql` 실행
+- 터미널 2개 필요 (서버용 + 테스트 실행용)
+
+### 실행
 
 ```bash
-# JSON 결과 파일 확인
-cat k6-tests/results/home-api-results.json | jq '.metrics.http_req_duration'
+cd k6-tests
+./run-scenario.sh 2
+```
 
-# 주요 지표 추출
-cat k6-tests/results/home-api-results.json | jq '{
+### 반자동 흐름
+
+```
+① 스크립트가 "nocache 프로필로 서버 재시작" 안내 표시
+   → 서버 터미널에서:
+     SPRING_PROFILES_ACTIVE=local,nocache ./gradlew bootRun
+   → 서버 시작 후 Enter
+
+② Redis 캐시 초기화
+③ Before 테스트 (캐시 꺼진 상태)
+
+④ 스크립트가 "local 프로필로 서버 재시작" 안내 표시
+   → 서버 터미널에서:
+     SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
+   → 서버 시작 후 Enter
+
+⑤ Redis 캐시 초기화
+⑥ After 테스트 (캐시 켜진 상태)
+```
+
+### 캐시 토글 원리
+
+`application-nocache.yml` 프로필을 추가하면 `app.cache.enabled=false`가 적용됩니다.
+`HomeService`와 `VideoService`에서 이 값에 따라 Redis 캐시 읽기/쓰기를 건너뜁니다.
+
+```yaml
+# application-nocache.yml
+app:
+  cache:
+    enabled: false
+```
+
+### 결과 확인
+
+```
+results/scenario2-cache/
+├── before-cache-home-api-*.html
+├── after-cache-home-api-*.html
+├── before-cache-history-api-*.html
+├── after-cache-history-api-*.html
+├── before-cache-video-join-api-*.html
+└── after-cache-video-join-api-*.html
+```
+
+### 검증
+
+```bash
+# nocache 상태에서 캐시 키가 생성되지 않는지 확인
+redis-cli KEYS "home:*"           # → (empty)
+redis-cli KEYS "video:*:info"     # → (empty)
+
+# cache 활성 상태에서 After 테스트 후 키 존재 확인
+redis-cli KEYS "home:*"           # → home:1:RECENT 등
+```
+
+---
+
+## 6. 시나리오 3: Connection Pool 크기 비교 (반자동)
+
+### 목적
+
+HikariCP `maximum-pool-size` 값(10, 50, 100)에 따른 동시 처리량 변화 측정
+
+### 전제 조건
+
+- `application-local.yml`에 `HIKARI_MAX_POOL_SIZE` 환경변수가 파라미터화되어 있어야 함 (이미 설정됨)
+
+### 실행
+
+```bash
+cd k6-tests
+./run-scenario.sh 3
+```
+
+### 반자동 흐름
+
+```
+for pool_size in 10 50 100:
+  ① 스크립트가 "HIKARI_MAX_POOL_SIZE=${pool_size}로 서버 재시작" 안내
+     → 서버 터미널에서:
+       HIKARI_MAX_POOL_SIZE=10 SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
+     → 서버 시작 후 Enter
+
+  ② Redis 캐시 초기화
+  ③ 3개 API 테스트 실행
+```
+
+### 결과 확인
+
+```
+results/scenario3-pool/
+├── pool-10-home-api-*.html
+├── pool-10-history-api-*.html
+├── pool-10-video-join-api-*.html
+├── pool-50-home-api-*.html
+├── pool-50-history-api-*.html
+├── pool-50-video-join-api-*.html
+├── pool-100-home-api-*.html
+├── pool-100-history-api-*.html
+└── pool-100-video-join-api-*.html
+```
+
+### 핵심 비교 지표
+
+| 지표           | pool=10 | pool=50 | pool=100 |
+|--------------|---------|---------|----------|
+| p95 응답 시간    | ?       | ?       | ?        |
+| 503/504 에러 수 | ?       | ?       | ?        |
+| 최대 TPS       | ?       | ?       | ?        |
+
+---
+
+## 7. 결과 분석 방법
+
+### 7.1 HTML 리포트 열기
+
+```bash
+# macOS에서 리포트 열기
+open k6-tests/results/scenario1-indexing/after-index-home-api-*.html
+
+# 또는 파일 탐색기에서 .html 파일 더블클릭
+```
+
+HTML 리포트에는 다음이 포함됩니다:
+
+- 요청 수, 에러율, 응답 시간 분포 차트
+- p50 / p90 / p95 / p99 백분위 테이블
+- 커스텀 메트릭 (home_api_duration 등)
+
+### 7.2 JSON에서 핵심 지표 추출
+
+```bash
+# p95, p99, avg 추출
+cat results/scenario1-indexing/before-index-home-api-*-summary.json | jq '{
   avg: .metrics.http_req_duration.values.avg,
   p95: .metrics.http_req_duration.values["p(95)"],
-  p99: .metrics.http_req_duration.values["p(99)"]
+  p99: .metrics.http_req_duration.values["p(99)"],
+  total_requests: .metrics.http_reqs.values.count,
+  error_rate: .metrics.http_req_failed.values.rate
 }'
 ```
 
-### 5.3 결과 비교
+### 7.3 Before/After 비교 예시
 
 ```bash
-# 인덱스 적용 전후 비교
-echo "=== Before Indexes ===" && \
-cat k6-tests/results/indexing/before-home.json | jq '.metrics.http_req_duration.values'
+echo "=== Before Index ===" && \
+cat results/scenario1-indexing/before-index-home-api-*-summary.json | \
+  jq '.metrics.http_req_duration.values | {avg, med, "p(95)", "p(99)"}'
 
-echo "=== After Indexes ===" && \
-cat k6-tests/results/indexing/after-home.json | jq '.metrics.http_req_duration.values'
+echo "=== After Index ===" && \
+cat results/scenario1-indexing/after-index-home-api-*-summary.json | \
+  jq '.metrics.http_req_duration.values | {avg, med, "p(95)", "p(99)"}'
 ```
 
 ---
 
-## 6. 모니터링
+## 8. 환경변수 레퍼런스
 
-### 6.1 PostgreSQL 모니터링
+### run-scenario.sh 환경변수
+
+| 변수           | 기본값                    | 설명             |
+|--------------|------------------------|----------------|
+| `DB_HOST`    | localhost              | PostgreSQL 호스트 |
+| `DB_PORT`    | 5432                   | PostgreSQL 포트  |
+| `DB_NAME`    | privideo               | DB 이름          |
+| `DB_USER`    | postgres               | DB 사용자         |
+| `PGPASSWORD` | 1234                   | DB 비밀번호        |
+| `REDIS_HOST` | localhost              | Redis 호스트      |
+| `REDIS_PORT` | 6379                   | Redis 포트       |
+| `BASE_URL`   | https://localhost:8080 | API 서버 URL     |
+
+### k6 테스트 환경변수
+
+| 변수              | 기본값              | 설명         |
+|-----------------|------------------|------------|
+| `EMAIL`         | test@example.com | 로그인 이메일    |
+| `PASSWORD`      | password123      | 로그인 비밀번호   |
+| `ORG_ID`        | 1                | 테스트 조직 ID  |
+| `MEMBER_ID`     | 1                | 테스트 멤버 ID  |
+| `VIDEO_ID`      | 1                | 테스트 비디오 ID |
+| `RESULT_DIR`    | results          | 결과 저장 디렉토리 |
+| `RESULT_PREFIX` | (테스트별 자동)        | 결과 파일 접두사  |
+
+### 서버 재시작용 환경변수
+
+| 변수                                     | 용도               |
+|----------------------------------------|------------------|
+| `SPRING_PROFILES_ACTIVE=local`         | 기본 로컬 실행 (캐시 ON) |
+| `SPRING_PROFILES_ACTIVE=local,nocache` | 캐시 비활성화          |
+| `HIKARI_MAX_POOL_SIZE=10\|50\|100`     | 커넥션풀 크기 변경       |
+
+---
+
+## 9. 모니터링 (테스트 중 병행)
+
+### PostgreSQL
 
 ```sql
--- 현재 연결 수 확인
-SELECT count(*) FROM pg_stat_activity;
+-- 현재 활성 연결 수
+SELECT count(*)
+FROM pg_stat_activity
+WHERE state = 'active';
 
--- 대기 중인 쿼리 확인
-SELECT pid, state, query, wait_event_type, wait_event
+-- 대기 중인 쿼리
+SELECT pid, state, wait_event_type, query
 FROM pg_stat_activity
 WHERE state != 'idle';
-
--- 슬로우 쿼리 확인
-SELECT query, calls, mean_time, max_time
-FROM pg_stat_statements
-ORDER BY mean_time DESC
-LIMIT 10;
 ```
 
-### 6.2 Redis 모니터링
+### Redis
 
 ```bash
 # 실시간 명령어 모니터링
 redis-cli monitor
 
-# 메모리 사용량 확인
-redis-cli info memory
-
-# 키 개수 확인
-redis-cli dbsize
+# 캐시 키 목록 확인
+redis-cli KEYS "home:*"
+redis-cli KEYS "video:*:info"
 ```
 
-### 6.3 HikariCP 모니터링 (Spring Boot Actuator)
+### HikariCP (Actuator가 활성화된 경우)
 
 ```bash
-# Connection Pool 상태 확인 (Actuator 활성화 필요)
-curl http://localhost:8080/actuator/metrics/hikaricp.connections.active
-curl http://localhost:8080/actuator/metrics/hikaricp.connections.idle
-curl http://localhost:8080/actuator/metrics/hikaricp.connections.pending
+curl -sk https://localhost:8080/actuator/metrics/hikaricp.connections.active
+curl -sk https://localhost:8080/actuator/metrics/hikaricp.connections.pending
 ```
 
 ---
 
-## 7. 문제 해결
+## 10. 문제 해결
 
-### 7.1 로그인 실패
+### SSL 인증서 오류
 
-```bash
-# 원인 확인
-curl -X POST https://localhost:8080/user/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"password123"}' \
-  -k -v
-
-# 해결 방법
-# 1. 이메일/비밀번호 확인
-# 2. PostgreSQL 연결 확인
-# 3. JWT 설정 확인 (application-local.yml)
-```
-
-### 7.2 401/403 에러
+k6 테스트 시 `--insecure-skip-tls-verify`가 `run-scenario.sh`에 이미 포함되어 있습니다.
+개별 실행 시에는 직접 추가하세요:
 
 ```bash
-# 토큰 유효성 확인
-# 1. 토큰 발급 시간 확인 (expired-in 설정)
-# 2. 조직 ID와 토큰 내 orgId 일치 확인
-
-# JWT 디코딩 (https://jwt.io 또는)
-echo "토큰값" | cut -d'.' -f2 | base64 -d | jq
-```
-
-### 7.3 503/504 에러
-
-```bash
-# Connection Pool 상태 확인
-psql -h localhost -U seohyun -d fisa -c \
-  "SELECT count(*) FROM pg_stat_activity WHERE state = 'active';"
-
-# 해결 방법
-# 1. HikariCP maximum-pool-size 증가
-# 2. PostgreSQL max_connections 확인
-# 3. 쿼리 최적화
-```
-
-### 7.4 SSL 인증서 오류
-
-```bash
-# k6 실행 시 SSL 검증 비활성화
 k6 run --insecure-skip-tls-verify k6-tests/home-api-test.js
-
-# 또는 shared/config.js에서 설정
-# baseUrl: 'https://localhost:8080'를 사용할 때 --insecure 옵션 필요
 ```
 
----
+### 로그인 실패 (401)
 
-## 8. 로컬 테스트 제한사항
-
-### 8.1 테스트 불가 API
-
-| API | 제한 이유 |
-|-----|-----------|
-| `POST /{orgId}/video` | S3 업로드 필요 |
-| `POST /{orgId}/video/airflow/status` | Airflow 연동 필요 |
-| AI 기능 처리 | Gemini AI 호출 필요 |
-
-### 8.2 테스트 가능 API
-
-| API | 비고 |
-|-----|------|
-| `GET /{orgId}/home` | 홈 조회 |
-| `GET /{orgId}/history` | 시청 기록 조회 |
-| `POST /{orgId}/video/{videoId}/join` | 영상 세션 시작 (S3 URL은 더미) |
-| `GET /{orgId}/video/{videoId}` | 영상 정보 조회 |
-| `GET /{orgId}/home/search` | 영상 검색 |
-| `GET /{orgId}/home/notice` | 공지사항 조회 |
-
-### 8.3 테스트 데이터 요구사항
-
-로컬 테스트를 위해 다음 데이터가 필요합니다:
-
-1. **사용자 계정**: 로그인 가능한 테스트 계정
-2. **조직**: 테스트용 조직 (ACTIVE 상태)
-3. **비디오**: 업로드 완료된 비디오 (upload_status = 'COMPLETE')
-4. **히스토리**: 시청 기록 데이터 (History 테이블)
-
-```sql
--- 테스트 데이터 확인 쿼리
-SELECT 
-  'Users' as table_name, count(*) as count FROM users
-UNION ALL
-SELECT 'Organizations', count(*) FROM organization WHERE status = 'ACTIVE'
-UNION ALL
-SELECT 'Videos', count(*) FROM video WHERE upload_status = 'COMPLETE'
-UNION ALL
-SELECT 'History', count(*) FROM history;
+```bash
+# 수동으로 로그인 테스트
+curl -sk -X POST https://localhost:8080/user/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password123"}'
 ```
+
+### PostgreSQL 연결 실패
+
+```bash
+# PGPASSWORD 확인
+export PGPASSWORD=1234
+psql -h localhost -U postgres -d privideo -c "SELECT 1;"
+
+# 사용자 환경에 맞게 DB_USER 등 조정
+DB_USER=seohyun DB_NAME=fisa ./run-scenario.sh 1
+```
+
+### Connection Pool 고갈 (503/504)
+
+이 에러는 시나리오 3에서 **의도적으로 발생**시키는 것입니다.
+pool_size=10일 때 503이 나오고, 50/100에서 줄어드는 것이 정상적인 결과입니다.
+
+### k6-reporter 로드 실패
+
+`handleSummary`에서 사용하는 `benc-uk/k6-reporter`는 URL import 방식입니다.
+첫 실행 시 인터넷 연결이 필요하며, 이후 캐시됩니다.
