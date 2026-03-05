@@ -1,0 +1,290 @@
+{
+  "metrics": {
+    "checks": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "fails": 6732,
+        "rate": 0.6,
+        "passes": 10098
+      }
+    },
+    "vus_max": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 100,
+        "min": 100,
+        "max": 100
+      }
+    },
+    "iterations": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "rate": 30.049321059426575,
+        "count": 3366
+      }
+    },
+    "http_req_sending": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(90)": 0.026,
+        "p(95)": 0.035,
+        "avg": 0.017667458432304307,
+        "min": 0.003,
+        "med": 0.013,
+        "max": 2.409
+      }
+    },
+    "errors": {
+      "thresholds": {
+        "rate<0.05": {
+          "ok": true
+        }
+      },
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "passes": 0,
+        "fails": 3366,
+        "rate": 0
+      }
+    },
+    "http_reqs": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 3368,
+        "rate": 30.067175676811853
+      }
+    },
+    "http_req_duration{expected_response:true}": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 9.45719032066507,
+        "min": 3.831,
+        "med": 7.14,
+        "max": 108.966,
+        "p(90)": 17.844400000000007,
+        "p(95)": 22.596499999999995
+      }
+    },
+    "http_req_receiving": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 0.161,
+        "avg": 0.07087203087885965,
+        "min": 0.011,
+        "med": 0.053,
+        "max": 3.944,
+        "p(90)": 0.124
+      }
+    },
+    "http_req_failed": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "passes": 0,
+        "fails": 3368,
+        "rate": 0
+      },
+      "thresholds": {
+        "rate<0.05": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_blocked": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "max": 33.249,
+        "p(90)": 0.01,
+        "p(95)": 0.01764999999999985,
+        "avg": 0.3581511282660146,
+        "min": 0.001,
+        "med": 0.004
+      }
+    },
+    "vus": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 1,
+        "min": 1,
+        "max": 100
+      }
+    },
+    "http_req_waiting": {
+      "values": {
+        "avg": 9.368650831353913,
+        "min": 3.807,
+        "med": 7.057,
+        "max": 108.726,
+        "p(90)": 17.6609,
+        "p(95)": 22.459449999999993
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "data_received": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "count": 38107855,
+        "rate": 340200.5851993685
+      }
+    },
+    "history_api_duration": {
+      "type": "trend",
+      "contains": "default",
+      "values": {
+        "avg": 9.857694592988711,
+        "min": 4,
+        "med": 7,
+        "max": 78,
+        "p(90)": 19,
+        "p(95)": 23
+      }
+    },
+    "http_req_connecting": {
+      "values": {
+        "min": 0,
+        "med": 0,
+        "max": 3.841,
+        "p(90)": 0,
+        "p(95)": 0,
+        "avg": 0.01022832541567696
+      },
+      "type": "trend",
+      "contains": "time"
+    },
+    "http_req_tls_handshaking": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.33838301662707837,
+        "min": 0,
+        "med": 0,
+        "max": 32.941,
+        "p(90)": 0,
+        "p(95)": 0
+      }
+    },
+    "iteration_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "max": 3011.337583,
+        "p(90)": 2816.952667,
+        "p(95)": 2919.66361475,
+        "avg": 2017.6495372932327,
+        "min": 1006.277209,
+        "med": 2003.962771
+      }
+    },
+    "total_requests": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 3366,
+        "rate": 30.049321059426575
+      }
+    },
+    "data_sent": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "count": 1644835,
+        "rate": 14683.949793458678
+      }
+    },
+    "http_req_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 9.45719032066507,
+        "min": 3.831,
+        "med": 7.14,
+        "max": 108.966,
+        "p(90)": 17.844400000000007,
+        "p(95)": 22.596499999999995
+      },
+      "thresholds": {
+        "p(95)<1500": {
+          "ok": true
+        },
+        "p(99)<3000": {
+          "ok": true
+        }
+      }
+    }
+  },
+  "setup_data": {
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJtZW1iZXJJZCI6NzUwMSwidXNlcklkIjo1MDAxLCJvcmdKb2luU3RhdHVzIjoiQVBQUk9WRUQiLCJvcmdJZCI6MSwib3JnUGVybWlzc2lvbiI6MTUsIm9yZ0lzQWRtaW4iOnRydWUsInRva2VuVHlwZSI6Ik9SRyIsImlhdCI6MTc3MjY3NjE4OCwiZXhwIjoxNzc1MjY4MTg4fQ.uc3PR0883EYVOJnKqciwfo0gGp-590Yaot2dszkubX8"
+  },
+  "root_group": {
+    "name": "",
+    "path": "",
+    "id": "d41d8cd98f00b204e9800998ecf8427e",
+    "groups": [],
+    "checks": [
+        {
+          "name": "시청 기록 조회 API 상태 코드 200",
+          "path": "::시청 기록 조회 API 상태 코드 200",
+          "id": "bebcd16d9c180175771f573c68668e02",
+          "passes": 3366,
+          "fails": 0
+        },
+        {
+          "id": "cf9c2c515f41b2607d24aaa76ba24e8d",
+          "passes": 3366,
+          "fails": 0,
+          "name": "시청 기록 조회 API 응답 시간 < 1.5초",
+          "path": "::시청 기록 조회 API 응답 시간 < 1.5초"
+        },
+        {
+          "passes": 3366,
+          "fails": 0,
+          "name": "시청 기록 조회 API 응답 본문 존재",
+          "path": "::시청 기록 조회 API 응답 본문 존재",
+          "id": "a4726479ed9e054806b2394d1e3245d4"
+        },
+        {
+          "path": "::시청 기록 조회 API JSON 파싱 가능",
+          "id": "4273e24be3eb6c2c92b46598fc66628e",
+          "passes": 0,
+          "fails": 3366,
+          "name": "시청 기록 조회 API JSON 파싱 가능"
+        },
+        {
+          "id": "3795741ae94c333f94ea574c9e3cb95e",
+          "passes": 0,
+          "fails": 3366,
+          "name": "시청 기록 목록 반환",
+          "path": "::시청 기록 목록 반환"
+        }
+      ]
+  },
+  "options": {
+    "summaryTrendStats": [
+      "avg",
+      "min",
+      "med",
+      "max",
+      "p(90)",
+      "p(95)"
+    ],
+    "summaryTimeUnit": "",
+    "noColor": false
+  },
+  "state": {
+    "isStdOutTTY": false,
+    "isStdErrTTY": false,
+    "testRunDurationMs": 112015.842
+  }
+}
