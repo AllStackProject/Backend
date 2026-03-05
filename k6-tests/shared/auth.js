@@ -1,3 +1,5 @@
+import http from 'k6/http';
+
 /**
  * 로그인하여 JWT 토큰을 발급받습니다.
  * @param {string} baseUrl - API 서버 기본 URL
@@ -5,35 +7,50 @@
  * @param {string} password - 사용자 비밀번호
  * @returns {string|null} JWT 토큰 또는 null
  */
-export function login(baseUrl, email, password) {
+export function login(baseUrl, email, password, orgId) {
+    // Step 1: 로그인 → BOOTSTRAP 토큰 발급
     const loginUrl = `${baseUrl}/user/login`;
     const payload = JSON.stringify({
         email: email,
         password: password,
     });
 
-    const response = http.post(loginUrl, payload, {
+    const loginRes = http.post(loginUrl, payload, {
         headers: {'Content-Type': 'application/json'},
     });
 
-    if (response.status === 200) {
-        // Authorization 헤더에서 토큰 추출
-        const authHeader = response.headers['Authorization'] || response.headers['authorization'];
-        if (authHeader && authHeader.startsWith('Bearer ')) {
-            return authHeader.substring(7); // "Bearer " 제거
-        }
-        // 응답 본문에서 토큰 확인 (필요한 경우)
-        try {
-            const body = JSON.parse(response.body);
-            if (body.data && body.data.token) {
-                return body.data.token;
-            }
-        } catch (e) {
-            // JSON 파싱 실패 시 무시
-        }
+    if (loginRes.status !== 200) {
+        console.error(`로그인 실패: ${loginRes.status} - ${loginRes.body}`);
+        return null;
     }
 
-    console.error(`로그인 실패: ${response.status} - ${response.body}`);
+    const authHeader = loginRes.headers['Authorization'] || loginRes.headers['authorization'];
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        console.error('로그인 응답에 Authorization 헤더가 없습니다.');
+        return null;
+    }
+    const bootstrapToken = authHeader.substring(7);
+
+    // Step 2: 조직 선택 → ORG 토큰 발급
+    const selectOrgUrl = `${baseUrl}/orgs/${orgId || 1}`;
+    const selectRes = http.patch(selectOrgUrl, null, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${bootstrapToken}`,
+        },
+    });
+
+    if (selectRes.status !== 200) {
+        console.error(`조직 선택 실패: ${selectRes.status} - ${selectRes.body}`);
+        return null;
+    }
+
+    const orgAuthHeader = selectRes.headers['Authorization'] || selectRes.headers['authorization'];
+    if (orgAuthHeader && orgAuthHeader.startsWith('Bearer ')) {
+        return orgAuthHeader.substring(7);
+    }
+
+    console.error('조직 선택 응답에 ORG 토큰이 없습니다.');
     return null;
 }
 

@@ -33,7 +33,7 @@ export function setup() {
   console.log('⚠️  로컬 테스트: 외부 API는 사용하지 않습니다.');
   
   // 로그인하여 토큰 발급
-  const token = login(config.baseUrl, testData.email, testData.password);
+  const token = login(config.baseUrl, testData.email, testData.password, testData.orgId);
   if (!token) {
     console.error('로그인 실패 - 테스트를 중단합니다.');
     return null;
@@ -54,7 +54,7 @@ export default function (data) {
 
   // 시청 기록 조회 API 호출
   // 실제 엔드포인트는 프로젝트 구조에 따라 조정 필요
-  const url = `${config.baseUrl}/${testData.orgId}/history`;
+  const url = `${config.baseUrl}/${testData.orgId}/myactivity/video`;
   
   const params = {
     headers: {

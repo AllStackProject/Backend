@@ -43,7 +43,7 @@ export function setup() {
   console.log('⚠️  로컬 테스트: S3/CloudFront URL 생성은 더미 값으로 반환될 수 있습니다.');
   
   // 로그인하여 토큰 발급
-  const token = login(config.baseUrl, testData.email, testData.password);
+  const token = login(config.baseUrl, testData.email, testData.password, testData.orgId);
   if (!token) {
     console.error('로그인 실패 - 테스트를 중단합니다.');
     return null;

@@ -11,25 +11,25 @@
 -- WHERE: member_id, join_status, upload_status
 -- ORDER BY: last_watched_at DESC
 CREATE INDEX IF NOT EXISTS idx_history_member_last_watched 
-ON "History" (member_id, last_watched_at DESC)
+ON history (member_id, last_watched_at DESC)
 WHERE status = 'ACTIVE';
 
 -- 멤버와 비디오 조합 조회 최적화
 -- 사용 쿼리: HistoryRepository.findByMemberIdAndVideoId()
 CREATE INDEX IF NOT EXISTS idx_history_member_video 
-ON "History" (member_id, video_id)
+ON history (member_id, video_id)
 WHERE status = 'ACTIVE';
 
 -- 비디오별 시청 기록 조회 최적화
 -- 사용 쿼리: HistoryRepositoryImpl.findVideoWatchLogByVideoId()
 CREATE INDEX IF NOT EXISTS idx_history_video_member 
-ON "History" (video_id, member_id, last_watched_at DESC)
+ON history (video_id, member_id, last_watched_at DESC)
 WHERE status = 'ACTIVE';
 
 -- 완료된 시청 기록 기간별 조회 최적화
 -- 사용 쿼리: HistoryRepositoryImpl.findTopCategoriesByMemberIdWithinPeriod()
 CREATE INDEX IF NOT EXISTS idx_history_member_completed 
-ON "History" (member_id, is_complete, completed_at)
+ON history (member_id, is_complete, completed_at)
 WHERE status = 'ACTIVE' AND is_complete = true;
 
 -- ============================================
@@ -41,26 +41,26 @@ WHERE status = 'ACTIVE' AND is_complete = true;
 -- WHERE: organization_id, upload_status, join_status, status
 -- ORDER BY: created_at DESC, watch_cnt DESC
 CREATE INDEX IF NOT EXISTS idx_video_org_status_created 
-ON "Video" (organization_id, upload_status, created_at DESC)
+ON video(organization_id, upload_status, created_at DESC)
 WHERE status = 'ACTIVE';
 
 -- 조직별 비디오 조회 (크리에이터 필터링 포함)
 -- 사용 쿼리: VideoRepositoryImpl.findByOrgIdAndCreatorId()
 CREATE INDEX IF NOT EXISTS idx_video_org_creator_status 
-ON "Video" (organization_id, member_id, upload_status, created_at DESC)
+ON video(organization_id, member_id, upload_status, created_at DESC)
 WHERE status = 'ACTIVE';
 
 -- 비디오 제목 검색 최적화
 -- 사용 쿼리: VideoRepositoryImpl.findSearchVideos()
 -- WHERE: organization_id, title (LIKE), upload_status
 CREATE INDEX IF NOT EXISTS idx_video_org_title_status 
-ON "Video" (organization_id, upload_status, title)
+ON video(organization_id, upload_status, title)
 WHERE status = 'ACTIVE';
 
 -- 비디오 키로 조회 (인코딩 결과 업데이트용)
 -- 사용 쿼리: VideoRepository.findByVideoKey()
 CREATE INDEX IF NOT EXISTS idx_video_video_key 
-ON "Video" (video_url)
+ON video(video_url)
 WHERE status = 'ACTIVE';
 
 -- ============================================
@@ -70,13 +70,13 @@ WHERE status = 'ACTIVE';
 -- 비디오별 멤버 그룹 매핑 조회 최적화
 -- 사용 쿼리: VideoMemberGroupMappingRepository.findAllByVideoId()
 CREATE INDEX IF NOT EXISTS idx_video_member_group_mapping_video 
-ON "Video_Member_Group_Mapping" (video_id, status)
+ON video_member_group_mapping (video_id, status)
 WHERE status = 'ACTIVE';
 
 -- 멤버 그룹별 비디오 매핑 조회 최적화
 -- 사용 쿼리: 비디오 접근 권한 확인 쿼리
 CREATE INDEX IF NOT EXISTS idx_video_member_group_mapping_group 
-ON "Video_Member_Group_Mapping" (member_group_id, video_id, status)
+ON video_member_group_mapping (member_group_id, video_id, status)
 WHERE status = 'ACTIVE';
 
 -- ============================================
@@ -86,12 +86,12 @@ WHERE status = 'ACTIVE';
 -- 멤버별 그룹 매핑 조회 최적화
 -- 사용 쿼리: MemberGroupMappingRepository.findAllByMemberId()
 CREATE INDEX IF NOT EXISTS idx_member_group_mapping_member 
-ON "Member_Group_Mapping" (member_id, member_group_id, status)
+ON member_group_mapping (member_id, member_group_id, status)
 WHERE status = 'ACTIVE';
 
 -- 그룹별 멤버 매핑 조회 최적화
 CREATE INDEX IF NOT EXISTS idx_member_group_mapping_group 
-ON "Member_Group_Mapping" (member_group_id, member_id, status)
+ON member_group_mapping (member_group_id, member_id, status)
 WHERE status = 'ACTIVE';
 
 -- ============================================
@@ -101,12 +101,12 @@ WHERE status = 'ACTIVE';
 -- 비디오별 카테고리 매핑 조회 최적화
 -- 사용 쿼리: VideoCategoryMappingRepository.findAllByVideoId()
 CREATE INDEX IF NOT EXISTS idx_video_category_mapping_video 
-ON "Video_Category_Mapping" (video_id, category_id, status)
+ON video_category_mapping (video_id, category_id, status)
 WHERE status = 'ACTIVE';
 
 -- 카테고리별 비디오 매핑 조회 최적화
 CREATE INDEX IF NOT EXISTS idx_video_category_mapping_category 
-ON "Video_Category_Mapping" (category_id, video_id, status)
+ON video_category_mapping (category_id, video_id, status)
 WHERE status = 'ACTIVE';
 
 -- ============================================
@@ -116,7 +116,7 @@ WHERE status = 'ACTIVE';
 -- 멤버와 비디오 조합으로 스크랩 확인 최적화
 -- 사용 쿼리: ScrapRepository.existsByMemberIdAndVideoId()
 CREATE INDEX IF NOT EXISTS idx_scrap_member_video 
-ON "Scrap" (member_id, video_id, status)
+ON scrap (member_id, video_id, status)
 WHERE status = 'ACTIVE';
 
 -- ============================================
@@ -141,9 +141,8 @@ WHERE status = 'ACTIVE';
 
 -- 공지사항별 멤버 그룹 매핑 조회 최적화
 -- 사용 쿼리: NoticeMemberGroupMappingRepository.findAllByNoticeId()
-CREATE INDEX IF NOT EXISTS idx_notice_member_group_mapping_notice 
-ON "Notice_Member_Group_Mapping" (notice_id, member_group_id, status)
-WHERE status = 'ACTIVE';
+CREATE INDEX IF NOT EXISTS idx_notice_member_group_mapping_notice
+ON notice_member_group_mapping (notice_id, member_group_id);
 
 -- ============================================
 -- 9. Comment 테이블 인덱스
@@ -152,12 +151,12 @@ WHERE status = 'ACTIVE';
 -- 비디오별 댓글 조회 최적화
 -- 사용 쿼리: CommentRepository.findByVideoId()
 CREATE INDEX IF NOT EXISTS idx_comment_video_status 
-ON "Comment" (video_id, status, created_at DESC)
+ON comment (video_id, status, created_at DESC)
 WHERE status = 'ACTIVE';
 
 -- 부모 댓글별 자식 댓글 조회 최적화
 CREATE INDEX IF NOT EXISTS idx_comment_parent 
-ON "Comment" (parent_comment_id, status, created_at)
+ON comment (parent_comment_id, status, created_at)
 WHERE status = 'ACTIVE' AND is_child = true;
 
 -- ============================================
