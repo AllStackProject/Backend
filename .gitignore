@@ -42,3 +42,8 @@ src/main/resource/application-local.yml
 
 ### Redis ###
 /redis/redis.conf
+
+### SSL cert
+src/main/resources/cert/
+*.pem
+*.p12

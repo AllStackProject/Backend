@@ -1,0 +1,299 @@
+{
+  "options": {
+    "summaryTrendStats": [
+      "avg",
+      "min",
+      "med",
+      "max",
+      "p(90)",
+      "p(95)"
+    ],
+    "summaryTimeUnit": "",
+    "noColor": false
+  },
+  "state": {
+    "isStdOutTTY": false,
+    "isStdErrTTY": false,
+    "testRunDurationMs": 203340.17
+  },
+  "metrics": {
+    "data_sent": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "count": 2672279,
+        "rate": 13141.913867781264
+      }
+    },
+    "http_req_failed": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "passes": 5299,
+        "fails": 3,
+        "rate": 0.9994341757827235
+      },
+      "thresholds": {
+        "rate<0.1": {
+          "ok": false
+        }
+      }
+    },
+    "http_reqs": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "rate": 26.074533133320386,
+        "count": 5302
+      }
+    },
+    "checks": {
+      "contains": "default",
+      "values": {
+        "rate": 0.5000471698113208,
+        "passes": 10601,
+        "fails": 10599
+      },
+      "type": "rate"
+    },
+    "vus": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "max": 150,
+        "value": 2,
+        "min": 2
+      }
+    },
+    "errors": {
+      "type": "rate",
+      "contains": "default",
+      "values": {
+        "rate": 0.999811320754717,
+        "passes": 5299,
+        "fails": 1
+      },
+      "thresholds": {
+        "rate<0.1": {
+          "ok": false
+        }
+      }
+    },
+    "data_received": {
+      "type": "counter",
+      "contains": "data",
+      "values": {
+        "count": 3391240,
+        "rate": 16677.668755760358
+      }
+    },
+    "vus_max": {
+      "type": "gauge",
+      "contains": "default",
+      "values": {
+        "value": 150,
+        "min": 150,
+        "max": 150
+      }
+    },
+    "http_req_duration{expected_response:true}": {
+      "contains": "time",
+      "values": {
+        "p(95)": 112.5319,
+        "avg": 63.79999999999999,
+        "min": 8.593,
+        "med": 64.993,
+        "max": 117.814,
+        "p(90)": 107.2498
+      },
+      "type": "trend"
+    },
+    "iteration_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "p(95)": 4871.24563685,
+        "avg": 3516.176150016585,
+        "min": 2004.024916,
+        "med": 3524.4983334999997,
+        "max": 5057.481125,
+        "p(90)": 4719.2201955
+      }
+    },
+    "connection_pool_errors": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "rate": 0,
+        "count": 0
+      },
+      "thresholds": {
+        "count<100": {
+          "ok": true
+        }
+      }
+    },
+    "http_req_duration": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 6.71452319879291,
+        "min": 1.831,
+        "med": 4.165,
+        "max": 127.758,
+        "p(90)": 13.856700000000004,
+        "p(95)": 20.579049999999974
+      },
+      "thresholds": {
+        "p(95)<3000": {
+          "ok": true
+        },
+        "p(99)<5000": {
+          "ok": true
+        }
+      }
+    },
+    "iterations": {
+      "values": {
+        "count": 5300,
+        "rate": 26.064697398453045
+      },
+      "type": "counter",
+      "contains": "default"
+    },
+    "http_req_connecting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 0,
+        "max": 2.739,
+        "p(90)": 0,
+        "p(95)": 0,
+        "avg": 0.008344586948321388,
+        "min": 0
+      }
+    },
+    "http_req_waiting": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "max": 127.713,
+        "p(90)": 13.616700000000002,
+        "p(95)": 20.08665,
+        "avg": 6.605357412297231,
+        "min": 1.801,
+        "med": 4.089
+      }
+    },
+    "http_req_receiving": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.07240475292342492,
+        "min": 0.011,
+        "med": 0.051,
+        "max": 4.405,
+        "p(90)": 0.125,
+        "p(95)": 0.165
+      }
+    },
+    "total_requests": {
+      "type": "counter",
+      "contains": "default",
+      "values": {
+        "count": 5300,
+        "rate": 26.064697398453045
+      }
+    },
+    "http_req_tls_handshaking": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.3418264805733684,
+        "min": 0,
+        "med": 0,
+        "max": 61.07,
+        "p(90)": 0,
+        "p(95)": 0
+      }
+    },
+    "http_req_sending": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "med": 0.017,
+        "max": 34.047,
+        "p(90)": 0.037,
+        "p(95)": 0.057,
+        "avg": 0.03676103357223676,
+        "min": 0.004
+      }
+    },
+    "video_join_api_duration": {
+      "type": "trend",
+      "contains": "default",
+      "values": {
+        "min": 1,
+        "med": 4,
+        "max": 128,
+        "p(90)": 15,
+        "p(95)": 21.049999999999766,
+        "avg": 7.190943396226415
+      }
+    },
+    "http_req_blocked": {
+      "type": "trend",
+      "contains": "time",
+      "values": {
+        "avg": 0.3759805733685322,
+        "min": 0.001,
+        "med": 0.006,
+        "max": 64.44,
+        "p(90)": 0.019,
+        "p(95)": 0.04589999999999953
+      }
+    }
+  },
+  "setup_data": {
+    "videoIds": [
+      "151"
+    ],
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJtZW1iZXJJZCI6NzUwMSwidXNlcklkIjo1MDAxLCJvcmdKb2luU3RhdHVzIjoiQVBQUk9WRUQiLCJvcmdJZCI6MSwib3JnUGVybWlzc2lvbiI6MTUsIm9yZ0lzQWRtaW4iOnRydWUsInRva2VuVHlwZSI6Ik9SRyIsImlhdCI6MTc3MjY3Njk0MywiZXhwIjoxNzc1MjY4OTQzfQ.KCDffnqvV22dseEK2fKU6kv4yuToN3byZhXOSu41nQE"
+  },
+  "root_group": {
+    "name": "",
+    "path": "",
+    "id": "d41d8cd98f00b204e9800998ecf8427e",
+    "groups": [],
+    "checks": [
+        {
+          "path": "::영상 세션 시작 API 상태 코드 200 또는 201",
+          "id": "b292b3b10176b79638a488dedde259f7",
+          "passes": 1,
+          "fails": 5299,
+          "name": "영상 세션 시작 API 상태 코드 200 또는 201"
+        },
+        {
+          "passes": 5300,
+          "fails": 0,
+          "name": "영상 세션 시작 API 응답 시간 < 3초",
+          "path": "::영상 세션 시작 API 응답 시간 < 3초",
+          "id": "38fdc37afba80c32cedb5248f693c40c"
+        },
+        {
+          "name": "영상 세션 시작 API 응답 본문 존재",
+          "path": "::영상 세션 시작 API 응답 본문 존재",
+          "id": "af400638963cc60ef15d8a9793e15a5d",
+          "passes": 5300,
+          "fails": 0
+        },
+        {
+          "fails": 5300,
+          "name": "영상 세션 시작 API JSON 파싱 가능",
+          "path": "::영상 세션 시작 API JSON 파싱 가능",
+          "id": "cd43fcd7173b0fd1d01c1848a9e0a945",
+          "passes": 0
+        }
+      ]
+  }
+}

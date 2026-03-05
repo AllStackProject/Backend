@@ -74,6 +74,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -81,6 +82,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -107,6 +109,9 @@ public class VideoService {
     private final AiFunctionService aiFunctionService;
     private final MemberGroupMappingRepository memberGroupMappingRepository;
     private final VideoRedisRepository videoRedisRepository;
+
+    @Value("${app.cache.enabled:true}")
+    private boolean cacheEnabled;
 
     @Transactional(readOnly = true)
     public JoinVideoSessionResult prepareJoinVideoSession(Long memberId, Long orgId, Long videoId) {
@@ -413,6 +418,98 @@ public class VideoService {
 
     @Transactional(readOnly = true)
     public ReadVideoInfoResponse readVideoInfo(Long orgId, Long memberId, Long videoId) {
+        // 캐시에서 비디오 정보 조회 시도
+        Map<String, Object> cachedInfo = cacheEnabled
+                ? videoRedisRepository.getCachedVideoInfo(videoId)
+                : null;
+
+        if (cachedInfo != null) {
+            // 캐시 히트: 캐시된 데이터를 ReadVideoInfoResponse로 변환
+            // 단, 사용자별 정보(멤버 그룹 등)는 매번 조회 필요
+            Video video = videoRepository.findByIdAndOrganizationId(videoId, orgId)
+                    .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
+
+            if (!video.getCreator().getId().equals(memberId)) {
+                throw new ApiException(VIDEO_CREATE_NOT_FOUND);
+            }
+
+            // 사용자별 정보는 DB에서 조회
+            List<VideoMemberGroupMapping> videoGroupMappings = videoMemberGroupMappingRepository.findAllByVideoId(
+                    videoId);
+            Set<Long> allMappingGroupIds = videoGroupMappings.stream()
+                    .map(m -> m.getMemberGroup().getId())
+                    .collect(Collectors.toSet());
+
+            List<VideoCategoryMapping> videoCategoryMappings = videoCategoryMappingRepository.findAllByVideoId(videoId);
+            Set<Long> allMappingCategoryIds = videoCategoryMappings.stream()
+                    .map(m -> m.getCategory().getId())
+                    .collect(Collectors.toSet());
+            OpenScopeType openScope = allMappingGroupIds.isEmpty() ? PUBLIC : GROUP;
+
+            List<MemberGroupMapping> myGroupMappings = memberGroupMappingRepository.findAllByMemberId(memberId);
+            Map<Long, MemberGroup> myGroupsById = myGroupMappings.stream()
+                    .map(MemberGroupMapping::getMemberGroup)
+                    .collect(Collectors.toMap(
+                            MemberGroup::getId,
+                            g -> g,
+                            (g1, g2) -> g1
+                    ));
+
+            List<Long> myGroupIds = new ArrayList<>(myGroupsById.keySet());
+            if (myGroupIds.isEmpty()) {
+                return ReadVideoInfoResponse.of(
+                        (String) cachedInfo.get("title"),
+                        (String) cachedInfo.get("description"),
+                        (String) cachedInfo.get("thumbnailUrl"),
+                        Long.valueOf(cachedInfo.get("watchCnt").toString()),
+                        (java.time.LocalDate) cachedInfo.get("expiredAt"),
+                        Boolean.valueOf(cachedInfo.get("isComment").toString()),
+                        openScope,
+                        List.of()
+                );
+            }
+
+            List<Category> categories = categoryRepository.findByMemberGroupIdIn(myGroupIds);
+            Map<Long, List<Category>> categoriesByGroupId = categories.stream()
+                    .collect(Collectors.groupingBy(Category::getMemberGroupId));
+
+            List<VideoMemberGroupItem> memberGroupItems = myGroupIds.stream()
+                    .map(groupId -> {
+                        MemberGroup group = myGroupsById.get(groupId);
+                        boolean groupSelected = allMappingGroupIds.contains(groupId);
+
+                        List<VideoCategoryItem> categoryItems = categoriesByGroupId
+                                .getOrDefault(groupId, List.of())
+                                .stream()
+                                .map(c -> new VideoCategoryItem(
+                                        c.getId(),
+                                        c.getTitle(),
+                                        allMappingCategoryIds.contains(c.getId())
+                                ))
+                                .toList();
+
+                        return new VideoMemberGroupItem(
+                                group.getId(),
+                                group.getName(),
+                                groupSelected,
+                                categoryItems
+                        );
+                    })
+                    .toList();
+
+            return ReadVideoInfoResponse.of(
+                    (String) cachedInfo.get("title"),
+                    (String) cachedInfo.get("description"),
+                    (String) cachedInfo.get("thumbnailUrl"),
+                    Long.valueOf(cachedInfo.get("watchCnt").toString()),
+                    (java.time.LocalDate) cachedInfo.get("expiredAt"),
+                    Boolean.valueOf(cachedInfo.get("isComment").toString()),
+                    openScope,
+                    memberGroupItems
+            );
+        }
+
+        // 캐시 미스: DB에서 조회
         Video video = videoRepository.findByIdAndOrganizationId(videoId, orgId)
                 .orElseThrow(() -> new ApiException(VIDEO_NOT_FOUND));
 
@@ -443,7 +540,7 @@ public class VideoService {
 
         List<Long> myGroupIds = new ArrayList<>(myGroupsById.keySet());
         if (myGroupIds.isEmpty()) {
-            return ReadVideoInfoResponse.of(
+            ReadVideoInfoResponse response = ReadVideoInfoResponse.of(
                     video.getTitle(),
                     video.getDescription(),
                     thumbnailUrl,
@@ -453,6 +550,20 @@ public class VideoService {
                     openScope,
                     List.of()
             );
+
+            // 캐시에 저장
+            if (cacheEnabled) {
+                Map<String, Object> videoInfoForCache = new HashMap<>();
+                videoInfoForCache.put("title", video.getTitle());
+                videoInfoForCache.put("description", video.getDescription());
+                videoInfoForCache.put("thumbnailUrl", thumbnailUrl);
+                videoInfoForCache.put("watchCnt", video.getWatchCnt());
+                videoInfoForCache.put("expiredAt", video.getExpiredAt());
+                videoInfoForCache.put("isComment", video.getIsComment());
+                videoRedisRepository.cacheVideoInfo(videoId, videoInfoForCache);
+            }
+
+            return response;
         }
 
         List<Category> categories = categoryRepository.findByMemberGroupIdIn(myGroupIds);
@@ -483,7 +594,7 @@ public class VideoService {
                 })
                 .toList();
 
-        return ReadVideoInfoResponse.of(
+        ReadVideoInfoResponse response = ReadVideoInfoResponse.of(
                 video.getTitle(),
                 video.getDescription(),
                 thumbnailUrl,
@@ -493,6 +604,20 @@ public class VideoService {
                 openScope,
                 memberGroupItems
         );
+
+        // 캐시에 저장
+        if (cacheEnabled) {
+            Map<String, Object> videoInfoForCache = new HashMap<>();
+            videoInfoForCache.put("title", video.getTitle());
+            videoInfoForCache.put("description", video.getDescription());
+            videoInfoForCache.put("thumbnailUrl", thumbnailUrl);
+            videoInfoForCache.put("watchCnt", video.getWatchCnt());
+            videoInfoForCache.put("expiredAt", video.getExpiredAt());
+            videoInfoForCache.put("isComment", video.getIsComment());
+            videoRedisRepository.cacheVideoInfo(videoId, videoInfoForCache);
+        }
+
+        return response;
     }
 
     public boolean modifyVideo(Long orgId, Long memberId, Long videoId, ModifyVideoRequest modifyVideoRequest) {
@@ -556,6 +681,10 @@ public class VideoService {
                 .toList();
         videoCategoryMappingRepository.saveAll(categoryMappings);
 
+        // 비디오 수정 시 캐시 무효화
+        videoRedisRepository.invalidateVideoCache(videoId);
+        videoRedisRepository.invalidateHomeCache(orgId);
+
         return true;
     }
 
@@ -576,6 +705,11 @@ public class VideoService {
 
         videoMemberGroupMappingRepository.deleteAllByVideoId(videoId);
         videoCategoryMappingRepository.deleteAllByVideoId(videoId);
+
+        // 비디오 삭제 시 캐시 무효화
+        videoRedisRepository.invalidateVideoCache(videoId);
+        videoRedisRepository.invalidateHomeCache(orgId);
+
         videoRepository.delete(video);
 
         return true;
