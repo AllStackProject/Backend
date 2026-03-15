@@ -1,0 +1,2 @@
+# Mark generated HTML reports so GitHub linguist ignores them
+k6-tests/results/**/*.html linguist-generated
